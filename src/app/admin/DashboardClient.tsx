@@ -1846,11 +1846,12 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
       if (res.ok) {
         showToast('Site Settings successfully updated!', 'success');
       } else {
-        showToast('Failed to update settings', 'error');
+        const errData = await res.json().catch(() => ({}));
+        showToast(`Failed to update settings: ${errData.error || res.statusText || 'Unknown error'}`, 'error');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      showToast('Error updating settings', 'error');
+      showToast(`Error updating settings: ${err.message || 'Unknown network error'}`, 'error');
     } finally {
       setLoading(false);
     }

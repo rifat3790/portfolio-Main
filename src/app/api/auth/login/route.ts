@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { signToken } from '@/lib/auth';
-import { serialize } from 'cookie';
+import { cookies } from 'next/headers';
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,7 +23,8 @@ export async function POST(req: NextRequest) {
     }
 
     const token = signToken();
-    const cookie = serialize('admin_token', token, {
+    const cookieStore = await cookies();
+    cookieStore.set('admin_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -31,9 +32,7 @@ export async function POST(req: NextRequest) {
       path: '/',
     });
 
-    const response = NextResponse.json({ success: true, message: 'Logged in successfully' });
-    response.headers.set('Set-Cookie', cookie);
-    return response;
+    return NextResponse.json({ success: true, message: 'Logged in successfully' });
   } catch (error) {
     console.error('Login API error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
