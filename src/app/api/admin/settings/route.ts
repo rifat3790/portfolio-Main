@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     if (settings) {
       console.log('Updating existing settings ID:', settings._id);
       settings = await Setting.findByIdAndUpdate(settings._id, { $set: data }, { new: true });
-      console.log('Updated Settings Result (heroTitle):', settings.heroTitle);
+      console.log('Updated Settings Result (heroTitle):', settings?.heroTitle);
     } else {
       console.log('Creating new settings document');
       settings = await Setting.create(data);
