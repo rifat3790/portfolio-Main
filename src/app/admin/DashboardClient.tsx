@@ -1690,6 +1690,9 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
   const [logoImage, setLogoImage] = useState('');
   const [heroBannerImage, setHeroBannerImage] = useState('');
   const [favicon, setFavicon] = useState('');
+  const [logoImageDirty, setLogoImageDirty] = useState(false);
+  const [heroBannerImageDirty, setHeroBannerImageDirty] = useState(false);
+  const [faviconDirty, setFaviconDirty] = useState(false);
   const [heroTitle, setHeroTitle] = useState('');
   const [heroSubtitle, setHeroSubtitle] = useState('');
   const [heroBtn1Text, setHeroBtn1Text] = useState('');
@@ -1724,6 +1727,9 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
         setLogoImage(data.logoImage || '');
         setHeroBannerImage(data.heroBannerImage || '');
         setFavicon(data.favicon || '');
+        setLogoImageDirty(false);
+        setHeroBannerImageDirty(false);
+        setFaviconDirty(false);
         setHeroTitle(data.heroTitle || '');
         setHeroSubtitle(data.heroSubtitle || '');
         setHeroBtn1Text(data.heroBtn1Text || '');
@@ -1763,6 +1769,7 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
       reader.onloadend = async () => {
         const compressed = await compressImage(reader.result as string, 128, 128, 0.8);
         setFavicon(compressed);
+        setFaviconDirty(true);
       };
       reader.readAsDataURL(file);
     }
@@ -1775,6 +1782,7 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
       reader.onloadend = async () => {
         const compressed = await compressImage(reader.result as string, 400, 400, 0.7);
         setLogoImage(compressed);
+        setLogoImageDirty(true);
       };
       reader.readAsDataURL(file);
     }
@@ -1787,6 +1795,7 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
       reader.onloadend = async () => {
         const compressed = await compressImage(reader.result as string, 1200, 1200, 0.7);
         setHeroBannerImage(compressed);
+        setHeroBannerImageDirty(true);
       };
       reader.readAsDataURL(file);
     }
@@ -1810,11 +1819,8 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
     e.preventDefault();
     setLoading(true);
 
-    const payload = {
+    const payload: any = {
       logoText,
-      logoImage,
-      heroBannerImage,
-      favicon,
       heroTitle,
       heroSubtitle,
       heroBtn1Text,
@@ -1837,6 +1843,11 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
       blogsLayout
     };
 
+    // Only include images in payload if they were modified in this session
+    if (logoImageDirty) payload.logoImage = logoImage;
+    if (heroBannerImageDirty) payload.heroBannerImage = heroBannerImage;
+    if (faviconDirty) payload.favicon = favicon;
+
     try {
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
@@ -1845,6 +1856,9 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
       });
       if (res.ok) {
         showToast('Site Settings successfully updated!', 'success');
+        setLogoImageDirty(false);
+        setHeroBannerImageDirty(false);
+        setFaviconDirty(false);
       } else {
         const errData = await res.json().catch(() => ({}));
         showToast(`Failed to update settings: ${errData.error || res.statusText || 'Unknown error'}`, 'error');
