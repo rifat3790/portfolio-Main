@@ -25,6 +25,49 @@ import {
 import styles from './admin.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const compressImage = (base64Str: string, maxWidth: number, maxHeight: number, quality = 0.7): Promise<string> => {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') {
+      resolve(base64Str);
+      return;
+    }
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressed);
+      } else {
+        resolve(base64Str);
+      }
+    };
+    img.onerror = () => {
+      resolve(base64Str);
+    };
+  });
+};
+
 type Tab = 'chat' | 'messages' | 'projects' | 'skills' | 'testimonials' | 'blogs' | 'settings';
 
 export default function DashboardClient() {
@@ -337,8 +380,9 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageInput(reader.result as string);
+      reader.onloadend = async () => {
+        const compressed = await compressImage(reader.result as string, 600, 600, 0.7);
+        setImageInput(compressed);
       };
       reader.readAsDataURL(file);
     }
@@ -563,8 +607,9 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
+      reader.onloadend = async () => {
+        const compressed = await compressImage(reader.result as string, 800, 800, 0.7);
+        setImage(compressed);
       };
       reader.readAsDataURL(file);
     }
@@ -1080,8 +1125,9 @@ function TestimonialManager({ showToast }: { showToast: (message: string, type?:
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatar(reader.result as string);
+      reader.onloadend = async () => {
+        const compressed = await compressImage(reader.result as string, 200, 200, 0.7);
+        setAvatar(compressed);
       };
       reader.readAsDataURL(file);
     }
@@ -1368,8 +1414,9 @@ function BlogManager({ showToast }: { showToast: (message: string, type?: 'succe
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
+      reader.onloadend = async () => {
+        const compressed = await compressImage(reader.result as string, 800, 800, 0.7);
+        setImage(compressed);
       };
       reader.readAsDataURL(file);
     }
@@ -1713,8 +1760,9 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFavicon(reader.result as string);
+      reader.onloadend = async () => {
+        const compressed = await compressImage(reader.result as string, 128, 128, 0.8);
+        setFavicon(compressed);
       };
       reader.readAsDataURL(file);
     }
@@ -1724,8 +1772,9 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoImage(reader.result as string);
+      reader.onloadend = async () => {
+        const compressed = await compressImage(reader.result as string, 400, 400, 0.7);
+        setLogoImage(compressed);
       };
       reader.readAsDataURL(file);
     }
@@ -1734,13 +1783,10 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
   const handleBannerImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        showToast('File size should be less than 2MB', 'error');
-        return;
-      }
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setHeroBannerImage(reader.result as string);
+      reader.onloadend = async () => {
+        const compressed = await compressImage(reader.result as string, 1200, 1200, 0.7);
+        setHeroBannerImage(compressed);
       };
       reader.readAsDataURL(file);
     }
