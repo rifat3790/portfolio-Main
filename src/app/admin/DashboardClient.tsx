@@ -23,6 +23,7 @@ import {
   Globe
 } from 'lucide-react';
 import styles from './admin.module.css';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Tab = 'chat' | 'messages' | 'projects' | 'skills' | 'testimonials' | 'blogs' | 'settings';
 
@@ -30,6 +31,21 @@ export default function DashboardClient() {
   const [activeTab, setActiveTab] = useState<Tab>('chat');
   const [logoutLoading, setLogoutLoading] = useState(false);
   const router = useRouter();
+
+  // Toast Notification State
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({
+    message: '',
+    type: 'info',
+    visible: false
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type, visible: true });
+    // Auto hide
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, visible: false }));
+    }, 4000);
+  };
 
   const handleLogout = async () => {
     setLogoutLoading(true);
@@ -53,13 +69,13 @@ export default function DashboardClient() {
         <aside className={styles.sidebar}>
           <div className={styles.sidebarHeader}>
             <h2 className={styles.adminBrand}>Aura Console</h2>
-            <div className={styles.adminStatus}>
-              <span className={styles.statusIndicator} />
-              <span>Owner Online</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--accent-gold)' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4caf50', display: 'inline-block' }} />
+              <span>OWNER ONLINE</span>
             </div>
           </div>
 
-          <nav className={styles.nav}>
+          <nav className={styles.navMenu}>
             <button
               onClick={() => setActiveTab('chat')}
               className={`${styles.navItem} ${activeTab === 'chat' ? styles.navItemActive : ''}`}
@@ -67,13 +83,15 @@ export default function DashboardClient() {
               <MessageSquare size={18} />
               <span>Live Chats</span>
             </button>
+
             <button
               onClick={() => setActiveTab('messages')}
               className={`${styles.navItem} ${activeTab === 'messages' ? styles.navItemActive : ''}`}
             >
-              <MessageSquare size={18} />
+              <Send size={18} />
               <span>Contact Forms</span>
             </button>
+
             <button
               onClick={() => setActiveTab('projects')}
               className={`${styles.navItem} ${activeTab === 'projects' ? styles.navItemActive : ''}`}
@@ -81,6 +99,7 @@ export default function DashboardClient() {
               <Briefcase size={18} />
               <span>Projects</span>
             </button>
+
             <button
               onClick={() => setActiveTab('skills')}
               className={`${styles.navItem} ${activeTab === 'skills' ? styles.navItemActive : ''}`}
@@ -88,6 +107,7 @@ export default function DashboardClient() {
               <Layers size={18} />
               <span>Skills</span>
             </button>
+
             <button
               onClick={() => setActiveTab('testimonials')}
               className={`${styles.navItem} ${activeTab === 'testimonials' ? styles.navItemActive : ''}`}
@@ -95,6 +115,7 @@ export default function DashboardClient() {
               <Quote size={18} />
               <span>Testimonials</span>
             </button>
+
             <button
               onClick={() => setActiveTab('blogs')}
               className={`${styles.navItem} ${activeTab === 'blogs' ? styles.navItemActive : ''}`}
@@ -102,6 +123,7 @@ export default function DashboardClient() {
               <BookOpen size={18} />
               <span>Journal (Blogs)</span>
             </button>
+
             <button
               onClick={() => setActiveTab('settings')}
               className={`${styles.navItem} ${activeTab === 'settings' ? styles.navItemActive : ''}`}
@@ -123,15 +145,53 @@ export default function DashboardClient() {
 
         {/* Main Content Area */}
         <main className={styles.mainContent}>
-          {activeTab === 'chat' && <ChatManager />}
-          {activeTab === 'messages' && <ContactMessagesManager />}
-          {activeTab === 'projects' && <ProjectManager />}
-          {activeTab === 'skills' && <SkillManager />}
-          {activeTab === 'testimonials' && <TestimonialManager />}
-          {activeTab === 'blogs' && <BlogManager />}
-          {activeTab === 'settings' && <SettingsManager />}
+          {activeTab === 'chat' && <ChatManager showToast={showToast} />}
+          {activeTab === 'messages' && <ContactMessagesManager showToast={showToast} />}
+          {activeTab === 'projects' && <ProjectManager showToast={showToast} />}
+          {activeTab === 'skills' && <SkillManager showToast={showToast} />}
+          {activeTab === 'testimonials' && <TestimonialManager showToast={showToast} />}
+          {activeTab === 'blogs' && <BlogManager showToast={showToast} />}
+          {activeTab === 'settings' && <SettingsManager showToast={showToast} />}
         </main>
       </div>
+
+      {/* Animated Custom Toast Popup */}
+      <AnimatePresence>
+        {toast.visible && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            style={{
+              position: 'fixed',
+              bottom: '32px',
+              right: '32px',
+              background: toast.type === 'success' ? '#1c3d28' : toast.type === 'error' ? '#4d1c1c' : 'var(--bg-tertiary)',
+              border: `1px solid ${toast.type === 'success' ? '#2e7d32' : toast.type === 'error' ? '#c62828' : 'var(--accent-gold)'}`,
+              padding: '16px 24px',
+              borderRadius: '8px',
+              color: '#fff',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+              zIndex: 2000,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              fontFamily: 'var(--font-sans)',
+              fontSize: '0.9rem',
+              pointerEvents: 'none'
+            }}
+          >
+            <span style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: toast.type === 'success' ? '#4caf50' : toast.type === 'error' ? '#f44336' : 'var(--accent-gold)'
+            }} />
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -155,7 +215,7 @@ interface IMessage {
   createdAt: string;
 }
 
-function ChatManager() {
+function ChatManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
   const [sessions, setSessions] = useState<IChatSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<IChatSession | null>(null);
   const [messages, setMessages] = useState<IMessage[]>([]);
@@ -442,7 +502,7 @@ interface IProject {
   order: number;
 }
 
-function ProjectManager() {
+function ProjectManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
   const [projects, setProjects] = useState<IProject[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -513,7 +573,7 @@ function ProjectManager() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !description || !image) {
-      alert('Title, Description, and Image are required.');
+      showToast('Title, Description, and Image are required.', 'error');
       return;
     }
 
@@ -729,7 +789,7 @@ interface ISkill {
   order: number;
 }
 
-function SkillManager() {
+function SkillManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
   const [skills, setSkills] = useState<ISkill[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -962,7 +1022,7 @@ interface ITestimonial {
   order: number;
 }
 
-function TestimonialManager() {
+function TestimonialManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
   const [testimonials, setTestimonials] = useState<ITestimonial[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -1244,7 +1304,7 @@ interface IBlog {
   createdAt?: string;
 }
 
-function BlogManager() {
+function BlogManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
   const [blogs, setBlogs] = useState<IBlog[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -1352,7 +1412,7 @@ function BlogManager() {
         fetchBlogs();
       } else {
         const errData = await res.json();
-        alert(errData.error || 'Failed to save blog post');
+        showToast(errData.error || 'Failed to save blog post', 'error');
       }
     } catch (err) {
       console.error('Error submitting blog:', err);
@@ -1578,7 +1638,7 @@ interface ISetting {
   blogsLayout?: string;
 }
 
-function SettingsManager() {
+function SettingsManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
   const [logoText, setLogoText] = useState('AURA');
   const [logoImage, setLogoImage] = useState('');
   const [heroBannerImage, setHeroBannerImage] = useState('');
@@ -1675,7 +1735,7 @@ function SettingsManager() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert('File size should be less than 2MB');
+        showToast('File size should be less than 2MB', 'error');
         return;
       }
       const reader = new FileReader();
@@ -1738,13 +1798,13 @@ function SettingsManager() {
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        alert('Site Settings successfully updated!');
+        showToast('Site Settings successfully updated!', 'success');
       } else {
-        alert('Failed to update settings');
+        showToast('Failed to update settings', 'error');
       }
     } catch (err) {
       console.error(err);
-      alert('Error updating settings');
+      showToast('Error updating settings', 'error');
     } finally {
       setLoading(false);
     }
@@ -1759,14 +1819,14 @@ function SettingsManager() {
       const res = await fetch('/api/admin/seed', { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        alert(data.message || 'Database successfully seeded!');
+        showToast(data.message || 'Database successfully seeded!', 'success');
         fetchSettings(); // Refresh
       } else {
-        alert('Seeding failed.');
+        showToast('Seeding failed.', 'error');
       }
     } catch (err) {
       console.error(err);
-      alert('Seeding encountered an error.');
+      showToast('Seeding encountered an error.', 'error');
     } finally {
       setSeedLoading(false);
     }
@@ -2210,7 +2270,7 @@ interface IContactFormMsg {
   createdAt: string;
 }
 
-function ContactMessagesManager() {
+function ContactMessagesManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
   const [messages, setMessages] = useState<IContactFormMsg[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeMessage, setActiveMessage] = useState<IContactFormMsg | null>(null);
