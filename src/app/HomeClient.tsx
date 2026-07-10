@@ -1459,9 +1459,10 @@ export default function HomeClient({
                 <input 
                   type="text" 
                   required
+                  placeholder="Enter your full name"
                   value={contactForm.name}
                   onChange={e => setContactForm(prev => ({ ...prev, name: e.target.value }))}
-                  style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--glass-border-light)', padding: '12px 16px', color: 'var(--text-primary)', borderRadius: '4px', outline: 'none' }}
+                  style={{ display: 'block', width: '100%', boxSizing: 'border-box', background: 'var(--bg-primary)', border: '1px solid var(--glass-border-light)', padding: '12px 16px', color: 'var(--text-primary)', borderRadius: '4px', outline: 'none' }}
                 />
               </div>
               <div>
@@ -1469,9 +1470,10 @@ export default function HomeClient({
                 <input 
                   type="email" 
                   required
+                  placeholder="Enter your email address"
                   value={contactForm.email}
                   onChange={e => setContactForm(prev => ({ ...prev, email: e.target.value }))}
-                  style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--glass-border-light)', padding: '12px 16px', color: 'var(--text-primary)', borderRadius: '4px', outline: 'none' }}
+                  style={{ display: 'block', width: '100%', boxSizing: 'border-box', background: 'var(--bg-primary)', border: '1px solid var(--glass-border-light)', padding: '12px 16px', color: 'var(--text-primary)', borderRadius: '4px', outline: 'none' }}
                 />
               </div>
               <div>
@@ -1479,18 +1481,20 @@ export default function HomeClient({
                 <input 
                   type="text" 
                   required
+                  placeholder="How can I help you?"
                   value={contactForm.subject}
                   onChange={e => setContactForm(prev => ({ ...prev, subject: e.target.value }))}
-                  style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--glass-border-light)', padding: '12px 16px', color: 'var(--text-primary)', borderRadius: '4px', outline: 'none' }}
+                  style={{ display: 'block', width: '100%', boxSizing: 'border-box', background: 'var(--bg-primary)', border: '1px solid var(--glass-border-light)', padding: '12px 16px', color: 'var(--text-primary)', borderRadius: '4px', outline: 'none' }}
                 />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginBottom: '8px' }}>Message</label>
                 <textarea 
                   required
+                  placeholder="Describe your project, timeline, or query..."
                   value={contactForm.message}
                   onChange={e => setContactForm(prev => ({ ...prev, message: e.target.value }))}
-                  style={{ width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--glass-border-light)', padding: '12px 16px', color: 'var(--text-primary)', borderRadius: '4px', outline: 'none', minHeight: '120px', resize: 'vertical' }}
+                  style={{ display: 'block', width: '100%', boxSizing: 'border-box', background: 'var(--bg-primary)', border: '1px solid var(--glass-border-light)', padding: '12px 16px', color: 'var(--text-primary)', borderRadius: '4px', outline: 'none', minHeight: '120px', resize: 'vertical' }}
                 />
               </div>
               <button 
