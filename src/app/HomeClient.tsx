@@ -1217,6 +1217,13 @@ export default function HomeClient({
       <section id="blogs" className={`${styles.section} ${styles.sectionLight}`}>
         <div className={styles.sectionContent}>
           
+          {initialBlogs.length > 0 && (!siteSettings?.blogsLayout || siteSettings.blogsLayout !== 'editorial-split-sticky') && (
+            <div className={styles.sectionHeader} style={{ marginBottom: '48px' }}>
+              <span className={styles.sectionTag}>Journal</span>
+              <h2 className={`${styles.sectionTitle} gold-gradient-text`}>Curated Insights</h2>
+            </div>
+          )}
+
           {initialBlogs.length === 0 ? (
             <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
               Articles are being curated. Check back shortly.
