@@ -707,9 +707,14 @@
 
 @media (max-width: 480px) {
   .chatWindow {
-    width: calc(100vw - 40px);
-    height: 80vh;
+    position: fixed;
+    bottom: 96px;
+    right: 20px;
+    left: 20px;
+    width: auto;
+    height: 70vh;
     max-height: 480px;
+    z-index: 1000;
   }
 }
 
@@ -751,6 +756,7 @@
   flex-grow: 1;
   padding: 20px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth inertia scroll on iOS */
   display: flex;
   flex-direction: column;
   gap: 12px;
