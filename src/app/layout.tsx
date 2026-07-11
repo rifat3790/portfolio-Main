@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display, Syne } from 'next/font/google';
 import './globals.css';
-import dbConnect from '@/lib/db';
-import Setting from '@/models/Setting';
+import { getSettingsOnly } from '@/lib/data-cache';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -28,8 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
   let favicon = '/favicon.ico';
 
   try {
-    await dbConnect();
-    const settings = await Setting.findOne();
+    const settings = await getSettingsOnly();
     if (settings) {
       if (settings.logoText && settings.heroTitle) {
         title = `${settings.logoText} | ${settings.heroTitle}`;

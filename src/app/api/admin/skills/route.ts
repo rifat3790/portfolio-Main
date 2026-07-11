@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import Skill from '@/models/Skill';
 import { isAuthenticated } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { clearDbCache } from '@/lib/data-cache';
 
 // GET all skills (Admin view, sorted by order)
 export async function GET(req: NextRequest) {
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
     await dbConnect();
     const newSkill = await Skill.create(data);
     revalidatePath('/');
+    clearDbCache();
     return NextResponse.json(newSkill, { status: 201 });
   } catch (error) {
     console.error('Skills POST API error:', error);

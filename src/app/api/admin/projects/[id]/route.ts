@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import Project from '@/models/Project';
 import { isAuthenticated } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { clearDbCache } from '@/lib/data-cache';
 
 export async function PUT(
   req: NextRequest,
@@ -27,6 +28,7 @@ export async function PUT(
     }
 
     revalidatePath('/');
+    clearDbCache();
 
     return NextResponse.json(updatedProject);
   } catch (error) {
@@ -54,6 +56,7 @@ export async function DELETE(
     }
 
     revalidatePath('/');
+    clearDbCache();
 
     return NextResponse.json({ message: 'Project deleted successfully' });
   } catch (error) {

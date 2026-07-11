@@ -1,9 +1,4 @@
-import dbConnect from '@/lib/db';
-import Project from '@/models/Project';
-import Skill from '@/models/Skill';
-import Testimonial from '@/models/Testimonial';
-import Blog from '@/models/Blog';
-import Setting from '@/models/Setting';
+import { getHomepageData } from '@/lib/data-cache';
 import HomeClient from './HomeClient';
 
 export default async function Home() {
@@ -14,23 +9,12 @@ export default async function Home() {
   let settings = null;
 
   try {
-    await dbConnect();
-
-    // Query databases in parallel sorted by order index
-    const [projectsData, skillsData, testimonialsData, blogsData, settingsData] = await Promise.all([
-      Project.find({}).sort({ order: 1, createdAt: -1 }),
-      Skill.find({}).sort({ order: 1, createdAt: -1 }),
-      Testimonial.find({}).sort({ order: 1, createdAt: -1 }),
-      Blog.find({ published: true }).sort({ order: 1, createdAt: -1 }),
-      Setting.findOne(),
-    ]);
-
-    // Safely serialize database values to plain JSON objects for Client Components
-    projects = JSON.parse(JSON.stringify(projectsData));
-    skills = JSON.parse(JSON.stringify(skillsData));
-    testimonials = JSON.parse(JSON.stringify(testimonialsData));
-    blogs = JSON.parse(JSON.stringify(blogsData));
-    settings = settingsData ? JSON.parse(JSON.stringify(settingsData)) : null;
+    const data = await getHomepageData();
+    projects = data.projects;
+    skills = data.skills;
+    testimonials = data.testimonials;
+    blogs = data.blogs;
+    settings = data.settings;
   } catch (error) {
     console.error('Error fetching database records for homepage:', error);
   }
