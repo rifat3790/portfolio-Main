@@ -1,25 +1,22 @@
-/* Load luxury fonts from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Syne:wght@400..800&family=Inter:wght@300;400;500;600;700&display=swap');
-
 :root {
-  --bg-primary: #040406;
-  --bg-secondary: #0a0a0d;
-  --bg-tertiary: #101014;
-  --accent-gold: #d4af37;
-  --accent-gold-rgb: 212, 175, 55;
-  --accent-gold-hover: #f0d369;
-  --accent-champagne: #fdfbf7;
+  --bg-primary: #07050a; /* Deep Amethyst Black */
+  --bg-secondary: #0d0a14; /* Velvet Plum */
+  --bg-tertiary: #161222; /* Royal Indigo-Amethyst */
+  --accent-gold: #c5a880; /* Rose Gold / Champagne */
+  --accent-gold-rgb: 197, 168, 128;
+  --accent-gold-hover: #dec49e;
+  --accent-champagne: #f7f5f2; /* Silk White */
   --text-primary: #fdfbf7;
-  --text-secondary: #a3a3ac;
-  --text-muted: #55555c;
-  --glass-bg: rgba(10, 10, 13, 0.65);
-  --glass-border: rgba(212, 175, 55, 0.15);
-  --glass-border-light: rgba(253, 251, 247, 0.08);
-  --glow-color: rgba(212, 175, 55, 0.1);
+  --text-secondary: #a9a4b3; /* Muted Lavender-Silver */
+  --text-muted: #5e596c; /* Deep Lavender-Gray */
+  --glass-bg: rgba(13, 10, 20, 0.7);
+  --glass-border: rgba(197, 168, 128, 0.18);
+  --glass-border-light: rgba(247, 245, 242, 0.08);
+  --glow-color: rgba(197, 168, 128, 0.08);
   
-  --font-serif: 'Playfair Display', Georgia, serif;
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Syne', sans-serif;
+  --font-serif: var(--font-serif), Georgia, serif;
+  --font-sans: var(--font-sans), sans-serif;
+  --font-display: var(--font-display), sans-serif;
 }
 
 * {
@@ -79,14 +76,14 @@ html, body {
 }
 
 .gold-gradient-text {
-  background: linear-gradient(135deg, #FFF7D6 0%, #D4AF37 50%, #9B7B1E 100%);
+  background: linear-gradient(135deg, #FFF5E6 0%, #C5A880 50%, #8E714B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gold-gradient-bg {
-  background: linear-gradient(135deg, #d4af37 0%, #a68521 50%, #735a11 100%);
+  background: linear-gradient(135deg, #C5A880 0%, #9E835D 50%, #6E5637 100%);
 }
 
 .glass-panel {
@@ -130,16 +127,16 @@ html, body {
 }
 
 .btn-premium-gold {
-  background: linear-gradient(135deg, #d4af37 0%, #b8972e 100%);
+  background: linear-gradient(135deg, #c5a880 0%, #a78c66 100%);
   color: var(--bg-primary);
   border: none;
-  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 4px 20px rgba(197, 168, 128, 0.2);
 }
 
 .btn-premium-gold:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(212, 175, 55, 0.35);
-  background: linear-gradient(135deg, #f0d369 0%, #d4af37 100%);
+  box-shadow: 0 6px 24px rgba(197, 168, 128, 0.35);
+  background: linear-gradient(135deg, #dec49e 0%, #c5a880 100%);
 }
 
 .btn-premium-outline {

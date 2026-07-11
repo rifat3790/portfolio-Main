@@ -51,10 +51,10 @@ export async function POST(req: NextRequest) {
         { label: 'Testimonials', url: '#testimonials' }
       ],
       typewriterRoles: 'Full Stack Developer, Shopify Developer, Next.js Architect',
-      projectsLayout: 'asymmetric',
-      skillsLayout: 'category-progress',
-      testimonialsLayout: 'grid',
-      blogsLayout: 'editorial-rows'
+      projectsLayout: 'split-parallax',
+      skillsLayout: 'timeline-steps',
+      testimonialsLayout: 'split-editorial',
+      blogsLayout: 'magazine-split'
     });
 
     // 2. Seed Projects
