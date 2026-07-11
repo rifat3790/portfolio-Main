@@ -1940,7 +1940,7 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
               {logoImage && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <img src={logoImage} alt="Portrait" style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: '50%', border: '1px solid var(--glass-border-light)', padding: 2, background: '#000' }} />
-                  <button type="button" onClick={() => setLogoImage('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
+                  <button type="button" onClick={() => { setLogoImage(''); setLogoImageDirty(true); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
                 </div>
               )}
             </div>
@@ -1962,7 +1962,7 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
               {favicon && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <img src={favicon} alt="Favicon" style={{ width: 32, height: 32, objectFit: 'contain', border: '1px solid var(--glass-border-light)', padding: 2, background: '#000' }} />
-                  <button type="button" onClick={() => setFavicon('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
+                  <button type="button" onClick={() => { setFavicon(''); setFaviconDirty(true); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
                 </div>
               )}
             </div>
@@ -2077,7 +2077,7 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
               {heroBannerImage && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <img src={heroBannerImage} alt="Banner" style={{ height: 40, width: 80, objectFit: 'cover', border: '1px solid var(--glass-border-light)' }} />
-                  <button type="button" onClick={() => setHeroBannerImage('')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
+                  <button type="button" onClick={() => { setHeroBannerImage(''); setHeroBannerImageDirty(true); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
                 </div>
               )}
             </div>

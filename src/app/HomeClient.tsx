@@ -413,82 +413,105 @@ export default function HomeClient({
         )}
         <div className={styles.luxuryMeshGlow} style={{ zIndex: 2, top: '20%', left: '50%', transform: 'translateX(-50%)' }} />
         
-        <div className={styles.sectionContent} style={{ width: '100%', maxWidth: '1400px', position: 'relative', zIndex: 10 }}>
-          <div className={styles.heroGrid}>
+        <div className={styles.sectionContent} style={{ width: '100%', maxWidth: '1200px', position: 'relative', zIndex: 10 }}>
+          <div className={styles.heroCentered}>
             
             {/* Left Column: Text Content */}
             <motion.div 
-              className={styles.heroTextSide}
-              initial={{ opacity: 0, x: -40 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             >
               <span style={{ 
                 display: 'inline-block',
-                padding: '8px 20px', 
+                padding: '8px 24px', 
                 border: '1px solid var(--glass-border)', 
                 borderRadius: '100px', 
-                fontSize: '0.85rem', 
-                letterSpacing: '0.2em', 
+                fontSize: '0.8rem', 
+                letterSpacing: '0.3em', 
                 textTransform: 'uppercase',
                 color: 'var(--accent-gold)',
                 backdropFilter: 'blur(10px)',
-                marginBottom: '24px'
+                marginBottom: '24px',
+                background: 'rgba(212, 175, 55, 0.02)'
               }}>
                 {siteSettings?.heroSubtitle || 'Exclusive Digital Atelier'}
               </span>
-
-              <h1 className="editorial-heading" style={{
-                fontSize: 'clamp(2.5rem, 4.5vw, 4.5rem)',
-                lineHeight: 1.1,
-                marginBottom: '24px',
-                color: 'var(--text-primary)'
-              }}>
-                {siteSettings?.heroTitle || "I'm Refayet Hossen"}
-              </h1>
-
-              {/* Typewriter Line */}
-              <div style={{ fontSize: 'clamp(1.2rem, 1.8vw, 1.6rem)', fontFamily: 'var(--font-serif)', fontStyle: 'italic', marginBottom: '40px', color: 'var(--text-secondary)' }}>
-                <TypewriterLoop roles={roles} />
-              </div>
-
-              <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                <a href={siteSettings?.heroBtn1Url || '#projects'} className="btn-premium btn-premium-gold" style={{ padding: '16px 36px', fontSize: '0.9rem', borderRadius: '50px' }}>
-                  {siteSettings?.heroBtn1Text || 'Explore Showcase'}
-                </a>
-                <a href={siteSettings?.heroBtn2Url || '#contact'} className="btn-premium btn-premium-outline" style={{ padding: '16px 36px', fontSize: '0.9rem', borderRadius: '50px' }}>
-                  {siteSettings?.heroBtn2Text || 'Contact Me'}
-                </a>
-              </div>
             </motion.div>
 
-            {/* Right Column: Rotating Portrait */}
-            <motion.div 
-              className={styles.heroVisualSide}
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+            <motion.h1 
+              className="editorial-heading"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+              style={{
+                fontSize: 'clamp(2.6rem, 5vw, 5.2rem)',
+                lineHeight: 1.08,
+                textAlign: 'center',
+                letterSpacing: '-0.01em',
+                marginBottom: '24px',
+                color: 'var(--text-primary)'
+              }}
             >
-              <div className={styles.heroPortraitWrapper}>
-                <div className={styles.heroPortraitInner}>
-                  {siteSettings?.logoImage ? (
-                     <img src={siteSettings.logoImage} alt="Portrait" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                     <User size={100} color="var(--text-muted)" />
-                  )}
-                </div>
-                
-                {/* Floating Icons */}
-                <motion.div className={styles.floatingIcon} style={{ top: '-5%', left: '-15%' }} animate={{ y: [0, -15, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
-                  <Code size={24} />
-                </motion.div>
-                <motion.div className={styles.floatingIcon} style={{ top: '40%', right: '-20%' }} animate={{ y: [0, 20, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}>
-                  <Briefcase size={24} />
-                </motion.div>
-                <motion.div className={styles.floatingIcon} style={{ bottom: '-10%', left: '10%' }} animate={{ y: [0, -20, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}>
-                  <Sparkles size={24} />
-                </motion.div>
+              {siteSettings?.heroTitle || "I'm Refayet Hossen"}
+            </motion.h1>
+
+            {/* Typewriter Line */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.5, delay: 0.2 }}
+              style={{ 
+                fontSize: 'clamp(1.2rem, 1.8vw, 1.6rem)', 
+                fontFamily: 'var(--font-serif)', 
+                fontStyle: 'italic', 
+                textAlign: 'center',
+                marginBottom: '40px', 
+                color: 'var(--text-secondary)' 
+              }}
+            >
+              <TypewriterLoop roles={roles} />
+            </motion.div>
+
+            {/* Luxury Arch Portrait Showcase */}
+            <motion.div 
+              className={styles.heroArchWrapper}
+              initial={{ opacity: 0, scale: 0.95, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+            >
+              <div className={styles.luxuryArchFrame}>
+                {siteSettings?.logoImage ? (
+                   <img src={siteSettings.logoImage} alt="Portrait" className={styles.luxuryArchImg} />
+                ) : (
+                   <div className={styles.luxuryArchPlaceholder}>
+                     <User size={80} color="var(--text-muted)" />
+                   </div>
+                )}
+                <div className={styles.luxuryArchGlow} />
               </div>
+              
+              {/* Floating Accent Icons */}
+              <motion.div className={styles.floatingAccentIcon} style={{ top: '15%', left: '-12%' }} animate={{ y: [0, -12, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
+                <Code size={18} />
+              </motion.div>
+              <motion.div className={styles.floatingAccentIcon} style={{ bottom: '20%', right: '-12%' }} animate={{ y: [0, 12, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}>
+                <Sparkles size={18} />
+              </motion.div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+              style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}
+            >
+              <a href={siteSettings?.heroBtn1Url || '#projects'} className="btn-premium btn-premium-gold" style={{ padding: '18px 40px', fontSize: '0.9rem', borderRadius: '100px' }}>
+                {siteSettings?.heroBtn1Text || 'Explore Showcase'}
+              </a>
+              <a href={siteSettings?.heroBtn2Url || '#contact'} className="btn-premium btn-premium-outline" style={{ padding: '18px 40px', fontSize: '0.9rem', borderRadius: '100px' }}>
+                {siteSettings?.heroBtn2Text || 'Establish Dialogue'}
+              </a>
             </motion.div>
 
           </div>
