@@ -28,24 +28,32 @@ async function dbConnect() {
     throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
   }
 
-  if (cached!.conn) {
-    return cached!.conn;
+  const readyState = mongoose.connection.readyState;
+
+  // 1 = connected
+  if (readyState === 1) {
+    return mongoose.connection;
   }
 
-  if (!cached!.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-
-    cached!.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
-      return mongooseInstance;
-    });
+  // 2 = connecting
+  if (readyState === 2 && cached!.promise) {
+    return cached!.promise;
   }
+
+  // If disconnected (0) or disconnecting (3), clear promise/cache and reconnect
+  const opts = {
+    bufferCommands: false,
+  };
+
+  cached!.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
+    return mongooseInstance;
+  });
 
   try {
     cached!.conn = await cached!.promise;
   } catch (e) {
     cached!.promise = null;
+    cached!.conn = null;
     throw e;
   }
 
