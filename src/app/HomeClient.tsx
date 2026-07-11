@@ -270,6 +270,7 @@ export default function HomeClient({
   return (
     <div className={styles.container}>
       <CustomCursor />
+      <div className="luxury-grid" />
 
       {/* Decorative Glow Mesh Backgrounds */}
       <div className={styles.meshGlowContainer}>
@@ -433,7 +434,7 @@ export default function HomeClient({
                 color: 'var(--accent-gold)',
                 backdropFilter: 'blur(10px)',
                 marginBottom: '24px',
-                background: 'rgba(212, 175, 55, 0.02)'
+                background: 'rgba(var(--accent-gold-rgb), 0.02)'
               }}>
                 {siteSettings?.heroSubtitle || 'Exclusive Digital Atelier'}
               </span>
@@ -1024,8 +1025,8 @@ export default function HomeClient({
                   <div key={t._id} style={{ display: 'flex', justifyContent: isEven ? 'flex-start' : 'flex-end', width: '100%' }}>
                     <div style={{
                       maxWidth: '85%',
-                      background: isEven ? 'var(--bg-secondary)' : 'rgba(212, 175, 55, 0.08)',
-                      border: isEven ? '1px solid var(--glass-border)' : '1px solid rgba(212, 175, 55, 0.2)',
+                      background: isEven ? 'var(--bg-secondary)' : 'rgba(var(--accent-gold-rgb), 0.08)',
+                      border: isEven ? '1px solid var(--glass-border)' : '1px solid rgba(var(--accent-gold-rgb), 0.2)',
                       borderRadius: isEven ? '20px 20px 20px 4px' : '20px 20px 4px 20px',
                       padding: '24px',
                       boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
