@@ -7,7 +7,7 @@ import Blog from '@/models/Blog';
 import Setting from '@/models/Setting';
 import { isAuthenticated } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { clearDbCache } from '@/lib/data-cache';
+import { clearDbCache, writeHomepageDataJson } from '@/lib/data-cache';
 
 const GOLD_PIXEL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 const DARK_PIXEL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
@@ -52,10 +52,10 @@ export async function POST(req: NextRequest) {
         { label: 'Testimonials', url: '#testimonials' }
       ],
       typewriterRoles: 'Full Stack Developer, Shopify Developer, Next.js Architect',
-      projectsLayout: 'split-parallax',
-      skillsLayout: 'timeline-steps',
-      testimonialsLayout: 'split-editorial',
-      blogsLayout: 'magazine-split'
+      projectsLayout: 'minimal-cards',
+      skillsLayout: 'circular-progress',
+      testimonialsLayout: 'single-featured',
+      blogsLayout: 'asymmetric-cards'
     });
 
     // 2. Seed Projects
@@ -187,6 +187,7 @@ By utilizing Next.js selective revalidation, static content like projects and sk
 
     revalidatePath('/');
     clearDbCache();
+    await writeHomepageDataJson();
 
     return NextResponse.json({
       success: true,

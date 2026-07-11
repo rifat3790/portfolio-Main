@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import Blog from '@/models/Blog';
 import { isAuthenticated } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { clearDbCache } from '@/lib/data-cache';
+import { clearDbCache, writeHomepageDataJson } from '@/lib/data-cache';
 
 function generateSlug(title: string): string {
   return title
@@ -47,6 +47,7 @@ export async function PUT(
 
     revalidatePath('/');
     clearDbCache();
+    await writeHomepageDataJson();
 
     return NextResponse.json({ success: true, blog });
   } catch (error) {
@@ -74,6 +75,7 @@ export async function DELETE(
 
     revalidatePath('/');
     clearDbCache();
+    await writeHomepageDataJson();
 
     return NextResponse.json({ success: true, message: 'Blog deleted successfully' });
   } catch (error) {

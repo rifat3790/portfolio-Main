@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import Skill from '@/models/Skill';
 import { isAuthenticated } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { clearDbCache } from '@/lib/data-cache';
+import { clearDbCache, writeHomepageDataJson } from '@/lib/data-cache';
 
 export async function PUT(
   req: NextRequest,
@@ -29,6 +29,7 @@ export async function PUT(
 
     revalidatePath('/');
     clearDbCache();
+    await writeHomepageDataJson();
 
     return NextResponse.json(updatedSkill);
   } catch (error) {
@@ -57,6 +58,7 @@ export async function DELETE(
 
     revalidatePath('/');
     clearDbCache();
+    await writeHomepageDataJson();
 
     return NextResponse.json({ message: 'Skill deleted successfully' });
   } catch (error) {

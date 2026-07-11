@@ -1,18 +1,18 @@
 :root {
-  --bg-primary: #07050a; /* Deep Amethyst Black */
-  --bg-secondary: #0d0a14; /* Velvet Plum */
-  --bg-tertiary: #161222; /* Royal Indigo-Amethyst */
-  --accent-gold: #c5a880; /* Rose Gold / Champagne */
-  --accent-gold-rgb: 197, 168, 128;
-  --accent-gold-hover: #dec49e;
-  --accent-champagne: #f7f5f2; /* Silk White */
-  --text-primary: #fdfbf7;
-  --text-secondary: #a9a4b3; /* Muted Lavender-Silver */
-  --text-muted: #5e596c; /* Deep Lavender-Gray */
-  --glass-bg: rgba(13, 10, 20, 0.7);
-  --glass-border: rgba(197, 168, 128, 0.18);
-  --glass-border-light: rgba(247, 245, 242, 0.08);
-  --glow-color: rgba(197, 168, 128, 0.08);
+  --bg-primary: #060806; /* Obsidian Jade Black */
+  --bg-secondary: #0b0e0c; /* Obsidian Deep Forest */
+  --bg-tertiary: #121814; /* Deep Emerald Charcoal */
+  --accent-gold: #d4af37; /* 24K Classic Gold */
+  --accent-gold-rgb: 212, 175, 55;
+  --accent-gold-hover: #f3e5ab; /* Champagne Cream */
+  --accent-champagne: #f9f8f6; /* Alabaster Silk */
+  --text-primary: #ffffff;
+  --text-secondary: #9bb2a8; /* Muted Jade Sage */
+  --text-muted: #52665c; /* Deep Sage Gray */
+  --glass-bg: rgba(11, 14, 12, 0.75);
+  --glass-border: rgba(212, 175, 55, 0.2);
+  --glass-border-light: rgba(249, 248, 246, 0.09);
+  --glow-color: rgba(212, 175, 55, 0.06);
   
   --font-serif: var(--font-serif), Georgia, serif;
   --font-sans: var(--font-sans), sans-serif;
@@ -76,14 +76,14 @@ html, body {
 }
 
 .gold-gradient-text {
-  background: linear-gradient(135deg, #FFF5E6 0%, #C5A880 50%, #8E714B 100%);
+  background: linear-gradient(135deg, #FFFDF9 0%, #D4AF37 50%, #8C6F1A 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .gold-gradient-bg {
-  background: linear-gradient(135deg, #C5A880 0%, #9E835D 50%, #6E5637 100%);
+  background: linear-gradient(135deg, #D4AF37 0%, #AA8722 50%, #6E530D 100%);
 }
 
 .glass-panel {
@@ -127,16 +127,16 @@ html, body {
 }
 
 .btn-premium-gold {
-  background: linear-gradient(135deg, #c5a880 0%, #a78c66 100%);
+  background: linear-gradient(135deg, #d4af37 0%, #aa8722 100%);
   color: var(--bg-primary);
   border: none;
-  box-shadow: 0 4px 20px rgba(197, 168, 128, 0.2);
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.2);
 }
 
 .btn-premium-gold:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(197, 168, 128, 0.35);
-  background: linear-gradient(135deg, #dec49e 0%, #c5a880 100%);
+  box-shadow: 0 6px 24px rgba(212, 175, 55, 0.35);
+  background: linear-gradient(135deg, #f3e5ab 0%, #d4af37 100%);
 }
 
 .btn-premium-outline {

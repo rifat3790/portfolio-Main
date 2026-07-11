@@ -1,0 +1,205 @@
+{
+  "projects": [
+    {
+      "_id": "6a527120bcfd15e71cdf581a",
+      "title": "Aetheria Estates",
+      "description": "Ultra-premium digital showcase for elite real estate portfolios in Monaco and Zurich.",
+      "richText": "Aetheria Estates is a bespoke digital platform catering to high-net-worth individuals. Engineered using Next.js with Server-Side Rendering (SSR), it provides an immersive 3D walkthrough experience (integrated with WebGL) and elegant fluid-scroll typography. The backend utilizes advanced caching algorithms for instant load times under 0.4 seconds.",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "techStack": [
+        "Next.js",
+        "WebGL",
+        "Framer Motion",
+        "MongoDB"
+      ],
+      "liveLink": "https://aetheria.example.com",
+      "githubLink": "https://github.com/rifat/aetheria",
+      "order": 1,
+      "__v": 0
+    },
+    {
+      "_id": "6a527120bcfd15e71cdf581b",
+      "title": "Chronos Horology",
+      "description": "An interactive luxury catalog and customizer for haute horology brands.",
+      "richText": "Chronos is an editorial e-commerce exploration built for luxury Swiss watchmakers. Featuring customizable spring animations, interactive 360-degree product tilts, and high-fidelity image loaders, it replicates the physical luxury experience in a browser window. The system integrates seamless API pipelines for private client booking.",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+      "techStack": [
+        "React",
+        "Vanilla CSS",
+        "Three.js",
+        "Node.js"
+      ],
+      "liveLink": "https://chronos.example.com",
+      "githubLink": "https://github.com/rifat/chronos",
+      "order": 2,
+      "__v": 0
+    }
+  ],
+  "skills": [
+    {
+      "_id": "6a527120bcfd15e71cdf581c",
+      "name": "Next.js & React",
+      "level": 98,
+      "category": "Frontend",
+      "order": 1,
+      "__v": 0
+    },
+    {
+      "_id": "6a527120bcfd15e71cdf581d",
+      "name": "TypeScript",
+      "level": 95,
+      "category": "Frontend",
+      "order": 2,
+      "__v": 0
+    },
+    {
+      "_id": "6a527120bcfd15e71cdf581e",
+      "name": "Framer Motion",
+      "level": 90,
+      "category": "Frontend",
+      "order": 3,
+      "__v": 0
+    },
+    {
+      "_id": "6a527120bcfd15e71cdf581f",
+      "name": "Node.js & Express",
+      "level": 92,
+      "category": "Backend",
+      "order": 4,
+      "__v": 0
+    },
+    {
+      "_id": "6a527120bcfd15e71cdf5820",
+      "name": "GraphQL & REST APIs",
+      "level": 94,
+      "category": "Backend",
+      "order": 5,
+      "__v": 0
+    },
+    {
+      "_id": "6a527120bcfd15e71cdf5821",
+      "name": "MongoDB & PostgreSQL",
+      "level": 90,
+      "category": "Backend",
+      "order": 6,
+      "__v": 0
+    },
+    {
+      "_id": "6a527120bcfd15e71cdf5822",
+      "name": "Liquid & Shopify",
+      "level": 96,
+      "category": "Tools/Other",
+      "order": 7,
+      "__v": 0
+    },
+    {
+      "_id": "6a527120bcfd15e71cdf5823",
+      "name": "CI/CD & Docker",
+      "level": 85,
+      "category": "Tools/Other",
+      "order": 8,
+      "__v": 0
+    }
+  ],
+  "testimonials": [
+    {
+      "_id": "6a527120bcfd15e71cdf5824",
+      "name": "Maximilian Vance",
+      "role": "Creative Director",
+      "company": "Vance & Co.",
+      "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "content": "Refayet has an incredibly rare gift of combining mathematical engineering performance with fine-arts design quality. Our website load speeds dropped to instant, and our customer engagement skyrocketed by 40% after launching the new luxury portal.",
+      "rating": 5,
+      "order": 1,
+      "__v": 0
+    },
+    {
+      "_id": "6a527120bcfd15e71cdf5825",
+      "name": "Elena Rostova",
+      "role": "Founder",
+      "company": "Rostova Fine Watches",
+      "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+      "content": "Aura completely redefined our digital image. The parallax fluid layouts and attention to minor details feel as premium as our physical craftsmanship. A stellar partner for luxury digital products.",
+      "rating": 5,
+      "order": 2,
+      "__v": 0
+    }
+  ],
+  "blogs": [
+    {
+      "_id": "6a527120bcfd15e71cdf5826",
+      "title": "The Architecture of Lightning-Fast Animations",
+      "slug": "architecture-lightning-fast-animations",
+      "content": "## 1. Frame rate preservation in modern browsers\nPreserving a constant 60fps (or 120fps on modern screens) is critical to maintaining a luxury feeling. Dropped frames disrupt the visual flow. We achieve this by moving heavy rendering tasks off the main thread:\n- Use hardware-accelerated CSS transforms (`translate3d`, `scale`).\n- Minimize paint invalidation zones.\n- Leverage GPU compositing.\n\n## 2. Dynamic easing equations\nLuxury interfaces rely on custom cubic-bezier curves rather than default ease-in or ease-out timings. The transition timing must feel deliberate:\n- **Cubic Bezier (0.16, 1, 0.3, 1):** Highly recommended for fluid, premium slide-outs.\n- **Spring Physics:** Used dynamically in Framer Motion to preserve natural inertia.",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+      "tags": [
+        "Animations",
+        "CSS",
+        "Performance"
+      ],
+      "readTime": "4 min read",
+      "published": true,
+      "order": 1,
+      "__v": 0
+    },
+    {
+      "_id": "6a527120bcfd15e71cdf5827",
+      "title": "Zero Latency: Optimizing Next.js for Monaco and Beyond",
+      "slug": "zero-latency-optimizing-nextjs-monaco",
+      "content": "## 1. Static site pre-generation\nBy pre-building all our routes to static HTML on the server side, browser load times are reduced to standard CDNs edge speeds. Pages serve in under 100 milliseconds, globally.\n\n## 2. In-memory data caches\nWe route database queries into a local file-based cache to bypass Atlas latency on dynamic requests. When database changes occur, the admin API triggers an on-demand revalidation.",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "tags": [
+        "Next.js",
+        "Database",
+        "Performance"
+      ],
+      "readTime": "6 min read",
+      "published": true,
+      "order": 2,
+      "__v": 0
+    }
+  ],
+  "settings": {
+    "_id": "6a527120bcfd15e71cdf5819",
+    "logoText": "Aura",
+    "heroTitle": "Bespoke Digital Architectures",
+    "heroSubtitle": "We craft high-performance digital systems and luxury portfolios with absolute pixel perfection.",
+    "heroBannerImage": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "aboutText": "Aura is a digital creative studio led by Refayet. We reject average layouts. We blend fine-arts editorial design with bleeding-edge technology to build digital portals that feel exclusive, load instantly, and leave a permanent imprint on the high-end digital landscape.",
+    "footerText": "© 2026 AURA. Meticulously crafted for high-end digital presence.",
+    "email": "mdrifayethossen@gmail.com",
+    "phone": "+880 17XXXXXXX",
+    "github": "https://github.com/rifat",
+    "linkedin": "https://linkedin.com/in/rifat",
+    "whatsapp": "+88017XXXXXXX",
+    "navbarLinks": [
+      {
+        "label": "Projects",
+        "url": "#projects"
+      },
+      {
+        "label": "Skills",
+        "url": "#skills"
+      },
+      {
+        "label": "Curation",
+        "url": "#about"
+      },
+      {
+        "label": "Journal",
+        "url": "#blogs"
+      },
+      {
+        "label": "Testimonials",
+        "url": "#testimonials"
+      }
+    ],
+    "typewriterRoles": "Full Stack Developer, Shopify Developer, Next.js Architect",
+    "projectsLayout": "minimal-cards",
+    "skillsLayout": "circular-progress",
+    "testimonialsLayout": "single-featured",
+    "blogsLayout": "asymmetric-cards",
+    "__v": 0
+  },
+  "lastFetched": 1783787808896
+}

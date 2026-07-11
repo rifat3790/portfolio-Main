@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import Project from '@/models/Project';
 import { isAuthenticated } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { clearDbCache } from '@/lib/data-cache';
+import { clearDbCache, writeHomepageDataJson } from '@/lib/data-cache';
 
 // GET all projects (Admin view, sorted by order)
 export async function GET(req: NextRequest) {
@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     const newProject = await Project.create(data);
     revalidatePath('/');
     clearDbCache();
+    await writeHomepageDataJson();
     return NextResponse.json(newProject, { status: 201 });
   } catch (error) {
     console.error('Projects POST API error:', error);

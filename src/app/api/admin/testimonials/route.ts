@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import Testimonial from '@/models/Testimonial';
 import { isAuthenticated } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { clearDbCache } from '@/lib/data-cache';
+import { clearDbCache, writeHomepageDataJson } from '@/lib/data-cache';
 
 // GET all testimonials (Admin view, sorted by order)
 export async function GET(req: NextRequest) {
@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     const newTestimonial = await Testimonial.create(data);
     revalidatePath('/');
     clearDbCache();
+    await writeHomepageDataJson();
     return NextResponse.json(newTestimonial, { status: 201 });
   } catch (error) {
     console.error('Testimonials POST API error:', error);

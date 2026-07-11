@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import Setting from '@/models/Setting';
 import { isAuthenticated } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { clearDbCache } from '@/lib/data-cache';
+import { clearDbCache, writeHomepageDataJson } from '@/lib/data-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
     // Force revalidation of homepage client cache
     revalidatePath('/');
     clearDbCache();
+    await writeHomepageDataJson();
 
     return NextResponse.json({ success: true, settings });
   } catch (error) {
