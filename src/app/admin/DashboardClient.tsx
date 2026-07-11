@@ -272,7 +272,7 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
   const fetchSessions = async (showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
-      const res = await fetch('/api/chat');
+      const res = await fetch('/api/admin/chat');
       if (res.ok) {
         const data = await res.json();
         setSessions(data);
@@ -287,7 +287,7 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
   // Fetch messages for active session
   const fetchMessages = async (sessId: string) => {
     try {
-      const res = await fetch(`/api/chat?sessionId=${sessId}`);
+      const res = await fetch(`/api/admin/chat?sessionId=${sessId}`);
       if (res.ok) {
         const data = await res.json();
         setMessages(data);
@@ -399,7 +399,7 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
         {/* Sidebar Sessions */}
         <div className={styles.sessionList}>
           {sessions.length === 0 ? (
-            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-secondary)' }}>
               No messages received yet.
             </div>
           ) : (
@@ -428,7 +428,7 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
         </div>
 
         {/* Chat Console */}
-        <div style={{ background: 'var(--bg-tertiary)' }}>
+        <div style={{ background: 'var(--bg-tertiary)', display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
           {selectedSession ? (
             <div className={styles.chatConsole}>
               <div className={styles.chatConsoleHeader}>
