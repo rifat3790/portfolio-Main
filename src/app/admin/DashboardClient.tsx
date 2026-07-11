@@ -1908,11 +1908,11 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px', alignItems: 'start' }}>
-        
+
         {/* Form panel */}
         <form onSubmit={handleSubmit} className={styles.formGrid} style={{ background: 'var(--bg-secondary)', padding: '32px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
           <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>BRANDING & LAYOUT</h3>
-          
+
           <div className={styles.formGroup}>
             <label className={styles.label}>Navbar Brand Text</label>
             <input
@@ -2278,7 +2278,7 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
 
         {/* Info panel */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
+
           {/* Seeding panel */}
           <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
             <div style={{ display: 'flex', gap: 12, color: 'var(--accent-gold)', marginBottom: 12 }}>
@@ -2288,10 +2288,10 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.4', marginBottom: 16 }}>
               Need to populate the database with premium designs, projects, testimonials, and blog articles instantly? Click below to seed elite layout data.
             </p>
-            
-            <button 
-              type="button" 
-              onClick={handleSeedDatabase} 
+
+            <button
+              type="button"
+              onClick={handleSeedDatabase}
               disabled={seedLoading}
               className="btn-premium btn-premium-gold"
               style={{ width: '100%', gap: 8 }}
@@ -2381,19 +2381,19 @@ function ContactMessagesManager({ showToast }: { showToast: (message: string, ty
             <h3 style={{ color: 'var(--accent-gold)' }}>Inbox</h3>
           </div>
           {messages.length === 0 ? (
-             <div style={{ padding: '40px', textAlign: 'center', opacity: 0.5 }}>No messages received.</div>
+            <div style={{ padding: '40px', textAlign: 'center', opacity: 0.5 }}>No messages received.</div>
           ) : (
             <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
               {messages.map(msg => (
-                <div 
-                  key={msg._id} 
+                <div
+                  key={msg._id}
                   onClick={() => {
                     setActiveMessage(msg);
                     markAsRead(msg._id, msg.read);
                   }}
-                  style={{ 
-                    padding: '16px', 
-                    borderBottom: '1px solid var(--glass-border-light)', 
+                  style={{
+                    padding: '16px',
+                    borderBottom: '1px solid var(--glass-border-light)',
                     cursor: 'pointer',
                     background: activeMessage?._id === msg._id ? 'var(--bg-tertiary)' : 'transparent',
                     borderLeft: !msg.read ? '4px solid var(--accent-gold)' : '4px solid transparent'

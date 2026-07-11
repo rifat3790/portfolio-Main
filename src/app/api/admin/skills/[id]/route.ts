@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Skill from '@/models/Skill';
 import { isAuthenticated } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export async function PUT(
   req: NextRequest,
@@ -24,6 +25,8 @@ export async function PUT(
     if (!updatedSkill) {
       return NextResponse.json({ error: 'Skill not found' }, { status: 404 });
     }
+
+    revalidatePath('/');
 
     return NextResponse.json(updatedSkill);
   } catch (error) {
@@ -49,6 +52,8 @@ export async function DELETE(
     if (!deletedSkill) {
       return NextResponse.json({ error: 'Skill not found' }, { status: 404 });
     }
+
+    revalidatePath('/');
 
     return NextResponse.json({ message: 'Skill deleted successfully' });
   } catch (error) {

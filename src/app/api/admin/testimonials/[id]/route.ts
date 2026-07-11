@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Testimonial from '@/models/Testimonial';
 import { isAuthenticated } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export async function PUT(
   req: NextRequest,
@@ -24,6 +25,8 @@ export async function PUT(
     if (!updatedTestimonial) {
       return NextResponse.json({ error: 'Testimonial not found' }, { status: 404 });
     }
+
+    revalidatePath('/');
 
     return NextResponse.json(updatedTestimonial);
   } catch (error) {
@@ -49,6 +52,8 @@ export async function DELETE(
     if (!deletedTestimonial) {
       return NextResponse.json({ error: 'Testimonial not found' }, { status: 404 });
     }
+
+    revalidatePath('/');
 
     return NextResponse.json({ message: 'Testimonial deleted successfully' });
   } catch (error) {

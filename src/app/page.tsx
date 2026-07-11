@@ -6,9 +6,6 @@ import Blog from '@/models/Blog';
 import Setting from '@/models/Setting';
 import HomeClient from './HomeClient';
 
-// Enable dynamic rendering to query database on every request
-export const revalidate = 0;
-
 export default async function Home() {
   let projects = [];
   let skills = [];
@@ -19,12 +16,14 @@ export default async function Home() {
   try {
     await dbConnect();
 
-    // Query databases sorted by order index
-    const projectsData = await Project.find({}).sort({ order: 1, createdAt: -1 });
-    const skillsData = await Skill.find({}).sort({ order: 1, createdAt: -1 });
-    const testimonialsData = await Testimonial.find({}).sort({ order: 1, createdAt: -1 });
-    const blogsData = await Blog.find({ published: true }).sort({ order: 1, createdAt: -1 });
-    const settingsData = await Setting.findOne();
+    // Query databases in parallel sorted by order index
+    const [projectsData, skillsData, testimonialsData, blogsData, settingsData] = await Promise.all([
+      Project.find({}).sort({ order: 1, createdAt: -1 }),
+      Skill.find({}).sort({ order: 1, createdAt: -1 }),
+      Testimonial.find({}).sort({ order: 1, createdAt: -1 }),
+      Blog.find({ published: true }).sort({ order: 1, createdAt: -1 }),
+      Setting.findOne(),
+    ]);
 
     // Safely serialize database values to plain JSON objects for Client Components
     projects = JSON.parse(JSON.stringify(projectsData));

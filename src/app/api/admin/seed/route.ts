@@ -6,6 +6,7 @@ import Testimonial from '@/models/Testimonial';
 import Blog from '@/models/Blog';
 import Setting from '@/models/Setting';
 import { isAuthenticated } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 const GOLD_PIXEL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 const DARK_PIXEL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
@@ -182,6 +183,8 @@ By utilizing Next.js selective revalidation, static content like projects and sk
         order: 2
       }
     ]);
+
+    revalidatePath('/');
 
     return NextResponse.json({
       success: true,

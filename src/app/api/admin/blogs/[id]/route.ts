@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Blog from '@/models/Blog';
 import { isAuthenticated } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 function generateSlug(title: string): string {
   return title
@@ -43,6 +44,8 @@ export async function PUT(
     Object.assign(blog, data);
     await blog.save();
 
+    revalidatePath('/');
+
     return NextResponse.json({ success: true, blog });
   } catch (error) {
     console.error('Error updating blog:', error);
@@ -66,6 +69,8 @@ export async function DELETE(
     if (!blog) {
       return NextResponse.json({ error: 'Blog not found' }, { status: 404 });
     }
+
+    revalidatePath('/');
 
     return NextResponse.json({ success: true, message: 'Blog deleted successfully' });
   } catch (error) {

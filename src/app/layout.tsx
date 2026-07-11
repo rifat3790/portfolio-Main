@@ -3,8 +3,6 @@ import './globals.css';
 import dbConnect from '@/lib/db';
 import Setting from '@/models/Setting';
 
-export const revalidate = 0;
-
 export async function generateMetadata(): Promise<Metadata> {
   let title = 'Aura | Luxury Digital Showcase & Development';
   let description = 'Premium personal portfolio site. Crafting lightning-fast digital solutions with premium aesthetics.';

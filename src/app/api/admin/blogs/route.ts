@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Blog from '@/models/Blog';
 import { isAuthenticated } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 function generateSlug(title: string): string {
   return title
@@ -55,6 +56,8 @@ export async function POST(req: NextRequest) {
       slug,
       order: data.order || 0
     });
+
+    revalidatePath('/');
 
     return NextResponse.json({ success: true, blog: newBlog });
   } catch (error) {

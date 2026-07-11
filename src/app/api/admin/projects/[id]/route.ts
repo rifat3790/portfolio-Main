@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Project from '@/models/Project';
 import { isAuthenticated } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export async function PUT(
   req: NextRequest,
@@ -24,6 +25,8 @@ export async function PUT(
     if (!updatedProject) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
+
+    revalidatePath('/');
 
     return NextResponse.json(updatedProject);
   } catch (error) {
@@ -49,6 +52,8 @@ export async function DELETE(
     if (!deletedProject) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
+
+    revalidatePath('/');
 
     return NextResponse.json({ message: 'Project deleted successfully' });
   } catch (error) {
