@@ -32,13 +32,13 @@ export async function POST(req: NextRequest) {
 
     // 1. Seed Site Settings
     const setting = await Setting.create({
-      logoText: 'AURA',
+      logoText: 'RIFAT',
       favicon: DEFAULT_FAVICON,
       heroTitle: "I'm Refayet Hossen",
       heroSubtitle: 'High-end development engineered with uncompromising aesthetics and extreme performance.',
       aboutHeading: 'The Luxury Curation',
-      aboutText: 'Aura is a digital creative studio led by Refayet. We reject average layouts. We blend fine-arts editorial design with bleeding-edge technology to build digital portals that feel exclusive, load instantly, and leave a permanent imprint on the high-end digital landscape.',
-      footerText: '© 2026 AURA. Meticulously crafted for high-end digital presence.',
+      aboutText: 'Rifat is a digital creative studio led by Refayet. We reject average layouts. We blend fine-arts editorial design with bleeding-edge technology to build digital portals that feel exclusive, load instantly, and leave a permanent imprint on the high-end digital landscape.',
+      footerText: '© 2026 Rifat. Meticulously crafted for high-end digital presence.',
       email: 'mdrifayethossen@gmail.com',
       phone: '+880 17XXXXXXX',
       github: 'https://github.com/rifat',

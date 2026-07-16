@@ -13,6 +13,7 @@ export interface IMessage extends Document {
 export interface IChatSession extends Document {
   sessionId: string;
   userName: string;
+  userEmail?: string;
   unreadCount: number;
   updatedAt: Date;
 }
@@ -31,6 +32,7 @@ const ChatSessionSchema: Schema = new Schema(
   {
     sessionId: { type: String, required: true, unique: true, index: true },
     userName: { type: String, required: true },
+    userEmail: { type: String },
     unreadCount: { type: Number, default: 0 },
   },
   { timestamps: true }

@@ -36,6 +36,7 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
   // Chat Widget States
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [chatInputText, setChatInputText] = useState('');
@@ -47,10 +48,12 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
   useEffect(() => {
     const savedSessionId = localStorage.getItem('portfolio_chat_session_id');
     const savedUserName = localStorage.getItem('portfolio_chat_user_name');
+    const savedUserEmail = localStorage.getItem('portfolio_chat_user_email');
 
     if (savedSessionId && savedUserName) {
       setSessionId(savedSessionId);
       setUserName(savedUserName);
+      if (savedUserEmail) setUserEmail(savedUserEmail);
       setIsRegistered(true);
     }
   }, []);
@@ -86,11 +89,12 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
   // Register chat session
   const handleRegisterChat = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userName.trim()) return;
+    if (!userName.trim() || !userEmail.trim()) return;
 
     const randomId = 'guest_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
     localStorage.setItem('portfolio_chat_session_id', randomId);
     localStorage.setItem('portfolio_chat_user_name', userName);
+    localStorage.setItem('portfolio_chat_user_email', userEmail);
     setSessionId(randomId);
     setIsRegistered(true);
   };
@@ -106,6 +110,7 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
       text: chatInputText,
       image: chatImageInput || undefined,
       userName: userName,
+      userEmail: userEmail || undefined,
     };
 
     const optimisticMsg: IMessage = {
@@ -173,16 +178,25 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
             <form onSubmit={handleRegisterChat} className={styles.chatRegister}>
               <Sparkles size={36} className={styles.chatRegisterIcon} />
               <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>Connect Instantly</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                Enter your name to begin a real-time conversation and discuss custom projects.
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                Enter your details to begin a secure real-time dialogue about your custom projects.
               </p>
               <input
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                placeholder="Your name"
+                placeholder="Full Name"
                 className={styles.chatInput}
-                style={{ width: '100%' }}
+                style={{ width: '100%', marginBottom: '10px' }}
+                required
+              />
+              <input
+                type="email"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                placeholder="Email Address"
+                className={styles.chatInput}
+                style={{ width: '100%', marginBottom: '16px' }}
                 required
               />
               <button type="submit" className="btn-premium btn-premium-gold" style={{ width: '100%' }}>

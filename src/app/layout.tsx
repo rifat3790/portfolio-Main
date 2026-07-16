@@ -22,7 +22,7 @@ const syne = Syne({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  let title = 'Aura | Luxury Digital Showcase & Development';
+  let title = 'Rifat | Premium Digital Showcase & Development';
   let description = 'Premium personal portfolio site. Crafting lightning-fast digital solutions with premium aesthetics.';
   let favicon = '/favicon.ico';
 

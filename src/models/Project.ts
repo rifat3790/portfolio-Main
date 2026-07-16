@@ -9,6 +9,13 @@ export interface IProject extends Document {
   liveLink?: string;
   githubLink?: string;
   order: number;
+  category?: string;
+  screenshots?: string[];
+  role?: string;
+  duration?: string;
+  projectType?: string;
+  keyFeatures?: string;
+  isFeatured?: boolean;
 }
 
 const ProjectSchema: Schema = new Schema(
@@ -21,6 +28,13 @@ const ProjectSchema: Schema = new Schema(
     liveLink: { type: String },
     githubLink: { type: String },
     order: { type: Number, default: 0 },
+    category: { type: String, default: 'Web Applications' },
+    screenshots: [{ type: String }], // Array of Base64 strings
+    role: { type: String, default: 'Developer' },
+    duration: { type: String },
+    projectType: { type: String, default: 'Web Application' },
+    keyFeatures: { type: String },
+    isFeatured: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

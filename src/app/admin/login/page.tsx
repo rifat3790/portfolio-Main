@@ -52,7 +52,7 @@ export default function AdminLogin() {
           <div style={{ display: 'inline-flex', padding: 12, borderRadius: 50, background: 'rgba(212, 175, 55, 0.05)', marginBottom: 16 }}>
             <Terminal color="#d4af37" size={32} />
           </div>
-          <h1 className={`${styles.loginTitle} gold-gradient-text`}>Aura Portal</h1>
+          <h1 className={`${styles.loginTitle} gold-gradient-text`}>Rifat Portal</h1>
           <p className={styles.loginSubtitle}>Access control console</p>
         </div>
 

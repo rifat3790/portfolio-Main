@@ -18,6 +18,24 @@ export interface ISetting extends Document {
   heroBtn2Url: string;
   aboutHeading: string;
   aboutText: string;
+  aboutTitle?: string;
+  aboutImage?: string;
+  aboutName?: string;
+  aboutEmail?: string;
+  aboutLocation?: string;
+  aboutAvailability?: string;
+  aboutCvText?: string;
+  aboutCvUrl?: string;
+  aboutCvFile?: string;
+  aboutCvFileName?: string;
+  stat1Value?: string;
+  stat1Label?: string;
+  stat2Value?: string;
+  stat2Label?: string;
+  stat3Value?: string;
+  stat3Label?: string;
+  stat4Value?: string;
+  stat4Label?: string;
   footerText: string;
   email?: string;
   phone?: string;
@@ -30,6 +48,15 @@ export interface ISetting extends Document {
   skillsLayout?: string;
   testimonialsLayout?: string;
   blogsLayout?: string;
+  servicesPerRow?: number;
+  servicesAutoScroll?: boolean;
+  projectsPerRow?: number;
+  projectCategories?: string;
+  heroTagline?: string;
+  heroTitleCursive?: string;
+  heroSpecializationText?: string;
+  heroShowFreelanceBadge?: boolean;
+  heroFreelanceText?: string;
 }
 
 const NavbarLinkSchema = new Schema<INavbarLink>({
@@ -38,7 +65,7 @@ const NavbarLinkSchema = new Schema<INavbarLink>({
 }, { _id: false });
 
 const SettingSchema = new Schema<ISetting>({
-  logoText: { type: String, default: 'AURA' },
+  logoText: { type: String, default: 'RIFAT' },
   logoImage: { type: String },
   heroBannerImage: { type: String },
   favicon: { type: String },
@@ -50,7 +77,25 @@ const SettingSchema = new Schema<ISetting>({
   heroBtn2Url: { type: String, default: '#contact' },
   aboutHeading: { type: String, default: 'Our Story' },
   aboutText: { type: String, default: 'We build fast, bespoke web applications with luxury branding.' },
-  footerText: { type: String, default: '© 2026 AURA. All rights reserved.' },
+  aboutTitle: { type: String, default: 'Who am I?' },
+  aboutImage: { type: String },
+  aboutName: { type: String, default: 'Md. Refayet Hossen' },
+  aboutEmail: { type: String, default: 'refayet@example.com' },
+  aboutLocation: { type: String, default: 'Dhaka, Bangladesh' },
+  aboutAvailability: { type: String, default: 'Open for opportunities' },
+  aboutCvText: { type: String, default: 'Download CV' },
+  aboutCvUrl: { type: String, default: '#' },
+  aboutCvFile: { type: String },
+  aboutCvFileName: { type: String, default: 'CV.pdf' },
+  stat1Value: { type: String, default: '2+' },
+  stat1Label: { type: String, default: 'Years Experience' },
+  stat2Value: { type: String, default: '20+' },
+  stat2Label: { type: String, default: 'Projects Completed' },
+  stat3Value: { type: String, default: '10+' },
+  stat3Label: { type: String, default: 'Happy Clients' },
+  stat4Value: { type: String, default: '100%' },
+  stat4Label: { type: String, default: 'Client Satisfaction' },
+  footerText: { type: String, default: '© 2026 Rifat. All rights reserved.' },
   email: { type: String },
   phone: { type: String },
   github: { type: String },
@@ -69,7 +114,16 @@ const SettingSchema = new Schema<ISetting>({
   projectsLayout: { type: String, default: 'asymmetric' },
   skillsLayout: { type: String, default: 'category-progress' },
   testimonialsLayout: { type: String, default: 'grid' },
-  blogsLayout: { type: String, default: 'editorial-rows' }
+  blogsLayout: { type: String, default: 'editorial-rows' },
+  servicesPerRow: { type: Number, default: 3 },
+  servicesAutoScroll: { type: Boolean, default: false },
+  projectsPerRow: { type: Number, default: 3 },
+  projectCategories: { type: String, default: 'Web Applications, E-Commerce, Dashboard, Landing Page, Other' },
+  heroTagline: { type: String, default: "HI, I'M REFAYET HOSSEN 👋" },
+  heroTitleCursive: { type: String, default: 'That Make Impact' },
+  heroSpecializationText: { type: String, default: "Shopify • Next.js • React\nNode.js • MongoDB" },
+  heroShowFreelanceBadge: { type: Boolean, default: true },
+  heroFreelanceText: { type: String, default: 'Available for freelance' }
 }, { timestamps: true });
 
 if (mongoose.models.Setting) {

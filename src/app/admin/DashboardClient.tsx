@@ -20,7 +20,15 @@ import {
   BookOpen,
   Settings,
   Database,
-  Globe
+  Globe,
+  Palette,
+  Smartphone,
+  Cpu,
+  Shield,
+  Layout,
+  Code,
+  Clock,
+  Mail
 } from 'lucide-react';
 import styles from './admin.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -68,7 +76,7 @@ const compressImage = (base64Str: string, maxWidth: number, maxHeight: number, q
   });
 };
 
-type Tab = 'chat' | 'messages' | 'projects' | 'skills' | 'testimonials' | 'blogs' | 'settings';
+type Tab = 'chat' | 'messages' | 'projects' | 'skills' | 'testimonials' | 'blogs' | 'services' | 'experiences' | 'newsletter' | 'hero-settings' | 'about-settings' | 'brand-settings';
 
 export default function DashboardClient() {
   const [activeTab, setActiveTab] = useState<Tab>('chat');
@@ -111,7 +119,7 @@ export default function DashboardClient() {
         {/* Sidebar */}
         <aside className={styles.sidebar}>
           <div className={styles.sidebarHeader}>
-            <h2 className={styles.adminBrand}>Aura Console</h2>
+            <h2 className={styles.adminBrand}>Rifat Console</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--accent-gold)' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#4caf50', display: 'inline-block' }} />
               <span>OWNER ONLINE</span>
@@ -168,11 +176,51 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('settings')}
-              className={`${styles.navItem} ${activeTab === 'settings' ? styles.navItemActive : ''}`}
+              onClick={() => setActiveTab('services')}
+              className={`${styles.navItem} ${activeTab === 'services' ? styles.navItemActive : ''}`}
             >
-              <Settings size={18} />
-              <span>Settings Console</span>
+              <Sparkles size={18} />
+              <span>Services (What I Do)</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('experiences')}
+              className={`${styles.navItem} ${activeTab === 'experiences' ? styles.navItemActive : ''}`}
+            >
+              <Clock size={18} />
+              <span>Experience Timeline</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('hero-settings')}
+              className={`${styles.navItem} ${activeTab === 'hero-settings' ? styles.navItemActive : ''}`}
+            >
+              <Layout size={18} />
+              <span>Hero Section</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('about-settings')}
+              className={`${styles.navItem} ${activeTab === 'about-settings' ? styles.navItemActive : ''}`}
+            >
+              <Briefcase size={18} />
+              <span>About Section</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('brand-settings')}
+              className={`${styles.navItem} ${activeTab === 'brand-settings' ? styles.navItemActive : ''}`}
+            >
+              <Globe size={18} />
+              <span>Branding & Socials</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('newsletter')}
+              className={`${styles.navItem} ${activeTab === 'newsletter' ? styles.navItemActive : ''}`}
+            >
+              <Mail size={18} />
+              <span>Newsletter</span>
             </button>
           </nav>
 
@@ -194,7 +242,12 @@ export default function DashboardClient() {
           {activeTab === 'skills' && <SkillManager showToast={showToast} />}
           {activeTab === 'testimonials' && <TestimonialManager showToast={showToast} />}
           {activeTab === 'blogs' && <BlogManager showToast={showToast} />}
-          {activeTab === 'settings' && <SettingsManager showToast={showToast} />}
+          {activeTab === 'services' && <ServiceManager showToast={showToast} />}
+          {activeTab === 'experiences' && <ExperienceManager showToast={showToast} />}
+          {activeTab === 'newsletter' && <NewsletterManager showToast={showToast} />}
+          {activeTab === 'hero-settings' && <HeroSettingsManager showToast={showToast} />}
+          {activeTab === 'about-settings' && <AboutSettingsManager showToast={showToast} />}
+          {activeTab === 'brand-settings' && <BrandSettingsManager showToast={showToast} />}
         </main>
       </div>
 
@@ -245,6 +298,7 @@ export default function DashboardClient() {
 interface IChatSession {
   sessionId: string;
   userName: string;
+  userEmail?: string;
   unreadCount: number;
   updatedAt: string;
 }
@@ -434,7 +488,9 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
               <div className={styles.chatConsoleHeader}>
                 <div className={styles.chatConsoleUser}>
                   <span className={styles.chatConsoleName}>{selectedSession.userName}</span>
-                  <span className={styles.chatConsoleId}>Session: {selectedSession.sessionId}</span>
+                  <span className={styles.chatConsoleId}>
+                    {selectedSession.userEmail ? `${selectedSession.userEmail} • ` : ''}Session: {selectedSession.sessionId}
+                  </span>
                 </div>
                 <button
                   onClick={() => handleDeleteSession(selectedSession.sessionId)}
@@ -544,6 +600,13 @@ interface IProject {
   liveLink?: string;
   githubLink?: string;
   order: number;
+  category?: string;
+  screenshots?: string[];
+  role?: string;
+  duration?: string;
+  projectType?: string;
+  keyFeatures?: string;
+  isFeatured?: boolean;
 }
 
 function ProjectManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
@@ -560,6 +623,15 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
   const [liveLink, setLiveLink] = useState('');
   const [githubLink, setGithubLink] = useState('');
   const [order, setOrder] = useState(0);
+  const [category, setCategory] = useState('Web Applications');
+  const [screenshots, setScreenshots] = useState<string[]>([]);
+  const [role, setRole] = useState('Developer');
+  const [duration, setDuration] = useState('');
+  const [projectType, setProjectType] = useState('Web Application');
+  const [keyFeatures, setKeyFeatures] = useState('');
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [categoriesList, setCategoriesList] = useState<string[]>(['Web Applications', 'E-Commerce', 'Dashboard', 'Landing Page', 'Other']);
+  const [newCategoryInput, setNewCategoryInput] = useState('');
 
   const fetchProjects = async () => {
     try {
@@ -573,8 +645,24 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
     }
   };
 
+  const fetchSettingsForCategories = async () => {
+    try {
+      const res = await fetch('/api/admin/settings');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.projectCategories) {
+          const list = data.projectCategories.split(',').map((c: string) => c.trim()).filter(Boolean);
+          setCategoriesList(list);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchProjects();
+    fetchSettingsForCategories();
   }, []);
 
   const openNewModal = () => {
@@ -586,6 +674,13 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
     setTechStack('');
     setLiveLink('');
     setGithubLink('');
+    setCategory(categoriesList[0] || 'Web Applications');
+    setScreenshots([]);
+    setRole('Developer');
+    setDuration('');
+    setProjectType('Web Application');
+    setKeyFeatures('');
+    setIsFeatured(false);
     setOrder(projects.length);
     setIsModalOpen(true);
   };
@@ -599,6 +694,13 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
     setTechStack(p.techStack.join(', '));
     setLiveLink(p.liveLink || '');
     setGithubLink(p.githubLink || '');
+    setCategory(p.category || 'Web Applications');
+    setScreenshots(p.screenshots || []);
+    setRole(p.role || 'Developer');
+    setDuration(p.duration || '');
+    setProjectType(p.projectType || 'Web Application');
+    setKeyFeatures(p.keyFeatures || '');
+    setIsFeatured(!!p.isFeatured);
     setOrder(p.order);
     setIsModalOpen(true);
   };
@@ -613,6 +715,29 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleMultipleScreenshots = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const readers = Array.from(files).map((file) => {
+        return new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const compressed = await compressImage(reader.result as string, 800, 800, 0.7);
+            resolve(compressed);
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+      Promise.all(readers).then((results) => {
+        setScreenshots(prev => [...prev, ...results]);
+      });
+    }
+  };
+
+  const removeScreenshot = (idx: number) => {
+    setScreenshots(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -631,6 +756,13 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
       liveLink,
       githubLink,
       order: Number(order),
+      category,
+      screenshots,
+      role,
+      duration,
+      projectType,
+      keyFeatures,
+      isFeatured,
     };
 
     try {
@@ -739,6 +871,94 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   className={styles.input}
                 />
               </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className={styles.input}
+                  style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}
+                >
+                  {categoriesList.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Or Add New Category Inline</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    placeholder="New category name"
+                    value={newCategoryInput}
+                    onChange={(e) => setNewCategoryInput(e.target.value)}
+                    className={styles.input}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const trimmed = newCategoryInput.trim();
+                      if (trimmed && !categoriesList.includes(trimmed)) {
+                        setCategoriesList(prev => [...prev, trimmed]);
+                        setCategory(trimmed);
+                        setNewCategoryInput('');
+                        showToast(`Category "${trimmed}" added! Save settings later to persist globally.`, 'info');
+                      }
+                    }}
+                    className="btn-premium btn-premium-gold"
+                    style={{ padding: '0 16px', fontSize: '0.8rem', height: '42px' }}
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.formGroup} style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '32px' }}>
+                <input
+                  type="checkbox"
+                  id="isFeatured"
+                  checked={isFeatured}
+                  onChange={(e) => setIsFeatured(e.target.checked)}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-gold)' }}
+                />
+                <label htmlFor="isFeatured" className={styles.label} style={{ cursor: 'pointer', margin: 0 }}>
+                  Mark as Featured Project
+                </label>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Developer Role</label>
+                <input
+                  type="text"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  placeholder="e.g. Full Stack Developer"
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Project Duration</label>
+                <input
+                  type="text"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  placeholder="e.g. Feb 2024 - Apr 2024"
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Project Type</label>
+                <input
+                  type="text"
+                  value={projectType}
+                  onChange={(e) => setProjectType(e.target.value)}
+                  placeholder="e.g. Web Application"
+                  className={styles.input}
+                />
+              </div>
+
               <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
                 <label className={styles.label}>Brief Description</label>
                 <input
@@ -778,6 +998,15 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                 />
               </div>
               <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+                <label className={styles.label}>Key Features (one per line)</label>
+                <textarea
+                  value={keyFeatures}
+                  onChange={(e) => setKeyFeatures(e.target.value)}
+                  className={styles.textarea}
+                  placeholder="User authentication & authorization&#10;Product listing with advanced filtering&#10;Shopping cart & checkout with Stripe"
+                />
+              </div>
+              <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
                 <label className={styles.label}>Detailed Description (HTML/Rich Text)</label>
                 <textarea
                   value={richText}
@@ -786,6 +1015,7 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   placeholder="Rich text details shown in modal overlay..."
                 />
               </div>
+              
               <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
                 <label className={styles.label}>Project Banner Image</label>
                 <div className={styles.imageUploadArea} onClick={() => document.getElementById('projectFile')?.click()}>
@@ -806,6 +1036,57 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   />
                 </div>
               </div>
+
+              <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+                <label className={styles.label}>Additional Screenshots Gallery</label>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                  {screenshots.map((shot, idx) => (
+                    <div key={idx} style={{ position: 'relative', width: '80px', height: '50px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--glass-border-light)' }}>
+                      <img src={shot} alt="Screenshot thumb" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button
+                        type="button"
+                        onClick={() => removeScreenshot(idx)}
+                        style={{
+                          position: 'absolute',
+                          top: '2px',
+                          right: '2px',
+                          background: 'rgba(220, 53, 69, 0.8)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '50%',
+                          width: '18px',
+                          height: '18px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          fontSize: '0.65rem',
+                          lineHeight: 1
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('screenshotUpload')?.click()}
+                  className="btn-premium btn-premium-outline"
+                  style={{ fontSize: '0.8rem', padding: '8px 16px' }}
+                >
+                  Upload Screenshot Files
+                </button>
+                <input
+                  type="file"
+                  id="screenshotUpload"
+                  accept="image/*"
+                  multiple
+                  onChange={handleMultipleScreenshots}
+                  style={{ display: 'none' }}
+                />
+              </div>
+
               <div className={`${styles.formActions} ${styles.formSpanFull}`}>
                 <button type="button" onClick={() => setIsModalOpen(false)} className="btn-premium btn-premium-outline">
                   Cancel
@@ -1651,8 +1932,637 @@ function BlogManager({ showToast }: { showToast: (message: string, type?: 'succe
 }
 
 /* ==========================================================================
+   5. SERVICES CRUD MANAGER
+   ========================================================================== */
+function ServiceManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
+  const [services, setServices] = useState<IService[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+
+  // Form fields
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [iconName, setIconName] = useState('Code');
+  const [order, setOrder] = useState(0);
+
+  const fetchServices = async () => {
+    try {
+      const res = await fetch('/api/admin/services');
+      if (res.ok) {
+        const data = await res.json();
+        setServices(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const openNewModal = () => {
+    setEditId(null);
+    setTitle('');
+    setDescription('');
+    setIconName('Code');
+    setOrder(services.length);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (s: IService) => {
+    setEditId(s._id);
+    setTitle(s.title);
+    setDescription(s.description);
+    setIconName(s.iconName || 'Code');
+    setOrder(s.order);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title || !description) return;
+
+    const dataPayload = {
+      title,
+      description,
+      iconName,
+      order: Number(order),
+    };
+
+    try {
+      let res;
+      if (editId) {
+        res = await fetch(`/api/admin/services/${editId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dataPayload),
+        });
+      } else {
+        res = await fetch('/api/admin/services', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dataPayload),
+        });
+      }
+
+      if (res.ok) {
+        setIsModalOpen(false);
+        fetchServices();
+        showToast(editId ? 'Service updated successfully!' : 'Service created successfully!', 'success');
+      } else {
+        showToast('Failed to save service', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Error saving service', 'error');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this service?')) return;
+    try {
+      const res = await fetch(`/api/admin/services/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchServices();
+        showToast('Service deleted successfully!', 'success');
+      } else {
+        showToast('Failed to delete service', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Error deleting service', 'error');
+    }
+  };
+
+  return (
+    <div>
+      <div className={styles.contentHeader}>
+        <h1 className={styles.contentTitle}>Service Offerings</h1>
+        <button onClick={openNewModal} className="btn-premium btn-premium-gold" style={{ gap: 8 }}>
+          <Plus size={16} /> Add Service
+        </button>
+      </div>
+
+      {services.length === 0 ? (
+        <div className={styles.emptyState}>
+          <Sparkles size={40} className={styles.emptyStateIcon} />
+          <h3>No Services Added</h3>
+          <p>Add the services you offer to show them on your homepage.</p>
+        </div>
+      ) : (
+        <div className={styles.crudList}>
+          {services.map(s => (
+            <div key={s._id} className={styles.crudItemCard}>
+              <div className={styles.crudItemMeta}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '6px',
+                  background: 'rgba(var(--accent-gold-rgb), 0.1)',
+                  border: '1px solid rgba(var(--accent-gold-rgb), 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--accent-gold)',
+                  marginRight: '12px',
+                  fontSize: '0.9rem'
+                }}>
+                  {s.iconName === 'Palette' && <Palette size={16} />}
+                  {s.iconName === 'Smartphone' && <Smartphone size={16} />}
+                  {s.iconName === 'Globe' && <Globe size={16} />}
+                  {s.iconName === 'Cpu' && <Cpu size={16} />}
+                  {s.iconName === 'Database' && <Database size={16} />}
+                  {s.iconName === 'Shield' && <Shield size={16} />}
+                  {s.iconName === 'Layout' && <Layout size={16} />}
+                  {s.iconName === 'Layers' && <Layers size={16} />}
+                  {s.iconName !== 'Palette' && s.iconName !== 'Smartphone' && s.iconName !== 'Globe' && s.iconName !== 'Cpu' && s.iconName !== 'Database' && s.iconName !== 'Shield' && s.iconName !== 'Layout' && s.iconName !== 'Layers' && <Code size={16} />}
+                </div>
+                <div className={styles.crudItemInfo}>
+                  <span className={styles.crudItemTitle}>{s.title}</span>
+                  <span className={styles.crudItemSubtitle}>
+                    Order: {s.order} • Icon: {s.iconName}
+                  </span>
+                </div>
+              </div>
+              <div className={styles.crudActions}>
+                <button onClick={() => openEditModal(s)} className={styles.actionBtn} title="Edit">
+                  <Edit size={16} />
+                </button>
+                <button onClick={() => handleDelete(s._id)} className={`${styles.actionBtn} ${styles.actionBtnDelete}`} title="Delete">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Service Form Modal */}
+      {isModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h2>{editId ? 'Modify Service' : 'New Service'}</h2>
+              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose}>
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className={styles.formGrid}>
+              <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+                <label className={styles.label}>Service Title</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={styles.input}
+                  required
+                />
+              </div>
+
+              <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+                <label className={styles.label}>Description</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className={styles.textarea}
+                  style={{ minHeight: '100px' }}
+                  required
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Visual Icon Representative</label>
+                <select
+                  value={iconName}
+                  onChange={(e) => setIconName(e.target.value)}
+                  className={styles.input}
+                  style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}
+                >
+                  <option value="Code">Code (Development)</option>
+                  <option value="Palette">Palette (UI/UX Design)</option>
+                  <option value="Smartphone">Smartphone (Mobile Apps)</option>
+                  <option value="Globe">Globe (Websites)</option>
+                  <option value="Cpu">Cpu (System Integrations)</option>
+                  <option value="Database">Database (Data Warehousing)</option>
+                  <option value="Shield">Shield (Cyber Security)</option>
+                  <option value="Layout">Layout (Frontend Architecture)</option>
+                  <option value="Layers">Layers (Full Stack Structure)</option>
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Sort Order Index</label>
+                <input
+                  type="number"
+                  value={order}
+                  onChange={(e) => setOrder(Number(e.target.value))}
+                  className={styles.input}
+                  required
+                />
+              </div>
+
+              <div className={`${styles.formActions} ${styles.formSpanFull}`}>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="btn-premium btn-premium-outline">
+                  Cancel
+                </button>
+                <button type="submit" className="btn-premium btn-premium-gold">
+                  {editId ? 'Save Changes' : 'Publish Service'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ==========================================================================
+   5B. EXPERIENCE CRUD MANAGER
+   ========================================================================== */
+interface IExperience {
+  _id: string;
+  company: string;
+  role: string;
+  location: string;
+  duration: string;
+  employmentType?: string;
+  description: string;
+  responsibilities?: string;
+  techStack: string[];
+  logo?: string;
+  order: number;
+  isCurrent: boolean;
+}
+
+function ExperienceManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
+  const [experiences, setExperiences] = useState<IExperience[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+
+  // Form states
+  const [company, setCompany] = useState('');
+  const [role, setRole] = useState('');
+  const [location, setLocation] = useState('');
+  const [duration, setDuration] = useState('');
+  const [employmentType, setEmploymentType] = useState('Full-time');
+  const [description, setDescription] = useState('');
+  const [responsibilities, setResponsibilities] = useState('');
+  const [techStackInput, setTechStackInput] = useState('');
+  const [logo, setLogo] = useState('');
+  const [order, setOrder] = useState(0);
+  const [isCurrent, setIsCurrent] = useState(false);
+
+  const fetchExperiences = async () => {
+    try {
+      const res = await fetch('/api/admin/experiences');
+      if (res.ok) {
+        const data = await res.json();
+        setExperiences(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching experiences:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchExperiences();
+  }, []);
+
+  const handleEdit = (exp: IExperience) => {
+    setEditId(exp._id);
+    setCompany(exp.company);
+    setRole(exp.role);
+    setLocation(exp.location || '');
+    setDuration(exp.duration);
+    setEmploymentType(exp.employmentType || 'Full-time');
+    setDescription(exp.description);
+    setResponsibilities(exp.responsibilities || '');
+    setTechStackInput((exp.techStack || []).join(', '));
+    setLogo(exp.logo || '');
+    setOrder(exp.order || 0);
+    setIsCurrent(exp.isCurrent || false);
+    setIsModalOpen(true);
+  };
+
+  const handleCreateNew = () => {
+    setEditId(null);
+    setCompany('');
+    setRole('');
+    setLocation('');
+    setDuration('');
+    setEmploymentType('Full-time');
+    setDescription('');
+    setResponsibilities('');
+    setTechStackInput('');
+    setLogo('');
+    setOrder(experiences.length);
+    setIsCurrent(false);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this experience timeline item?')) return;
+    try {
+      const res = await fetch(`/api/admin/experiences/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('Experience item deleted successfully!', 'success');
+        fetchExperiences();
+      } else {
+        showToast('Failed to delete experience item.', 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      showToast('Error occurred while deleting.', 'error');
+    }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const compressed = await compressImage(reader.result as string, 400, 400, 0.7);
+        setLogo(compressed);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const techStack = techStackInput.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    const body = {
+      company,
+      role,
+      location,
+      duration,
+      employmentType,
+      description,
+      responsibilities,
+      techStack,
+      logo,
+      order,
+      isCurrent
+    };
+
+    try {
+      const url = editId ? `/api/admin/experiences/${editId}` : '/api/admin/experiences';
+      const method = editId ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        showToast(editId ? 'Experience saved successfully!' : 'Experience created successfully!', 'success');
+        setIsModalOpen(false);
+        fetchExperiences();
+      } else {
+        const err = await res.json();
+        showToast(err.message || 'Failed to save experience.', 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      showToast('Error saving experience item.', 'error');
+    }
+  };
+
+  return (
+    <div>
+      <div className={styles.contentHeader}>
+        <div>
+          <h1 className={styles.contentTitle}>Work Experience Timeline</h1>
+          <p className={styles.adminStatus}>Manage your professional background timeline shown on the home page</p>
+        </div>
+        <button onClick={handleCreateNew} className="btn-premium btn-premium-gold" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <Plus size={16} /> Add Experience
+        </button>
+      </div>
+
+      {experiences.length === 0 ? (
+        <div className={styles.emptyState}>
+          <Clock size={40} className={styles.emptyStateIcon} />
+          <h3>No Experiences Registered</h3>
+          <p>Click "Add Experience" to create one.</p>
+        </div>
+      ) : (
+        <div className={styles.crudList}>
+          {experiences.sort((a,b) => a.order - b.order).map((exp) => (
+            <div key={exp._id} className={styles.crudItemCard}>
+              <div className={styles.crudItemMeta}>
+                <div style={{ width: '50px', height: '50px', background: '#fff', border: '1px solid var(--glass-border-light)', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {exp.logo ? (
+                    <img src={exp.logo} alt={exp.company} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ fontWeight: 'bold', color: '#1e293b', fontSize: '1.2rem' }}>{exp.company.charAt(0)}</span>
+                  )}
+                </div>
+                <div className={styles.crudItemInfo}>
+                  <span className={styles.crudItemTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {exp.company}
+                    {exp.isCurrent && (
+                      <span style={{ background: 'rgba(129, 140, 248, 0.1)', color: 'var(--accent-gold)', padding: '2px 8px', borderRadius: '100px', fontSize: '0.7rem', fontWeight: 600 }}>Current</span>
+                    )}
+                  </span>
+                  <span className={styles.crudItemSubtitle}>{exp.role} • {exp.duration}</span>
+                </div>
+              </div>
+              <div className={styles.crudActions}>
+                <button type="button" onClick={() => handleEdit(exp)} className={styles.actionBtn} title="Edit">
+                  <Edit size={16} />
+                </button>
+                <button type="button" onClick={() => handleDelete(exp._id)} className={`${styles.actionBtn} ${styles.actionBtnDelete}`} title="Delete">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {isModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent} style={{ maxWidth: '700px' }}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>{editId ? 'Edit Work Experience' : 'Add Work Experience'}</h2>
+              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose}>
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className={styles.formGrid}>
+              
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Company Name *</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={company} 
+                  onChange={e => setCompany(e.target.value)} 
+                  className={styles.input} 
+                  placeholder="e.g. Google"
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Job Title / Role *</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={role} 
+                  onChange={e => setRole(e.target.value)} 
+                  className={styles.input} 
+                  placeholder="e.g. Senior Frontend Architect"
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Location</label>
+                <input 
+                  type="text" 
+                  value={location} 
+                  onChange={e => setLocation(e.target.value)} 
+                  className={styles.input} 
+                  placeholder="e.g. Mountain View, CA (Remote)"
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Duration (Dates) *</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={duration} 
+                  onChange={e => setDuration(e.target.value)} 
+                  className={styles.input} 
+                  placeholder="e.g. Jan 2023 - Present or 2021 - 2022"
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Employment Type</label>
+                <select 
+                  value={employmentType} 
+                  onChange={e => setEmploymentType(e.target.value)} 
+                  className={styles.input}
+                  style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}
+                >
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Freelance">Freelance</option>
+                  <option value="Internship">Internship</option>
+                </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Display Order</label>
+                <input 
+                  type="number" 
+                  value={order} 
+                  onChange={e => setOrder(parseInt(e.target.value) || 0)} 
+                  className={styles.input}
+                />
+              </div>
+
+              <div className={`${styles.formGroup} ${styles.formSpanFull}`} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px' }}>
+                <input 
+                  type="checkbox" 
+                  id="isCurrent"
+                  checked={isCurrent} 
+                  onChange={e => setIsCurrent(e.target.checked)} 
+                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-gold)' }}
+                />
+                <label htmlFor="isCurrent" className={styles.label} style={{ marginBottom: 0, cursor: 'pointer' }}>
+                  This is my current company/role
+                </label>
+              </div>
+
+              <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+                <label className={styles.label}>Short Job Description *</label>
+                <textarea 
+                  required 
+                  value={description} 
+                  onChange={e => setDescription(e.target.value)} 
+                  className={styles.textarea} 
+                  placeholder="Summarize your main responsibilities and achievements in this role..."
+                  style={{ minHeight: '80px' }}
+                />
+              </div>
+
+              <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+                <label className={styles.label}>Key Responsibilities (One per line)</label>
+                <textarea 
+                  value={responsibilities} 
+                  onChange={e => setResponsibilities(e.target.value)} 
+                  className={styles.textarea} 
+                  placeholder="e.g. Built responsive interfaces using Next.js&#10;Integrated third-party APIs&#10;Led team of developers"
+                  style={{ minHeight: '120px' }}
+                />
+              </div>
+
+              <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+                <label className={styles.label}>Tech Stack Tags (Comma separated)</label>
+                <input 
+                  type="text" 
+                  value={techStackInput} 
+                  onChange={e => setTechStackInput(e.target.value)} 
+                  className={styles.input} 
+                  placeholder="e.g. Next.js, React, Node.js, TypeScript"
+                />
+              </div>
+
+              <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+                <label className={styles.label}>Company Logo Image</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '8px' }}>
+                  <button type="button" onClick={() => document.getElementById('expLogoUpload')?.click()} className="btn-premium btn-premium-outline" style={{ fontSize: '0.8rem', padding: '8px 16px' }}>
+                    Upload Logo
+                  </button>
+                  <input 
+                    type="file" 
+                    id="expLogoUpload"
+                    accept="image/*" 
+                    onChange={handleLogoUpload} 
+                    style={{ display: 'none' }}
+                  />
+                  {logo && (
+                    <div style={{ width: '60px', height: '60px', background: '#fff', border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img src={logo} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className={`${styles.formActions} ${styles.formSpanFull}`}>
+                <button type="button" onClick={() => setIsModalOpen(false)} className="btn-premium btn-premium-outline">
+                  Cancel
+                </button>
+                <button type="submit" className="btn-premium btn-premium-gold">
+                  {editId ? 'Save Changes' : 'Create Timeline Item'}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ==========================================================================
    6. SETTINGS MANAGER COMPONENT
    ========================================================================== */
+interface IService {
+  _id: string;
+  title: string;
+  description: string;
+  iconName: string;
+  order: number;
+}
+
 interface INavbarLink {
   label: string;
   url: string;
@@ -1671,6 +2581,24 @@ interface ISetting {
   heroBtn2Url: string;
   aboutHeading: string;
   aboutText: string;
+  aboutTitle?: string;
+  aboutImage?: string;
+  aboutName?: string;
+  aboutEmail?: string;
+  aboutLocation?: string;
+  aboutAvailability?: string;
+  aboutCvText?: string;
+  aboutCvUrl?: string;
+  aboutCvFile?: string;
+  aboutCvFileName?: string;
+  stat1Value?: string;
+  stat1Label?: string;
+  stat2Value?: string;
+  stat2Label?: string;
+  stat3Value?: string;
+  stat3Label?: string;
+  stat4Value?: string;
+  stat4Label?: string;
   footerText: string;
   email?: string;
   phone?: string;
@@ -1683,39 +2611,33 @@ interface ISetting {
   skillsLayout?: string;
   testimonialsLayout?: string;
   blogsLayout?: string;
+  servicesPerRow?: number;
+  servicesAutoScroll?: boolean;
+  projectsPerRow?: number;
+  projectCategories?: string;
+  heroTagline?: string;
+  heroTitleCursive?: string;
+  heroSpecializationText?: string;
+  heroShowFreelanceBadge?: boolean;
+  heroFreelanceText?: string;
 }
 
-function SettingsManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
-  const [logoText, setLogoText] = useState('AURA');
-  const [logoImage, setLogoImage] = useState('');
-  const [heroBannerImage, setHeroBannerImage] = useState('');
-  const [favicon, setFavicon] = useState('');
-  const [logoImageDirty, setLogoImageDirty] = useState(false);
-  const [heroBannerImageDirty, setHeroBannerImageDirty] = useState(false);
-  const [faviconDirty, setFaviconDirty] = useState(false);
+function HeroSettingsManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
   const [heroTitle, setHeroTitle] = useState('');
   const [heroSubtitle, setHeroSubtitle] = useState('');
   const [heroBtn1Text, setHeroBtn1Text] = useState('');
   const [heroBtn1Url, setHeroBtn1Url] = useState('');
   const [heroBtn2Text, setHeroBtn2Text] = useState('');
   const [heroBtn2Url, setHeroBtn2Url] = useState('');
-  const [aboutHeading, setAboutHeading] = useState('');
-  const [aboutText, setAboutText] = useState('');
-  const [footerText, setFooterText] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [github, setGithub] = useState('');
-  const [linkedin, setLinkedin] = useState('');
-  const [whatsapp, setWhatsapp] = useState('');
-  const [navbarLinks, setNavbarLinks] = useState<INavbarLink[]>([]);
-  const [typewriterRoles, setTypewriterRoles] = useState('Refayet Hossen, Full Stack Developer, Shopify Developer');
-  const [projectsLayout, setProjectsLayout] = useState('asymmetric');
-  const [skillsLayout, setSkillsLayout] = useState('category-progress');
-  const [testimonialsLayout, setTestimonialsLayout] = useState('grid');
-  const [blogsLayout, setBlogsLayout] = useState('editorial-rows');
-
+  const [heroTagline, setHeroTagline] = useState('');
+  const [heroTitleCursive, setHeroTitleCursive] = useState('');
+  const [heroSpecializationText, setHeroSpecializationText] = useState('');
+  const [heroShowFreelanceBadge, setHeroShowFreelanceBadge] = useState(true);
+  const [heroFreelanceText, setHeroFreelanceText] = useState('');
+  const [heroBannerImage, setHeroBannerImage] = useState('');
+  const [heroBannerImageDirty, setHeroBannerImageDirty] = useState(false);
+  const [typewriterRoles, setTypewriterRoles] = useState('');
   const [loading, setLoading] = useState(false);
-  const [seedLoading, setSeedLoading] = useState(false);
 
   const fetchSettings = async () => {
     setLoading(true);
@@ -1723,36 +2645,22 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
       const res = await fetch('/api/admin/settings?t=' + Date.now());
       if (res.ok) {
         const data = (await res.json()) as ISetting;
-        setLogoText(data.logoText || 'AURA');
-        setLogoImage(data.logoImage || '');
-        setHeroBannerImage(data.heroBannerImage || '');
-        setFavicon(data.favicon || '');
-        setLogoImageDirty(false);
-        setHeroBannerImageDirty(false);
-        setFaviconDirty(false);
         setHeroTitle(data.heroTitle || '');
         setHeroSubtitle(data.heroSubtitle || '');
         setHeroBtn1Text(data.heroBtn1Text || '');
         setHeroBtn1Url(data.heroBtn1Url || '');
         setHeroBtn2Text(data.heroBtn2Text || '');
         setHeroBtn2Url(data.heroBtn2Url || '');
-        setAboutHeading(data.aboutHeading || '');
-        setAboutText(data.aboutText || '');
-        setFooterText(data.footerText || '');
-        setEmail(data.email || '');
-        setPhone(data.phone || '');
-        setGithub(data.github || '');
-        setLinkedin(data.linkedin || '');
-        setWhatsapp(data.whatsapp || '');
-        setNavbarLinks(data.navbarLinks || []);
-        setTypewriterRoles(data.typewriterRoles || 'Refayet Hossen, Full Stack Developer, Shopify Developer');
-        setProjectsLayout(data.projectsLayout || 'asymmetric');
-        setSkillsLayout(data.skillsLayout || 'category-progress');
-        setTestimonialsLayout(data.testimonialsLayout || 'grid');
-        setBlogsLayout(data.blogsLayout || 'editorial-rows');
+        setHeroTagline(data.heroTagline || '');
+        setHeroTitleCursive(data.heroTitleCursive || '');
+        setHeroSpecializationText(data.heroSpecializationText || '');
+        setHeroShowFreelanceBadge(data.heroShowFreelanceBadge !== false);
+        setHeroFreelanceText(data.heroFreelanceText || '');
+        setHeroBannerImage(data.heroBannerImage || '');
+        setTypewriterRoles(data.typewriterRoles || '');
       }
     } catch (err) {
-      console.error('Error fetching settings:', err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -1762,18 +2670,512 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
     fetchSettings();
   }, []);
 
-  const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const compressed = await compressImage(reader.result as string, 128, 128, 0.8);
-        setFavicon(compressed);
-        setFaviconDirty(true);
+        const compressed = await compressImage(reader.result as string, 1200, 1200, 0.7);
+        setHeroBannerImage(compressed);
+        setHeroBannerImageDirty(true);
       };
       reader.readAsDataURL(file);
     }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const payload: any = {
+      heroTitle,
+      heroSubtitle,
+      heroBtn1Text,
+      heroBtn1Url,
+      heroBtn2Text,
+      heroBtn2Url,
+      heroTagline,
+      heroTitleCursive,
+      heroSpecializationText,
+      heroShowFreelanceBadge: !!heroShowFreelanceBadge,
+      heroFreelanceText,
+      typewriterRoles
+    };
+    if (heroBannerImageDirty) {
+      payload.heroBannerImage = heroBannerImage;
+    }
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        showToast('Hero settings successfully updated!', 'success');
+        setHeroBannerImageDirty(false);
+      } else {
+        showToast('Failed to update Hero settings.', 'error');
+      }
+    } catch (err) {
+      showToast('Error updating Hero settings.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && !heroTitle) {
+    return <div className={styles.emptyState}><h3>Connecting Hero Settings...</h3></div>;
+  }
+
+  return (
+    <div>
+      <div className={styles.contentHeader}>
+        <h1 className={styles.contentTitle}>Hero Section Curation</h1>
+      </div>
+      <form onSubmit={handleSubmit} className={styles.formGrid} style={{ background: 'var(--bg-secondary)', padding: '32px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>HERO SECTION CONFIG</h3>
+
+        <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+          <label className={styles.label}>Hero Background Banner Image</label>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <button type="button" onClick={() => document.getElementById('heroBannerUpload')?.click()} className="btn-premium btn-premium-outline" style={{ fontSize: '0.8rem', padding: '8px 16px' }}>
+              Upload Banner
+            </button>
+            <input
+              type="file"
+              id="heroBannerUpload"
+              accept="image/*"
+              onChange={handleBannerImageUpload}
+              style={{ display: 'none' }}
+            />
+            {heroBannerImage && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <img src={heroBannerImage} alt="Banner" style={{ height: 40, width: 80, objectFit: 'cover', border: '1px solid var(--glass-border-light)' }} />
+                <button type="button" onClick={() => { setHeroBannerImage(''); setHeroBannerImageDirty(true); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+          <label className={styles.label}>Main Hero Heading</label>
+          <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+          <label className={styles.label}>Hero Subtitle Copy</label>
+          <textarea value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} className={styles.textarea} style={{ minHeight: '60px' }} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Primary Button Text</label>
+          <input type="text" value={heroBtn1Text} onChange={(e) => setHeroBtn1Text(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Primary Button Link</label>
+          <input type="text" value={heroBtn1Url} onChange={(e) => setHeroBtn1Url(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Secondary Button Text</label>
+          <input type="text" value={heroBtn2Text} onChange={(e) => setHeroBtn2Text(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Secondary Button Link</label>
+          <input type="text" value={heroBtn2Url} onChange={(e) => setHeroBtn2Url(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Hero Small Greeting Tagline</label>
+          <input type="text" value={heroTagline} onChange={(e) => setHeroTagline(e.target.value)} className={styles.input} placeholder="e.g., HI, I'M REFAYET HOSSEN 👋" />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Hero Title Cursive Overlay Word/Phrase</label>
+          <input type="text" value={heroTitleCursive} onChange={(e) => setHeroTitleCursive(e.target.value)} className={styles.input} placeholder="e.g., That Make Impact" />
+        </div>
+
+        <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+          <label className={styles.label}>Hero Specializations Box Content (one per line)</label>
+          <textarea value={heroSpecializationText} onChange={(e) => setHeroSpecializationText(e.target.value)} className={styles.textarea} style={{ minHeight: '60px' }} placeholder="Shopify • Next.js • React&#10;Node.js • MongoDB" />
+        </div>
+
+        <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+          <label className={styles.label}>Hero Typewriter Roles (comma-separated)</label>
+          <input type="text" value={typewriterRoles} onChange={(e) => setTypewriterRoles(e.target.value)} className={styles.input} placeholder="e.g. Refayet Hossen, Full Stack Developer, Shopify Developer" required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Freelance Status Text</label>
+          <input type="text" value={heroFreelanceText} onChange={(e) => setHeroFreelanceText(e.target.value)} className={styles.input} placeholder="e.g., Available for freelance" />
+        </div>
+
+        <div className={styles.formGroup} style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '32px' }}>
+          <input type="checkbox" id="heroShowFreelanceBadge" checked={heroShowFreelanceBadge} onChange={(e) => setHeroShowFreelanceBadge(e.target.checked)} style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-gold)' }} />
+          <label htmlFor="heroShowFreelanceBadge" className={styles.label} style={{ cursor: 'pointer', margin: 0 }}>Show Freelance Status Badge</label>
+        </div>
+
+        <div className={`${styles.formActions} ${styles.formSpanFull}`} style={{ marginTop: '24px', borderTop: '1px solid var(--glass-border-light)', paddingTop: '16px' }}>
+          <button type="submit" disabled={loading} className="btn-premium btn-premium-gold" style={{ width: '100%' }}>
+            {loading ? 'Saving Hero Configuration...' : 'Save Hero Section Changes'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function AboutSettingsManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
+  const [aboutHeading, setAboutHeading] = useState('');
+  const [aboutText, setAboutText] = useState('');
+  const [aboutTitle, setAboutTitle] = useState('');
+  const [aboutImage, setAboutImage] = useState('');
+  const [aboutImageDirty, setAboutImageDirty] = useState(false);
+  const [aboutName, setAboutName] = useState('');
+  const [aboutEmail, setAboutEmail] = useState('');
+  const [aboutLocation, setAboutLocation] = useState('');
+  const [aboutAvailability, setAboutAvailability] = useState('');
+  const [aboutCvText, setAboutCvText] = useState('');
+  const [aboutCvUrl, setAboutCvUrl] = useState('');
+  const [aboutCvFile, setAboutCvFile] = useState('');
+  const [aboutCvFileName, setAboutCvFileName] = useState('');
+  const [aboutCvFileDirty, setAboutCvFileDirty] = useState(false);
+  const [stat1Value, setStat1Value] = useState('');
+  const [stat1Label, setStat1Label] = useState('');
+  const [stat2Value, setStat2Value] = useState('');
+  const [stat2Label, setStat2Label] = useState('');
+  const [stat3Value, setStat3Value] = useState('');
+  const [stat3Label, setStat3Label] = useState('');
+  const [stat4Value, setStat4Value] = useState('');
+  const [stat4Label, setStat4Label] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const fetchSettings = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/settings?t=' + Date.now());
+      if (res.ok) {
+        const data = (await res.json()) as ISetting;
+        setAboutHeading(data.aboutHeading || '');
+        setAboutText(data.aboutText || '');
+        setAboutTitle(data.aboutTitle || '');
+        setAboutImage(data.aboutImage || '');
+        setAboutName(data.aboutName || 'Md. Refayet Hossen');
+        setAboutEmail(data.aboutEmail || 'refayet@example.com');
+        setAboutLocation(data.aboutLocation || 'Dhaka, Bangladesh');
+        setAboutAvailability(data.aboutAvailability || 'Open for opportunities');
+        setAboutCvText(data.aboutCvText || 'Download CV');
+        setAboutCvUrl(data.aboutCvUrl || '#');
+        setAboutCvFile(data.aboutCvFile || '');
+        setAboutCvFileName(data.aboutCvFileName || 'CV.pdf');
+        setStat1Value(data.stat1Value || '5+');
+        setStat1Label(data.stat1Label || 'Years Experience');
+        setStat2Value(data.stat2Value || '50+');
+        setStat2Label(data.stat2Label || 'Projects Completed');
+        setStat3Value(data.stat3Value || '20+');
+        setStat3Label(data.stat3Label || 'Happy Clients');
+        setStat4Value(data.stat4Value || '100%');
+        setStat4Label(data.stat4Label || 'Client Satisfaction');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const handleAboutImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const compressed = await compressImage(reader.result as string, 800, 1000, 0.7);
+        setAboutImage(compressed);
+        setAboutImageDirty(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAboutCvFile(reader.result as string);
+        setAboutCvFileName(file.name);
+        setAboutCvFileDirty(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const payload: any = {
+      aboutHeading,
+      aboutText,
+      aboutTitle,
+      aboutName,
+      aboutEmail,
+      aboutLocation,
+      aboutAvailability,
+      aboutCvText,
+      aboutCvUrl,
+      stat1Value,
+      stat1Label,
+      stat2Value,
+      stat2Label,
+      stat3Value,
+      stat3Label,
+      stat4Value,
+      stat4Label
+    };
+    if (aboutImageDirty) payload.aboutImage = aboutImage;
+    if (aboutCvFileDirty) {
+      payload.aboutCvFile = aboutCvFile;
+      payload.aboutCvFileName = aboutCvFileName;
+    }
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        showToast('About settings successfully updated!', 'success');
+        setAboutImageDirty(false);
+        setAboutCvFileDirty(false);
+      } else {
+        showToast('Failed to update About settings.', 'error');
+      }
+    } catch (err) {
+      showToast('Error updating About settings.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && !aboutTitle) {
+    return <div className={styles.emptyState}><h3>Connecting About Settings...</h3></div>;
+  }
+
+  return (
+    <div>
+      <div className={styles.contentHeader}>
+        <h1 className={styles.contentTitle}>About Section Curation</h1>
+      </div>
+      <form onSubmit={handleSubmit} className={styles.formGrid} style={{ background: 'var(--bg-secondary)', padding: '32px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>ABOUT CURIOSITY STORY</h3>
+
+        <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+          <label className={styles.label}>About Biography Portrait Image</label>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <button type="button" onClick={() => document.getElementById('aboutImageUpload')?.click()} className="btn-premium btn-premium-outline" style={{ fontSize: '0.8rem', padding: '8px 16px' }}>
+              Upload Image
+            </button>
+            <input
+              type="file"
+              id="aboutImageUpload"
+              accept="image/*"
+              onChange={handleAboutImageUpload}
+              style={{ display: 'none' }}
+            />
+            {aboutImage && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <img src={aboutImage} alt="About Bio" style={{ height: 40, width: 40, objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--glass-border-light)' }} />
+                <button type="button" onClick={() => { setAboutImage(''); setAboutImageDirty(true); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Story Section Tag/Heading</label>
+          <input type="text" value={aboutHeading} onChange={(e) => setAboutHeading(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Who am I Title</label>
+          <input type="text" value={aboutTitle} onChange={(e) => setAboutTitle(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+          <label className={styles.label}>Biography Story Content</label>
+          <textarea value={aboutText} onChange={(e) => setAboutText(e.target.value)} className={styles.textarea} style={{ minHeight: '120px' }} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Card: Name Display</label>
+          <input type="text" value={aboutName} onChange={(e) => setAboutName(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Card: Email Display</label>
+          <input type="text" value={aboutEmail} onChange={(e) => setAboutEmail(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Card: Location Display</label>
+          <input type="text" value={aboutLocation} onChange={(e) => setAboutLocation(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Card: Availability Status</label>
+          <input type="text" value={aboutAvailability} onChange={(e) => setAboutAvailability(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>CV Download Button Text</label>
+          <input type="text" value={aboutCvText} onChange={(e) => setAboutCvText(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>CV Document Upload (Direct PDF/Doc)</label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
+            <button 
+              type="button" 
+              onClick={() => document.getElementById('cvDocUpload')?.click()} 
+              className="btn-premium btn-premium-outline" 
+              style={{ fontSize: '0.8rem', padding: '8px 16px' }}
+            >
+              Upload CV File
+            </button>
+            <input
+              type="file"
+              id="cvDocUpload"
+              accept=".pdf,.doc,.docx"
+              onChange={handleCvUpload}
+              style={{ display: 'none' }}
+            />
+            {aboutCvFileName && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                <span>📄 {aboutCvFileName}</span>
+                <button 
+                  type="button" 
+                  onClick={() => { setAboutCvFile(''); setAboutCvFileName(''); setAboutCvFileDirty(true); }} 
+                  style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>BIOGRAPHY STATISTICS ROW</h3>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Stat 1: Value (e.g. 5+)</label>
+          <input type="text" value={stat1Value} onChange={(e) => setStat1Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Stat 1: Label (e.g. Years Experience)</label>
+          <input type="text" value={stat1Label} onChange={(e) => setStat1Label(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Stat 2: Value (e.g. 50+)</label>
+          <input type="text" value={stat2Value} onChange={(e) => setStat2Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Stat 2: Label (e.g. Projects Completed)</label>
+          <input type="text" value={stat2Label} onChange={(e) => setStat2Label(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Stat 3: Value (e.g. 20+)</label>
+          <input type="text" value={stat3Value} onChange={(e) => setStat3Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Stat 3: Label (e.g. Happy Clients)</label>
+          <input type="text" value={stat3Label} onChange={(e) => setStat3Label(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Stat 4: Value (e.g. 100%)</label>
+          <input type="text" value={stat4Value} onChange={(e) => setStat4Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Stat 4: Label (e.g. Client Satisfaction)</label>
+          <input type="text" value={stat4Label} onChange={(e) => setStat4Label(e.target.value)} className={styles.input} required />
+        </div>
+
+        <div className={`${styles.formActions} ${styles.formSpanFull}`} style={{ marginTop: '24px', borderTop: '1px solid var(--glass-border-light)', paddingTop: '16px' }}>
+          <button type="submit" disabled={loading} className="btn-premium btn-premium-gold" style={{ width: '100%' }}>
+            {loading ? 'Saving About Configuration...' : 'Save About Section Changes'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function BrandSettingsManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
+  const [logoText, setLogoText] = useState('RIFAT');
+  const [logoImage, setLogoImage] = useState('');
+  const [logoImageDirty, setLogoImageDirty] = useState(false);
+  const [favicon, setFavicon] = useState('');
+  const [faviconDirty, setFaviconDirty] = useState(false);
+  const [footerText, setFooterText] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [github, setGithub] = useState('');
+  const [linkedin, setLinkedin] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [navbarLinks, setNavbarLinks] = useState<INavbarLink[]>([]);
+  const [projectsLayout, setProjectsLayout] = useState('asymmetric');
+  const [skillsLayout, setSkillsLayout] = useState('category-progress');
+  const [testimonialsLayout, setTestimonialsLayout] = useState('grid');
+  const [blogsLayout, setBlogsLayout] = useState('editorial-rows');
+  const [servicesPerRow, setServicesPerRow] = useState(3);
+  const [servicesAutoScroll, setServicesAutoScroll] = useState(false);
+  const [projectsPerRow, setProjectsPerRow] = useState(3);
+  const [projectCategories, setProjectCategories] = useState('Web Applications, E-Commerce, Dashboard, Landing Page, Other');
+  const [loading, setLoading] = useState(false);
+  const [seedLoading, setSeedLoading] = useState(false);
+
+  const fetchSettings = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/settings?t=' + Date.now());
+      if (res.ok) {
+        const data = (await res.json()) as ISetting;
+        setLogoText(data.logoText || 'RIFAT');
+        setLogoImage(data.logoImage || '');
+        setFavicon(data.favicon || '');
+        setFooterText(data.footerText || '');
+        setEmail(data.email || '');
+        setPhone(data.phone || '');
+        setGithub(data.github || '');
+        setLinkedin(data.linkedin || '');
+        setWhatsapp(data.whatsapp || '');
+        setNavbarLinks(data.navbarLinks || []);
+        setProjectsLayout(data.projectsLayout || 'asymmetric');
+        setSkillsLayout(data.skillsLayout || 'category-progress');
+        setTestimonialsLayout(data.testimonialsLayout || 'grid');
+        setBlogsLayout(data.blogsLayout || 'editorial-rows');
+        setServicesPerRow(data.servicesPerRow || 3);
+        setServicesAutoScroll(!!data.servicesAutoScroll);
+        setProjectsPerRow(data.projectsPerRow || 3);
+        setProjectCategories(data.projectCategories || 'Web Applications, E-Commerce, Dashboard, Landing Page, Other');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1788,14 +3190,14 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
     }
   };
 
-  const handleBannerImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const compressed = await compressImage(reader.result as string, 1200, 1200, 0.7);
-        setHeroBannerImage(compressed);
-        setHeroBannerImageDirty(true);
+        const compressed = await compressImage(reader.result as string, 128, 128, 0.8);
+        setFavicon(compressed);
+        setFaviconDirty(true);
       };
       reader.readAsDataURL(file);
     }
@@ -1818,17 +3220,8 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     const payload: any = {
       logoText,
-      heroTitle,
-      heroSubtitle,
-      heroBtn1Text,
-      heroBtn1Url,
-      heroBtn2Text,
-      heroBtn2Url,
-      aboutHeading,
-      aboutText,
       footerText,
       email,
       phone,
@@ -1836,18 +3229,17 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
       linkedin,
       whatsapp,
       navbarLinks,
-      typewriterRoles,
       projectsLayout,
       skillsLayout,
       testimonialsLayout,
-      blogsLayout
+      blogsLayout,
+      servicesPerRow: Number(servicesPerRow),
+      servicesAutoScroll: !!servicesAutoScroll,
+      projectsPerRow: Number(projectsPerRow),
+      projectCategories
     };
-
-    // Only include images in payload if they were modified in this session
     if (logoImageDirty) payload.logoImage = logoImage;
-    if (heroBannerImageDirty) payload.heroBannerImage = heroBannerImage;
     if (faviconDirty) payload.favicon = favicon;
-
     try {
       const res = await fetch('/api/admin/settings', {
         method: 'POST',
@@ -1855,24 +3247,21 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
         body: JSON.stringify(payload)
       });
       if (res.ok) {
-        showToast('Site Settings successfully updated!', 'success');
+        showToast('Branding & Socials settings successfully updated!', 'success');
         setLogoImageDirty(false);
-        setHeroBannerImageDirty(false);
         setFaviconDirty(false);
       } else {
-        const errData = await res.json().catch(() => ({}));
-        showToast(`Failed to update settings: ${errData.error || res.statusText || 'Unknown error'}`, 'error');
+        showToast('Failed to update Branding settings.', 'error');
       }
-    } catch (err: any) {
-      console.error(err);
-      showToast(`Error updating settings: ${err.message || 'Unknown network error'}`, 'error');
+    } catch (err) {
+      showToast('Error updating Branding settings.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   const handleSeedDatabase = async () => {
-    if (!confirm('Warning: Seeding database will clear existing Skills, Projects, Testimonials, Blogs and Settings, and replace them with curated premium layout contents. Do you want to proceed?')) {
+    if (!confirm('Warning: Seeding database will clear existing Skills, Projects, Testimonials, Blogs and Settings, and replace them with curated premium dummy layout contents. Do you want to proceed?')) {
       return;
     }
     setSeedLoading(true);
@@ -1881,7 +3270,7 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
       if (res.ok) {
         const data = await res.json();
         showToast(data.message || 'Database successfully seeded!', 'success');
-        fetchSettings(); // Refresh
+        fetchSettings();
       } else {
         showToast('Seeding failed.', 'error');
       }
@@ -1893,53 +3282,35 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
     }
   };
 
-  if (loading && !heroTitle) {
-    return (
-      <div className={styles.emptyState}>
-        <h3>Connecting Settings Console...</h3>
-      </div>
-    );
+  if (loading && !logoText) {
+    return <div className={styles.emptyState}><h3>Connecting Branding Settings...</h3></div>;
   }
 
   return (
     <div>
       <div className={styles.contentHeader}>
-        <h1 className={styles.contentTitle}>System Curation Settings</h1>
+        <h1 className={styles.contentTitle}>Branding & General Settings</h1>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px', alignItems: 'start' }}>
-
-        {/* Form panel */}
         <form onSubmit={handleSubmit} className={styles.formGrid} style={{ background: 'var(--bg-secondary)', padding: '32px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-          <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>BRANDING & LAYOUT</h3>
+          <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>BRANDING IDENTITY</h3>
 
           <div className={styles.formGroup}>
             <label className={styles.label}>Navbar Brand Text</label>
-            <input
-              type="text"
-              value={logoText}
-              onChange={(e) => setLogoText(e.target.value)}
-              className={styles.input}
-              required
-            />
+            <input type="text" value={logoText} onChange={(e) => setLogoText(e.target.value)} className={styles.input} required />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Portrait Image (Circle)</label>
+            <label className={styles.label}>Branding Logo/Portrait</label>
             <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-              <button type="button" onClick={() => document.getElementById('logoUpload')?.click()} className="btn-premium btn-premium-outline" style={{ fontSize: '0.8rem', padding: '8px 16px' }}>
-                Upload Portrait
+              <button type="button" onClick={() => document.getElementById('logoImageUpload')?.click()} className="btn-premium btn-premium-outline" style={{ fontSize: '0.8rem', padding: '8px 16px' }}>
+                Upload Image
               </button>
-              <input
-                type="file"
-                id="logoUpload"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                style={{ display: 'none' }}
-              />
+              <input type="file" id="logoImageUpload" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} />
               {logoImage && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <img src={logoImage} alt="Portrait" style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: '50%', border: '1px solid var(--glass-border-light)', padding: 2, background: '#000' }} />
+                  <img src={logoImage} alt="Logo" style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: '50%', border: '1px solid var(--glass-border-light)' }} />
                   <button type="button" onClick={() => { setLogoImage(''); setLogoImageDirty(true); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
                 </div>
               )}
@@ -1952,288 +3323,96 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
               <button type="button" onClick={() => document.getElementById('faviconUpload')?.click()} className="btn-premium btn-premium-outline" style={{ fontSize: '0.8rem', padding: '8px 16px' }}>
                 Upload Favicon
               </button>
-              <input
-                type="file"
-                id="faviconUpload"
-                accept="image/*"
-                onChange={handleFaviconUpload}
-                style={{ display: 'none' }}
-              />
+              <input type="file" id="faviconUpload" accept="image/*" onChange={handleFaviconUpload} style={{ display: 'none' }} />
               {favicon && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <img src={favicon} alt="Favicon" style={{ width: 32, height: 32, objectFit: 'contain', border: '1px solid var(--glass-border-light)', padding: 2, background: '#000' }} />
+                  <img src={favicon} alt="Favicon" style={{ width: 32, height: 32, objectFit: 'contain', border: '1px solid var(--glass-border-light)' }} />
                   <button type="button" onClick={() => { setFavicon(''); setFaviconDirty(true); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
                 </div>
               )}
             </div>
           </div>
 
-          <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>LAYOUT & TYPEWRITER CONFIG</h3>
-
-          <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
-            <label className={styles.label}>Hero Typewriter Roles (comma-separated)</label>
-            <input
-              type="text"
-              value={typewriterRoles}
-              onChange={(e) => setTypewriterRoles(e.target.value)}
-              className={styles.input}
-              placeholder="e.g. Refayet Hossen, Full Stack Developer, Shopify Developer"
-              required
-            />
-          </div>
+          <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>LAYOUT & VIEW SCHEMAS</h3>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Selected Works Layout</label>
-            <select
-              value={projectsLayout}
-              onChange={(e) => setProjectsLayout(e.target.value)}
-              className={styles.input}
-              style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}
-            >
-              <option value="asymmetric">Asymmetric Gallery (Modern)</option>
-              <option value="grid">Classic Luxury Card Grid</option>
-              <option value="carousel">Horizontal Drag Carousel</option>
-              <option value="masonry">Staggered Height Masonry Grid</option>
-              <option value="stacked-list">Large List Rows (Expand Hover Image)</option>
-              <option value="minimal-cards">Borderless Minimal Hover Cards</option>
-              <option value="split-parallax">Split Columns with Parallax Scroll</option>
-              <option value="minimal-list">Simple Text Links (Image on Hover)</option>
+            <label className={styles.label}>Projects Gallery Layout</label>
+            <select value={projectsLayout} onChange={(e) => setProjectsLayout(e.target.value)} className={styles.input} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}>
+              <option value="asymmetric">Asymmetric Gallery</option>
+              <option value="grid">Classic Card Grid</option>
+              <option value="carousel">Drag Carousel</option>
+              <option value="masonry">Staggered Masonry</option>
             </select>
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Technical Proficiency Layout</label>
-            <select
-              value={skillsLayout}
-              onChange={(e) => setSkillsLayout(e.target.value)}
-              className={styles.input}
-              style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}
-            >
+            <label className={styles.label}>Technical Skills Layout</label>
+            <select value={skillsLayout} onChange={(e) => setSkillsLayout(e.target.value)} className={styles.input} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}>
               <option value="category-progress">Category Progress Bars</option>
               <option value="grid-cards">3D Glass Cards Grid</option>
               <option value="marquee">Infinite Smooth Marquee</option>
-              <option value="minimal-tags">Elegant Minimalist Badge Cloud</option>
-              <option value="timeline-steps">Staggered Skill Flow Columns</option>
-              <option value="two-column-list">Sleek Dual-Column Table</option>
-              <option value="circular-progress">Circular Progress Dials</option>
-              <option value="badge-cloud">Modern Compact Badge Cloud</option>
+              <option value="badge-cloud">Compact Badge Cloud</option>
             </select>
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Client Reviews Layout</label>
-            <select
-              value={testimonialsLayout}
-              onChange={(e) => setTestimonialsLayout(e.target.value)}
-              className={styles.input}
-              style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}
-            >
-              <option value="grid">Staggered Columns Grid</option>
-              <option value="carousel">Dragging Card Carousel</option>
-              <option value="masonry">Luxury Masonry Wall</option>
-              <option value="single-featured">Huge Single Quote Slider</option>
-              <option value="split-editorial">Split Sticky Review Cards</option>
-              <option value="bubble-chat">Conversational Bubble Messages Mockup</option>
-              <option value="minimalist-citations">Elegant Gold Signature Quotes</option>
-              <option value="infinite-scroll">Auto-Scrolling Review Ribbon</option>
+            <label className={styles.label}>Services Grid Column Count</label>
+            <select value={servicesPerRow} onChange={(e) => setServicesPerRow(Number(e.target.value))} className={styles.input} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}>
+              <option value={2}>2 Columns</option>
+              <option value={3}>3 Columns</option>
+              <option value={4}>4 Columns</option>
             </select>
           </div>
 
+          <div className={styles.formGroup} style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '32px' }}>
+            <input type="checkbox" id="servicesAutoScroll" checked={servicesAutoScroll} onChange={(e) => setServicesAutoScroll(e.target.checked)} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
+            <label htmlFor="servicesAutoScroll" className={styles.label} style={{ cursor: 'pointer', margin: 0 }}>Enable Service Ticker</label>
+          </div>
+
           <div className={styles.formGroup}>
-            <label className={styles.label}>Journal Blogs Layout</label>
-            <select
-              value={blogsLayout}
-              onChange={(e) => setBlogsLayout(e.target.value)}
-              className={styles.input}
-              style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}
-            >
-              <option value="editorial-split-sticky">Split Sticky Editorial (Featured Layout)</option>
-              <option value="editorial-rows">Editorial List Rows (Minimal)</option>
-              <option value="cards-grid">Premium Post Cards Grid</option>
-              <option value="magazine-split">Magazine Split Columns (One Large Featured)</option>
-              <option value="magazine-cover">Digital Cover Blog Slider</option>
-              <option value="asymmetric-cards">Staggered Large Alternate Blocks</option>
-              <option value="horizontal-strip">Inline Scrolling Strip Cards</option>
-              <option value="minimalist-list">Date-Focused Golden Text List</option>
+            <label className={styles.label}>Projects Grid Column Count</label>
+            <select value={projectsPerRow} onChange={(e) => setProjectsPerRow(Number(e.target.value))} className={styles.input} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--glass-border-light)' }}>
+              <option value={2}>2 Columns</option>
+              <option value={3}>3 Columns</option>
+              <option value={4}>4 Columns</option>
             </select>
           </div>
 
-
-          <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>HERO SCREEN COPY</h3>
-
           <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
-            <label className={styles.label}>Hero Background Banner Image (Optional Full Page Background)</label>
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-              <button type="button" onClick={() => document.getElementById('bannerUpload')?.click()} className="btn-premium btn-premium-outline" style={{ fontSize: '0.8rem', padding: '8px 16px' }}>
-                Upload Full Background
-              </button>
-              <input
-                type="file"
-                id="bannerUpload"
-                accept="image/*"
-                onChange={handleBannerImageUpload}
-                style={{ display: 'none' }}
-              />
-              {heroBannerImage && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <img src={heroBannerImage} alt="Banner" style={{ height: 40, width: 80, objectFit: 'cover', border: '1px solid var(--glass-border-light)' }} />
-                  <button type="button" onClick={() => { setHeroBannerImage(''); setHeroBannerImageDirty(true); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>Remove</button>
-                </div>
-              )}
-            </div>
+            <label className={styles.label}>Project Categories (comma separated)</label>
+            <input type="text" value={projectCategories} onChange={(e) => setProjectCategories(e.target.value)} className={styles.input} />
           </div>
 
-          <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
-            <label className={styles.label}>Main Hero Heading</label>
-            <input
-              type="text"
-              value={heroTitle}
-              onChange={(e) => setHeroTitle(e.target.value)}
-              className={styles.input}
-              required
-            />
-          </div>
-
-          <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
-            <label className={styles.label}>Hero Subtitle Copy</label>
-            <textarea
-              value={heroSubtitle}
-              onChange={(e) => setHeroSubtitle(e.target.value)}
-              className={styles.textarea}
-              style={{ minHeight: '60px' }}
-              required
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Primary Button Text</label>
-            <input
-              type="text"
-              value={heroBtn1Text}
-              onChange={(e) => setHeroBtn1Text(e.target.value)}
-              className={styles.input}
-              required
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Primary Button Link</label>
-            <input
-              type="text"
-              value={heroBtn1Url}
-              onChange={(e) => setHeroBtn1Url(e.target.value)}
-              className={styles.input}
-              required
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Secondary Button Text</label>
-            <input
-              type="text"
-              value={heroBtn2Text}
-              onChange={(e) => setHeroBtn2Text(e.target.value)}
-              className={styles.input}
-              required
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Secondary Button Link</label>
-            <input
-              type="text"
-              value={heroBtn2Url}
-              onChange={(e) => setHeroBtn2Url(e.target.value)}
-              className={styles.input}
-              required
-            />
-          </div>
-
-          <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>ABOUT CURIOSITY STORY</h3>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Story Section Heading</label>
-            <input
-              type="text"
-              value={aboutHeading}
-              onChange={(e) => setAboutHeading(e.target.value)}
-              className={styles.input}
-              required
-            />
-          </div>
-
-          <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
-            <label className={styles.label}>Biography Story Content</label>
-            <textarea
-              value={aboutText}
-              onChange={(e) => setAboutText(e.target.value)}
-              className={styles.textarea}
-              style={{ minHeight: '120px' }}
-              required
-            />
-          </div>
-
-          <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>FOOTER & CONTACT</h3>
+          <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>CONTACT CHANNELS & SOCIALS</h3>
 
           <div className={styles.formGroup}>
             <label className={styles.label}>Contact Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.input}
-            />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={styles.input} />
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.label}>Contact Phone</label>
-            <input
-              type="text"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className={styles.input}
-            />
+            <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className={styles.input} />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>GitHub Profile URL</label>
-            <input
-              type="url"
-              value={github}
-              onChange={(e) => setGithub(e.target.value)}
-              className={styles.input}
-            />
+            <label className={styles.label}>GitHub URL</label>
+            <input type="url" value={github} onChange={(e) => setGithub(e.target.value)} className={styles.input} />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>LinkedIn Profile URL</label>
-            <input
-              type="url"
-              value={linkedin}
-              onChange={(e) => setLinkedin(e.target.value)}
-              className={styles.input}
-            />
+            <label className={styles.label}>LinkedIn URL</label>
+            <input type="url" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} className={styles.input} />
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.label}>WhatsApp Number</label>
-            <input
-              type="text"
-              value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
-              className={styles.input}
-            />
+            <input type="text" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className={styles.input} />
           </div>
 
           <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
-            <label className={styles.label}>Footer Signature Label</label>
-            <input
-              type="text"
-              value={footerText}
-              onChange={(e) => setFooterText(e.target.value)}
-              className={styles.input}
-              required
-            />
+            <label className={styles.label}>Footer Signature/Copyright Label</label>
+            <input type="text" value={footerText} onChange={(e) => setFooterText(e.target.value)} className={styles.input} required />
           </div>
 
           <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>NAVIGATION LINKS</h3>
@@ -2242,28 +3421,14 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {navbarLinks.map((link, idx) => (
                 <div key={idx} style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <input
-                    type="text"
-                    value={link.label}
-                    onChange={(e) => handleNavLinkChange(idx, 'label', e.target.value)}
-                    placeholder="Label (e.g. Projects)"
-                    className={styles.input}
-                    style={{ flex: 1 }}
-                  />
-                  <input
-                    type="text"
-                    value={link.url}
-                    onChange={(e) => handleNavLinkChange(idx, 'url', e.target.value)}
-                    placeholder="URL Path (e.g. #projects)"
-                    className={styles.input}
-                    style={{ flex: 1 }}
-                  />
+                  <input type="text" value={link.label} onChange={(e) => handleNavLinkChange(idx, 'label', e.target.value)} placeholder="Label" className={styles.input} style={{ flex: 1 }} />
+                  <input type="text" value={link.url} onChange={(e) => handleNavLinkChange(idx, 'url', e.target.value)} placeholder="URL" className={styles.input} style={{ flex: 1 }} />
                   <button type="button" onClick={() => removeNavLink(idx)} className={styles.actionBtn} style={{ color: 'var(--status-offline)', border: '1px solid rgba(220,53,69,0.2)', height: '44px', width: '44px', padding: 0 }}>
                     <X size={16} />
                   </button>
                 </div>
               ))}
-              <button type="button" onClick={addNavLink} className="btn-premium btn-premium-outline" style={{ alignSelf: 'start', fontSize: '0.8rem', padding: '6px 12px', marginTop: 4 }}>
+              <button type="button" onClick={addNavLink} className="btn-premium btn-premium-outline" style={{ alignSelf: 'start', fontSize: '0.8rem', padding: '6px 12px' }}>
                 + Add Custom Nav Link
               </button>
             </div>
@@ -2271,47 +3436,26 @@ function SettingsManager({ showToast }: { showToast: (message: string, type?: 's
 
           <div className={`${styles.formActions} ${styles.formSpanFull}`} style={{ marginTop: '24px', borderTop: '1px solid var(--glass-border-light)', paddingTop: '16px' }}>
             <button type="submit" disabled={loading} className="btn-premium btn-premium-gold" style={{ width: '100%' }}>
-              {loading ? 'Saving Curation Settings...' : 'Save Configuration Changes'}
+              {loading ? 'Saving Branding...' : 'Save Branding Changes'}
             </button>
           </div>
         </form>
 
-        {/* Info panel */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
-          {/* Seeding panel */}
           <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
             <div style={{ display: 'flex', gap: 12, color: 'var(--accent-gold)', marginBottom: 12 }}>
               <Database size={24} />
               <h3 style={{ fontFamily: 'var(--font-display)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Core Seeding Tools</h3>
             </div>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.4', marginBottom: 16 }}>
-              Need to populate the database with premium designs, projects, testimonials, and blog articles instantly? Click below to seed elite layout data.
+              Populate the database with dummy premium layout assets instantly.
             </p>
-
-            <button
-              type="button"
-              onClick={handleSeedDatabase}
-              disabled={seedLoading}
-              className="btn-premium btn-premium-gold"
-              style={{ width: '100%', gap: 8 }}
-            >
+            <button type="button" onClick={handleSeedDatabase} disabled={seedLoading} className="btn-premium btn-premium-gold" style={{ width: '100%', gap: 8 }}>
               <Sparkles size={16} />
               {seedLoading ? 'Seeding Database...' : 'Seed Premium Dummy Data'}
             </button>
           </div>
-
-          {/* Quick instructions */}
-          <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: '8px', border: '1px solid var(--glass-border)', color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5' }}>
-            <h4 style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)', textTransform: 'uppercase', margin: '0 0 8px 0' }}>Configuration Rules</h4>
-            <ul style={{ paddingLeft: '16px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <li>Changing navbar links reflects instantly across the public portfolio header menus.</li>
-              <li>Favicon uploads will change the website browser tab icon dynamically.</li>
-              <li>Hero headings automatically support text reveals inside the visual showcase.</li>
-            </ul>
-          </div>
         </div>
-
       </div>
     </div>
   );
@@ -2439,3 +3583,244 @@ function ContactMessagesManager({ showToast }: { showToast: (message: string, ty
     </div>
   );
 }
+
+function NewsletterManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
+  const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dbStats, setDbStats] = useState<any>(null);
+  const [dbLoading, setDbLoading] = useState(true);
+  const [refreshCountdown, setRefreshCountdown] = useState(5);
+
+  const fetchSubscribers = async () => {
+    try {
+      const res = await fetch('/api/admin/newsletter');
+      if (res.ok) {
+        const data = await res.json();
+        setSubscribers(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDbStats = async () => {
+    try {
+      const res = await fetch('/api/admin/db-stats');
+      if (res.ok) {
+        const data = await res.json();
+        setDbStats(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDbLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscribers();
+    fetchDbStats();
+
+    const intervalId = setInterval(() => {
+      fetchDbStats();
+      fetchSubscribers();
+      setRefreshCountdown(5);
+    }, 5000);
+
+    const countdownId = setInterval(() => {
+      setRefreshCountdown(prev => (prev > 1 ? prev - 1 : 5));
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+      clearInterval(countdownId);
+    };
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this subscriber?')) return;
+    try {
+      const res = await fetch(`/api/admin/newsletter?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        showToast('Subscriber deleted successfully', 'success');
+        setSubscribers(prev => prev.filter(s => s._id !== id));
+      } else {
+        showToast('Failed to delete subscriber', 'error');
+      }
+    } catch (err) {
+      showToast('Error deleting subscriber', 'error');
+    }
+  };
+
+  const filtered = subscribers.filter(s => 
+    s.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div>
+      <div className={styles.crudHeader}>
+        <div>
+          <h1 className={styles.crudTitle}>Newsletter & Database</h1>
+          <p className={styles.crudSubtitle}>Manage email list subscriptions and monitor live database storage space.</p>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginBottom: '32px' }}>
+        
+        <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '24px', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Database size={20} color="var(--accent-gold)" />
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '1rem' }}>Storage Space</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+              <span>Live (Auto-refresh {refreshCountdown}s)</span>
+            </div>
+          </div>
+
+          {dbLoading ? (
+            <div style={{ padding: '20px 0', textAlign: 'center', color: 'var(--text-muted)' }}>Loading storage stats...</div>
+          ) : dbStats ? (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                <span style={{ fontSize: '2rem', fontWeight: 800, color: '#ffffff' }}>
+                  {dbStats.storageSizeMB} <span style={{ fontSize: '1rem', fontWeight: 400, color: 'var(--text-secondary)' }}>MB</span>
+                </span>
+                <span style={{ fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+                  of {dbStats.limitMB} MB ({dbStats.percentage}%)
+                </span>
+              </div>
+
+              <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '100px', overflow: 'hidden', marginBottom: '16px' }}>
+                <div style={{ 
+                  width: `${Math.min(100, Math.max(1, parseFloat(dbStats.percentage) * 10))}%`,
+                  height: '100%', 
+                  background: 'linear-gradient(90deg, #818cf8, #c084fc)',
+                  borderRadius: '100px'
+                }} />
+              </div>
+
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                * Standard Atlas M0 free tier database is capped at 512MB storage space. Live metrics are read directly from MongoDB storage stats.
+              </div>
+            </div>
+          ) : (
+            <div style={{ color: 'var(--text-muted)' }}>Failed to load storage details.</div>
+          )}
+        </div>
+
+        <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '24px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Collections</span>
+            <span style={{ fontSize: '1.6rem', fontWeight: 700, color: '#ffffff' }}>{dbStats ? dbStats.collections : '-'}</span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Documents Count</span>
+            <span style={{ fontSize: '1.6rem', fontWeight: 700, color: '#ffffff' }}>{dbStats ? dbStats.objects : '-'}</span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Data Payload Size</span>
+            <span style={{ fontSize: '1.3rem', fontWeight: 700, color: '#ffffff' }}>{dbStats ? `${dbStats.dataSizeMB} MB` : '-'}</span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>Indexes Size</span>
+            <span style={{ fontSize: '1.3rem', fontWeight: 700, color: '#ffffff' }}>{dbStats ? `${dbStats.indexSizeMB} MB` : '-'}</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', borderRadius: '16px', padding: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '1.2rem', fontWeight: 600, color: '#ffffff', margin: 0 }}>
+            Subscribers List ({filtered.length})
+          </h2>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
+            <input 
+              type="text" 
+              placeholder="Search subscriber emails..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '10px 16px',
+                background: 'var(--bg-tertiary)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                outline: 'none',
+                fontSize: '0.88rem'
+              }}
+            />
+          </div>
+        </div>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>Loading subscribers...</div>
+        ) : filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', border: '1px dashed var(--glass-border-light)', borderRadius: '8px' }}>
+            No subscribers found matching query.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {filtered.map((s, idx) => (
+              <div 
+                key={s._id} 
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  background: 'rgba(15, 23, 42, 0.25)', 
+                  border: '1px solid var(--glass-border-light)',
+                  borderRadius: '12px',
+                  padding: '16px 20px',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(129, 140, 248, 0.1)', border: '1px solid rgba(129, 140, 248, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                    {idx + 1}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 600, color: '#ffffff', fontSize: '0.95rem' }}>{s.email}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                      Subscribed: {new Date(s.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleDelete(s._id)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    padding: '8px',
+                    borderRadius: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background 0.2s ease'
+                  }}
+                  title="Remove Subscriber"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+

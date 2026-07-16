@@ -4,12 +4,16 @@ import Skill from '@/models/Skill';
 import Testimonial from '@/models/Testimonial';
 import Blog from '@/models/Blog';
 import Setting from '@/models/Setting';
+import Service from '@/models/Service';
+import Experience from '@/models/Experience';
 
 interface DbCache {
   projects: any[];
   skills: any[];
   testimonials: any[];
   blogs: any[];
+  services: any[];
+  experiences: any[];
   settings: any;
   lastFetched: number;
 }
@@ -35,12 +39,14 @@ export async function getHomepageData() {
   console.log('Cache miss. Fetching fresh homepage data from MongoDB...');
   await dbConnect();
 
-  const [projectsData, skillsData, testimonialsData, blogsData, settingsData] = await Promise.all([
+  const [projectsData, skillsData, testimonialsData, blogsData, settingsData, servicesData, experiencesData] = await Promise.all([
     Project.find({}).sort({ order: 1, createdAt: -1 }),
     Skill.find({}).sort({ order: 1, createdAt: -1 }),
     Testimonial.find({}).sort({ order: 1, createdAt: -1 }),
     Blog.find({ published: true }).sort({ order: 1, createdAt: -1 }),
     Setting.findOne(),
+    Service.find({}).sort({ order: 1, createdAt: -1 }),
+    Experience.find({}).sort({ order: 1, createdAt: -1 }),
   ]);
 
   const data = {
@@ -48,6 +54,8 @@ export async function getHomepageData() {
     skills: JSON.parse(JSON.stringify(skillsData)),
     testimonials: JSON.parse(JSON.stringify(testimonialsData)),
     blogs: JSON.parse(JSON.stringify(blogsData)),
+    services: JSON.parse(JSON.stringify(servicesData)),
+    experiences: JSON.parse(JSON.stringify(experiencesData)),
     settings: settingsData ? JSON.parse(JSON.stringify(settingsData)) : null,
     lastFetched: now,
   };

@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
-    const { sessionId, sender, text, image, userName } = data;
+    const { sessionId, sender, text, image, userName, userEmail } = data;
 
     if (!sessionId || !sender) {
       return NextResponse.json({ error: 'Session ID and Sender are required' }, { status: 400 });
@@ -74,6 +74,9 @@ export async function POST(req: NextRequest) {
 
     if (userName && sender === 'user') {
       updateObj.userName = userName;
+    }
+    if (userEmail && sender === 'user') {
+      updateObj.userEmail = userEmail;
     }
 
     // If user sent it, increment admin's unreadCount
