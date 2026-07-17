@@ -88,24 +88,24 @@ export default function About({ siteSettings }: AboutProps) {
                 <div className={styles.aboutFeatureIconBox}>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                 </div>
-                <h4 className={styles.aboutFeatureTitle}>Purpose-Driven</h4>
-                <p className={styles.aboutFeatureDesc}>I build with purpose, focused on solving real problems.</p>
+                <h4 className={styles.aboutFeatureTitle}>{siteSettings?.aboutFeature1Title || 'Purpose-Driven'}</h4>
+                <p className={styles.aboutFeatureDesc}>{siteSettings?.aboutFeature1Desc || 'I build with purpose, focused on solving real problems.'}</p>
               </div>
 
               <div className={styles.aboutFeatureCard}>
                 <div className={styles.aboutFeatureIconBox}>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="22" y2="7"/><line x1="2" y1="17" x2="22" y2="17"/></svg>
                 </div>
-                <h4 className={styles.aboutFeatureTitle}>Modern & Scalable</h4>
-                <p className={styles.aboutFeatureDesc}>I use the latest technologies to build fast, secure applications.</p>
+                <h4 className={styles.aboutFeatureTitle}>{siteSettings?.aboutFeature2Title || 'Modern & Scalable'}</h4>
+                <p className={styles.aboutFeatureDesc}>{siteSettings?.aboutFeature2Desc || 'I use the latest technologies to build fast, secure applications.'}</p>
               </div>
 
               <div className={styles.aboutFeatureCard}>
                 <div className={styles.aboutFeatureIconBox}>
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
-                <h4 className={styles.aboutFeatureTitle}>Collaborative</h4>
-                <p className={styles.aboutFeatureDesc}>I believe in clear communication and strong collaboration.</p>
+                <h4 className={styles.aboutFeatureTitle}>{siteSettings?.aboutFeature3Title || 'Collaborative'}</h4>
+                <p className={styles.aboutFeatureDesc}>{siteSettings?.aboutFeature3Desc || 'I believe in clear communication and strong collaboration.'}</p>
               </div>
             </div>
 
@@ -113,13 +113,13 @@ export default function About({ siteSettings }: AboutProps) {
             <div className={styles.aboutSignatureWrapper}>
               <div className={styles.aboutSignatureLeft}>
                 <div className={styles.aboutSignatureText}>{siteSettings?.aboutName || 'Refayet Hossen'}</div>
-                <div className={styles.aboutSignatureRole}>Full Stack Developer</div>
+                <div className={styles.aboutSignatureRole}>{siteSettings?.aboutSignatureRole || 'Full Stack Developer'}</div>
               </div>
 
               <div className={styles.aboutQuoteBlock}>
                 <Quote size={20} className={styles.aboutQuoteIcon} style={{ transform: 'rotate(180deg)', opacity: 0.6 }} />
                 <p className={styles.aboutQuoteText}>
-                  My goal is to help businesses and individuals turn their ideas into powerful digital solutions that make a difference.
+                  {siteSettings?.aboutQuoteText || 'My goal is to help businesses and individuals turn their ideas into powerful digital solutions that make a difference.'}
                 </p>
               </div>
             </div>
@@ -143,26 +143,26 @@ export default function About({ siteSettings }: AboutProps) {
         <div className={styles.aboutStatsRow} style={{ marginTop: '48px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border-light)', borderRadius: '20px' }}>
           <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
             <span style={{ fontSize: '0.72rem', color: '#818cf8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>01 / QUALITY</span>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Quality First</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>Delivering pixel-perfect, premium code matching top international standards.</p>
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{siteSettings?.aboutValue1Title || 'Quality First'}</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>{siteSettings?.aboutValue1Desc || 'Delivering pixel-perfect, premium code matching top international standards.'}</p>
           </div>
 
           <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
             <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>02 / SPEED</span>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Agile & Responsive</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>Fast iterations, transparent updates, and super lightweight pages.</p>
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{siteSettings?.aboutValue2Title || 'Agile & Responsive'}</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>{siteSettings?.aboutValue2Desc || 'Fast iterations, transparent updates, and super lightweight pages.'}</p>
           </div>
 
           <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
             <span style={{ fontSize: '0.72rem', color: '#818cf8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>03 / SECURITY</span>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Clean & Scalable</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>Future-proof modular structures tailored for high-scale enterprise operations.</p>
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{siteSettings?.aboutValue3Title || 'Clean & Scalable'}</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>{siteSettings?.aboutValue3Desc || 'Future-proof modular structures tailored for high-scale enterprise operations.'}</p>
           </div>
 
           <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
             <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>04 / VISION</span>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Client-Centric</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>Partnering closely to solve real-world problems and drive conversion rates.</p>
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{siteSettings?.aboutValue4Title || 'Client-Centric'}</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>{siteSettings?.aboutValue4Desc || 'Partnering closely to solve real-world problems and drive conversion rates.'}</p>
           </div>
         </div>
 

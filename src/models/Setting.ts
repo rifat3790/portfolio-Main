@@ -88,6 +88,25 @@ export interface ISetting extends Document {
   heroSpecializationText?: string;
   heroShowFreelanceBadge?: boolean;
   heroFreelanceText?: string;
+  // About Feature Cards
+  aboutFeature1Title?: string;
+  aboutFeature1Desc?: string;
+  aboutFeature2Title?: string;
+  aboutFeature2Desc?: string;
+  aboutFeature3Title?: string;
+  aboutFeature3Desc?: string;
+  // About Signature & Quote
+  aboutSignatureRole?: string;
+  aboutQuoteText?: string;
+  // About Core Values
+  aboutValue1Title?: string;
+  aboutValue1Desc?: string;
+  aboutValue2Title?: string;
+  aboutValue2Desc?: string;
+  aboutValue3Title?: string;
+  aboutValue3Desc?: string;
+  aboutValue4Title?: string;
+  aboutValue4Desc?: string;
 }
 
 const NavbarLinkSchema = new Schema<INavbarLink>({
@@ -185,7 +204,26 @@ const SettingSchema = new Schema<ISetting>({
   heroTitleCursive: { type: String, default: 'That Make Impact' },
   heroSpecializationText: { type: String, default: "Shopify • Next.js • React\nNode.js • MongoDB" },
   heroShowFreelanceBadge: { type: Boolean, default: true },
-  heroFreelanceText: { type: String, default: 'Available for freelance' }
+  heroFreelanceText: { type: String, default: 'Available for freelance' },
+  // About Feature Cards
+  aboutFeature1Title: { type: String, default: 'Purpose-Driven' },
+  aboutFeature1Desc: { type: String, default: 'I build with purpose, focused on solving real problems.' },
+  aboutFeature2Title: { type: String, default: 'Modern & Scalable' },
+  aboutFeature2Desc: { type: String, default: 'I use the latest technologies to build fast, secure applications.' },
+  aboutFeature3Title: { type: String, default: 'Collaborative' },
+  aboutFeature3Desc: { type: String, default: 'I believe in clear communication and strong collaboration.' },
+  // About Signature & Quote
+  aboutSignatureRole: { type: String, default: 'Full Stack Developer' },
+  aboutQuoteText: { type: String, default: 'My goal is to help businesses and individuals turn their ideas into powerful digital solutions that make a difference.' },
+  // About Core Values
+  aboutValue1Title: { type: String, default: 'Quality First' },
+  aboutValue1Desc: { type: String, default: 'Delivering pixel-perfect, premium code matching top international standards.' },
+  aboutValue2Title: { type: String, default: 'Agile & Responsive' },
+  aboutValue2Desc: { type: String, default: 'Fast iterations, transparent updates, and super lightweight pages.' },
+  aboutValue3Title: { type: String, default: 'Clean & Scalable' },
+  aboutValue3Desc: { type: String, default: 'Future-proof modular structures tailored for high-scale enterprise operations.' },
+  aboutValue4Title: { type: String, default: 'Client-Centric' },
+  aboutValue4Desc: { type: String, default: 'Partnering closely to solve real-world problems and drive conversion rates.' },
 }, { timestamps: true });
 
 if (mongoose.models.Setting) {

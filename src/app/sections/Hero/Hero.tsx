@@ -170,6 +170,7 @@ export default function Hero({ siteSettings }: HeroProps) {
             {/* ─── OVERLAY FLOATING WIDGETS (Matches the mockup layout perfectly) ─── */}
 
             {/* Overlay 1: Available for Freelance badge (Left Side) */}
+            {siteSettings?.heroShowFreelanceBadge !== false && (
             <motion.div
               className={styles.heroPremiumFreelanceBadge}
               whileHover={{ scale: 1.05 }}
@@ -195,10 +196,11 @@ export default function Hero({ siteSettings }: HeroProps) {
                 <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#22c55e', position: 'relative', display: 'inline-block' }}>
                   <span style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', backgroundColor: '#22c55e', animation: 'ping 1.6s infinite', opacity: 0.8 }} />
                 </span>
-                <span style={{ fontSize: '0.78rem', color: '#ffffff', fontWeight: 700 }}>Available for Freelance</span>
+                <span style={{ fontSize: '0.78rem', color: '#ffffff', fontWeight: 700 }}>{siteSettings?.heroFreelanceText || 'Available for Freelance'}</span>
               </div>
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Let's build something amazing!</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Let&apos;s build something amazing!</span>
             </motion.div>
+            )}
 
             {/* Overlay 2: Floating code tag Badge (Top-Left Area) */}
             <motion.div

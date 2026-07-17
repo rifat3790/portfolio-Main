@@ -174,6 +174,25 @@ export interface ISetting {
   heroSpecializationText?: string;
   heroShowFreelanceBadge?: boolean;
   heroFreelanceText?: string;
+  // About Feature Cards
+  aboutFeature1Title?: string;
+  aboutFeature1Desc?: string;
+  aboutFeature2Title?: string;
+  aboutFeature2Desc?: string;
+  aboutFeature3Title?: string;
+  aboutFeature3Desc?: string;
+  // About Signature & Quote
+  aboutSignatureRole?: string;
+  aboutQuoteText?: string;
+  // About Core Values
+  aboutValue1Title?: string;
+  aboutValue1Desc?: string;
+  aboutValue2Title?: string;
+  aboutValue2Desc?: string;
+  aboutValue3Title?: string;
+  aboutValue3Desc?: string;
+  aboutValue4Title?: string;
+  aboutValue4Desc?: string;
 }
 
 export interface HomeClientProps {

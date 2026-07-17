@@ -2349,6 +2349,8 @@ function ExperienceManager({ showToast }: { showToast: (message: string, type?: 
       };
       reader.readAsDataURL(file);
     }
+    // Reset so same file can be re-selected
+    e.target.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -2578,8 +2580,16 @@ function ExperienceManager({ showToast }: { showToast: (message: string, type?: 
               <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
                 <label className={styles.label}>Company Logo Image</label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '8px' }}>
-                  <button type="button" onClick={() => document.getElementById('expLogoUpload')?.click()} className="btn-premium btn-premium-outline" style={{ fontSize: '0.8rem', padding: '8px 16px' }}>
-                    Upload Logo
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById('expLogoUpload') as HTMLInputElement;
+                      if (input) { input.value = ''; input.click(); }
+                    }}
+                    className="btn-premium btn-premium-outline"
+                    style={{ fontSize: '0.8rem', padding: '8px 16px' }}
+                  >
+                    {logo ? 'Change Logo' : 'Upload Logo'}
                   </button>
                   <input 
                     type="file" 
@@ -2589,8 +2599,17 @@ function ExperienceManager({ showToast }: { showToast: (message: string, type?: 
                     style={{ display: 'none' }}
                   />
                   {logo && (
-                    <div style={{ width: '60px', height: '60px', background: '#fff', border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <img src={logo} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: '60px', height: '60px', background: '#fff', border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img src={logo} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setLogo('')}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}
+                      >
+                        ✕ Remove
+                      </button>
                     </div>
                   )}
                 </div>
@@ -2975,6 +2994,27 @@ function AboutSettingsManager({ showToast }: { showToast: (message: string, type
   const [testiStat3Label, setTestiStat3Label] = useState('');
   const [testiStat4Value, setTestiStat4Value] = useState('');
   const [testiStat4Label, setTestiStat4Label] = useState('');
+
+  // About Feature Cards
+  const [aboutFeature1Title, setAboutFeature1Title] = useState('');
+  const [aboutFeature1Desc, setAboutFeature1Desc] = useState('');
+  const [aboutFeature2Title, setAboutFeature2Title] = useState('');
+  const [aboutFeature2Desc, setAboutFeature2Desc] = useState('');
+  const [aboutFeature3Title, setAboutFeature3Title] = useState('');
+  const [aboutFeature3Desc, setAboutFeature3Desc] = useState('');
+  // About Signature & Quote
+  const [aboutSignatureRole, setAboutSignatureRole] = useState('');
+  const [aboutQuoteText, setAboutQuoteText] = useState('');
+  // About Core Values
+  const [aboutValue1Title, setAboutValue1Title] = useState('');
+  const [aboutValue1Desc, setAboutValue1Desc] = useState('');
+  const [aboutValue2Title, setAboutValue2Title] = useState('');
+  const [aboutValue2Desc, setAboutValue2Desc] = useState('');
+  const [aboutValue3Title, setAboutValue3Title] = useState('');
+  const [aboutValue3Desc, setAboutValue3Desc] = useState('');
+  const [aboutValue4Title, setAboutValue4Title] = useState('');
+  const [aboutValue4Desc, setAboutValue4Desc] = useState('');
+
   const [loading, setLoading] = useState(false);
 
   const fetchSettings = async () => {
@@ -3037,6 +3077,26 @@ function AboutSettingsManager({ showToast }: { showToast: (message: string, type
         setTestiStat3Label(data.testiStat3Label || 'Client Trust');
         setTestiStat4Value(data.testiStat4Value || 'Direct');
         setTestiStat4Label(data.testiStat4Label || 'Collaboration');
+
+        // About Feature Cards
+        setAboutFeature1Title(data.aboutFeature1Title || 'Purpose-Driven');
+        setAboutFeature1Desc(data.aboutFeature1Desc || 'I build with purpose, focused on solving real problems.');
+        setAboutFeature2Title(data.aboutFeature2Title || 'Modern & Scalable');
+        setAboutFeature2Desc(data.aboutFeature2Desc || 'I use the latest technologies to build fast, secure applications.');
+        setAboutFeature3Title(data.aboutFeature3Title || 'Collaborative');
+        setAboutFeature3Desc(data.aboutFeature3Desc || 'I believe in clear communication and strong collaboration.');
+        // About Signature & Quote
+        setAboutSignatureRole(data.aboutSignatureRole || 'Full Stack Developer');
+        setAboutQuoteText(data.aboutQuoteText || 'My goal is to help businesses and individuals turn their ideas into powerful digital solutions that make a difference.');
+        // About Core Values
+        setAboutValue1Title(data.aboutValue1Title || 'Quality First');
+        setAboutValue1Desc(data.aboutValue1Desc || 'Delivering pixel-perfect, premium code matching top international standards.');
+        setAboutValue2Title(data.aboutValue2Title || 'Agile & Responsive');
+        setAboutValue2Desc(data.aboutValue2Desc || 'Fast iterations, transparent updates, and super lightweight pages.');
+        setAboutValue3Title(data.aboutValue3Title || 'Clean & Scalable');
+        setAboutValue3Desc(data.aboutValue3Desc || 'Future-proof modular structures tailored for high-scale enterprise operations.');
+        setAboutValue4Title(data.aboutValue4Title || 'Client-Centric');
+        setAboutValue4Desc(data.aboutValue4Desc || 'Partnering closely to solve real-world problems and drive conversion rates.');
       }
     } catch (err) {
       console.error(err);
@@ -3125,7 +3185,26 @@ function AboutSettingsManager({ showToast }: { showToast: (message: string, type
       testiStat3Value,
       testiStat3Label,
       testiStat4Value,
-      testiStat4Label
+      testiStat4Label,
+      // About Feature Cards
+      aboutFeature1Title,
+      aboutFeature1Desc,
+      aboutFeature2Title,
+      aboutFeature2Desc,
+      aboutFeature3Title,
+      aboutFeature3Desc,
+      // About Signature & Quote
+      aboutSignatureRole,
+      aboutQuoteText,
+      // About Core Values
+      aboutValue1Title,
+      aboutValue1Desc,
+      aboutValue2Title,
+      aboutValue2Desc,
+      aboutValue3Title,
+      aboutValue3Desc,
+      aboutValue4Title,
+      aboutValue4Desc
     };
     if (aboutImageDirty) payload.aboutImage = aboutImage;
     if (aboutCvFileDirty) {
@@ -3257,6 +3336,85 @@ function AboutSettingsManager({ showToast }: { showToast: (message: string, type
               </div>
             )}
           </div>
+        </div>
+
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>ABOUT FEATURE CARDS</h3>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Card 1: Title (e.g. Purpose-Driven)</label>
+          <input type="text" value={aboutFeature1Title} onChange={(e) => setAboutFeature1Title(e.target.value)} className={styles.input} />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Card 1: Description</label>
+          <input type="text" value={aboutFeature1Desc} onChange={(e) => setAboutFeature1Desc(e.target.value)} className={styles.input} />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Card 2: Title (e.g. Modern & Scalable)</label>
+          <input type="text" value={aboutFeature2Title} onChange={(e) => setAboutFeature2Title(e.target.value)} className={styles.input} />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Card 2: Description</label>
+          <input type="text" value={aboutFeature2Desc} onChange={(e) => setAboutFeature2Desc(e.target.value)} className={styles.input} />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Card 3: Title (e.g. Collaborative)</label>
+          <input type="text" value={aboutFeature3Title} onChange={(e) => setAboutFeature3Title(e.target.value)} className={styles.input} />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Card 3: Description</label>
+          <input type="text" value={aboutFeature3Desc} onChange={(e) => setAboutFeature3Desc(e.target.value)} className={styles.input} />
+        </div>
+
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>SIGNATURE & QUOTE</h3>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Signature Role (e.g. Full Stack Developer)</label>
+          <input type="text" value={aboutSignatureRole} onChange={(e) => setAboutSignatureRole(e.target.value)} className={styles.input} />
+        </div>
+
+        <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
+          <label className={styles.label}>Quote Text</label>
+          <textarea value={aboutQuoteText} onChange={(e) => setAboutQuoteText(e.target.value)} className={styles.textarea} style={{ minHeight: '80px' }} />
+        </div>
+
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>CORE VALUES (Bottom Row)</h3>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>01 / QUALITY — Title</label>
+          <input type="text" value={aboutValue1Title} onChange={(e) => setAboutValue1Title(e.target.value)} className={styles.input} />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>01 / QUALITY — Description</label>
+          <input type="text" value={aboutValue1Desc} onChange={(e) => setAboutValue1Desc(e.target.value)} className={styles.input} />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>02 / SPEED — Title</label>
+          <input type="text" value={aboutValue2Title} onChange={(e) => setAboutValue2Title(e.target.value)} className={styles.input} />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>02 / SPEED — Description</label>
+          <input type="text" value={aboutValue2Desc} onChange={(e) => setAboutValue2Desc(e.target.value)} className={styles.input} />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>03 / SECURITY — Title</label>
+          <input type="text" value={aboutValue3Title} onChange={(e) => setAboutValue3Title(e.target.value)} className={styles.input} />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>03 / SECURITY — Description</label>
+          <input type="text" value={aboutValue3Desc} onChange={(e) => setAboutValue3Desc(e.target.value)} className={styles.input} />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>04 / VISION — Title</label>
+          <input type="text" value={aboutValue4Title} onChange={(e) => setAboutValue4Title(e.target.value)} className={styles.input} />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>04 / VISION — Description</label>
+          <input type="text" value={aboutValue4Desc} onChange={(e) => setAboutValue4Desc(e.target.value)} className={styles.input} />
         </div>
 
         <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>BIOGRAPHY STATISTICS ROW</h3>
