@@ -271,3 +271,38 @@ html, body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ────────────────────────────────────────────────────────
+   LIGHTWEIGHT & PERFORMANCE OPTIMIZATIONS (SUPER FAST)
+   ──────────────────────────────────────────────────────── */
+
+/* Hardware GPU Acceleration & Compounding Layers */
+.gsap-floating-shape,
+.gsap-bg-aurora,
+.glass-panel,
+.glass-card,
+.luxury-card,
+[class*="heroPremiumPortraitFrame"],
+[class*="aboutPortraitWrapper"] {
+  will-change: transform, opacity;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Mobile-Specific Performance Tweaks */
+@media (max-width: 768px) {
+  /* Reduce SVG heavy filters on mobile to maintain 120fps */
+  .gsap-bg-aurora {
+    filter: blur(60px) !important;
+    opacity: 0.65 !important;
+  }
+  
+  /* Disable heavy dynamic backdrop filters on low-end processors */
+  .glass-panel,
+  .glass-card {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+}
+

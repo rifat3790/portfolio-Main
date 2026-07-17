@@ -185,7 +185,7 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                placeholder="Full Name"
+                placeholder="Rifat Hossen"
                 className={styles.chatInput}
                 style={{ width: '100%', marginBottom: '10px' }}
                 required
@@ -194,7 +194,7 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
                 type="email"
                 value={userEmail}
                 onChange={(e) => setUserEmail(e.target.value)}
-                placeholder="Email Address"
+                placeholder="example@gmail.com"
                 className={styles.chatInput}
                 style={{ width: '100%', marginBottom: '16px' }}
                 required

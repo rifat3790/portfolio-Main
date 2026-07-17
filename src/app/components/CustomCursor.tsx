@@ -7,42 +7,36 @@ export default function CustomCursor() {
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  // Mouse coordinates using Framer Motion variables
-  const cursorX = useMotionValue(-100);
-  const cursorY = useMotionValue(-100);
+  // Mouse coordinates
+  const mouseX = useMotionValue(-100);
+  const mouseY = useMotionValue(-100);
 
-  // Spring configuration for smooth premium lag
-  const springConfig = { damping: 30, stiffness: 200, mass: 0.8 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
+  // Smooth spring physics for trailing outer ring
+  const ringX = useSpring(mouseX, { damping: 30, stiffness: 220, mass: 0.6 });
+  const ringY = useSpring(mouseY, { damping: 30, stiffness: 220, mass: 0.6 });
+
+  // Direct fast spring for inner dot (no lag, super responsive)
+  const dotX = useSpring(mouseX, { damping: 45, stiffness: 450, mass: 0.2 });
+  const dotY = useSpring(mouseY, { damping: 45, stiffness: 450, mass: 0.2 });
 
   useEffect(() => {
-    const moveCursor = (e: MouseEvent) => {
-      cursorX.set(e.clientX - 16);
-      cursorY.set(e.clientY - 16);
+    const handleMouseMove = (e: MouseEvent) => {
+      // Offset by half of cursor size to center
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
       if (!isVisible) setIsVisible(true);
     };
 
-    const handleMouseLeave = () => {
-      setIsVisible(false);
-    };
+    const handleMouseLeave = () => setIsVisible(false);
+    const handleMouseEnter = () => setIsVisible(true);
 
-    const handleMouseEnter = () => {
-      setIsVisible(true);
-    };
-
-    window.addEventListener('mousemove', moveCursor);
-    document.addEventListener('mouseleave', handleMouseLeave);
-    document.addEventListener('mouseenter', handleMouseEnter);
-
-    // Setup interactive hover detection
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (
-        target.tagName === 'A' || 
-        target.tagName === 'BUTTON' || 
-        target.closest('a') || 
-        target.closest('button') || 
+        target.tagName === 'A' ||
+        target.tagName === 'BUTTON' ||
+        target.closest('a') ||
+        target.closest('button') ||
         target.style.cursor === 'pointer' ||
         target.classList.contains('interactive-hover')
       ) {
@@ -52,65 +46,66 @@ export default function CustomCursor() {
       }
     };
 
-    window.addEventListener('mouseover', handleMouseOver);
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    document.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+    document.addEventListener('mouseenter', handleMouseEnter, { passive: true });
+    window.addEventListener('mouseover', handleMouseOver, { passive: true });
 
     return () => {
-      window.removeEventListener('mousemove', moveCursor);
+      window.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('mouseenter', handleMouseEnter);
       window.removeEventListener('mouseover', handleMouseOver);
     };
-  }, [cursorX, cursorY, isVisible]);
+  }, [mouseX, mouseY, isVisible]);
 
   if (!isVisible) return null;
 
   return (
     <>
-      {/* Glow Ball */}
+      {/* Outer Glow Ring (will-change optimized) */}
       <motion.div
         style={{
           position: 'fixed',
-          left: 0,
-          top: 0,
-          x: cursorXSpring,
-          y: cursorYSpring,
+          left: -16,
+          top: -16,
+          x: ringX,
+          y: ringY,
           width: 32,
           height: 32,
           borderRadius: '50%',
           backgroundColor: 'transparent',
-          border: '1px solid var(--accent-gold)',
-          boxShadow: isHovered 
-            ? '0 0 30px rgba(212, 175, 55, 0.4)' 
-            : '0 0 15px rgba(212, 175, 55, 0.1)',
+          border: '1.5px solid var(--accent-gold)',
           pointerEvents: 'none',
-          zIndex: 9999,
+          zIndex: 99999,
+          willChange: 'transform, width, height',
         }}
         animate={{
-          scale: isHovered ? 1.8 : 1,
-          backgroundColor: isHovered ? 'rgba(212, 175, 55, 0.05)' : 'rgba(212, 175, 55, 0)',
+          scale: isHovered ? 1.7 : 1,
+          borderColor: isHovered ? 'var(--accent-gold-hover)' : 'var(--accent-gold)',
+          backgroundColor: isHovered ? 'rgba(129, 140, 248, 0.08)' : 'rgba(129, 140, 248, 0)',
+          boxShadow: isHovered 
+            ? '0 0 25px rgba(129, 140, 248, 0.45)' 
+            : '0 0 8px rgba(129, 140, 248, 0.1)',
         }}
-        transition={{ type: 'tween', ease: 'backOut', duration: 0.2 }}
+        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
       />
-      {/* Central Pointer Dot */}
+      
+      {/* Inner Central Pointer Dot (Direct performance tracker) */}
       <motion.div
         style={{
           position: 'fixed',
-          left: 0,
-          top: 0,
-          width: 4,
-          height: 4,
+          left: -3,
+          top: -3,
+          x: dotX,
+          y: dotY,
+          width: 6,
+          height: 6,
           borderRadius: '50%',
-          backgroundColor: 'var(--accent-gold)',
+          backgroundColor: 'var(--accent-gold-hover)',
           pointerEvents: 'none',
-          zIndex: 9999,
-          transform: 'translate(14px, 14px)' // Center it inside the 32x32 glow ball
-        }}
-        ref={(el) => {
-          if (!el) return;
-          const updateDot = (e: MouseEvent) => {
-            el.style.transform = `translate(${e.clientX - 2}px, ${e.clientY - 2}px)`;
-          };
-          window.addEventListener('mousemove', updateDot);
+          zIndex: 99999,
+          willChange: 'transform',
         }}
       />
     </>

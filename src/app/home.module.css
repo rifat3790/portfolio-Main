@@ -3344,41 +3344,39 @@
   }
 }
 
-.heroPremiumStats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+.heroPremiumBulletRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
   width: 100%;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 36px;
+  padding-top: 30px;
+  margin-top: 24px;
 }
 
-@media (max-width: 640px) {
-  .heroPremiumStats {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+@media (max-width: 991px) {
+  .heroPremiumBulletRow {
+    justify-content: center;
   }
 }
 
-.heroPremiumStatItem {
+.heroPremiumBulletItem {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.heroPremiumStatValue {
-  font-size: clamp(1.8rem, 3.5vw, 2.3rem);
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.heroPremiumStatLabel {
-  font-size: 0.8rem;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
   font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.heroPremiumBulletDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  box-shadow: 0 0 6px var(--accent-gold);
+  display: inline-block;
 }
 
 /* Right column styles */
@@ -5596,8 +5594,8 @@
 
 @media (max-width: 768px) {
   .footerPremiumGrid {
-    grid-template-columns: 1fr;
-    gap: 36px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px 20px;
   }
 }
 
@@ -5610,8 +5608,16 @@
 
 @media (max-width: 768px) {
   .footerBrandCol {
-    align-items: center;
-    text-align: center;
+    grid-column: span 2 !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+  /* Contact Info spans full width at the bottom */
+  .footerLinksCol:nth-child(5) {
+    grid-column: span 2 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding-top: 24px !important;
+    margin-top: 12px !important;
   }
 }
 
@@ -5737,12 +5743,7 @@
   text-align: left;
 }
 
-@media (max-width: 768px) {
-  .footerLinksCol {
-    align-items: center;
-    text-align: center;
-  }
-}
+
 
 .footerColHeader {
   display: flex;
@@ -5807,11 +5808,7 @@
   text-align: left;
 }
 
-@media (max-width: 768px) {
-  .footerContactItem {
-    justify-content: center;
-  }
-}
+
 
 .footerContactIcon {
   color: #60a5fa;
@@ -5935,7 +5932,7 @@
     padding-bottom: 50px !important;
   }
   .heroPremium {
-    padding-top: 80px !important;
+    padding-top: 115px !important;
     padding-bottom: 30px !important;
   }
   .aboutPremiumGrid,
@@ -6043,6 +6040,13 @@
 .servicesStatCard:hover {
   border-color: rgba(var(--accent-gold-rgb), 0.2);
   transform: translateY(-2px);
+}
+
+.servicesStatInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .servicesStatIcon {
@@ -6540,8 +6544,8 @@
     grid-template-columns: 1fr;
   }
   .processTimelineGrid {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 32px 16px !important;
   }
   .servicesCTAActions {
     flex-direction: column;
@@ -6552,7 +6556,75 @@
     width: 100%;
   }
 }
+@media (max-width: 600px) {
+  .servicesStatsRow {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}
 
-
-
-
+@media (max-width: 480px) {
+  .projectStatsOverlay {
+    padding: 16px !important;
+    gap: 12px !important;
+    max-width: 100% !important;
+  }
+  .projectStatValue {
+    font-size: 1.8rem !important;
+  }
+  .projectStatLabel {
+    font-size: 0.72rem !important;
+  }
+  .processItemTitle {
+    font-size: 1.05rem !important;
+  }
+  .processItemDesc {
+    font-size: 0.78rem !important;
+    line-height: 1.5 !important;
+    max-width: 100% !important;
+  }
+  .servicesStatCard {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 16px !important;
+    padding: 16px !important;
+    width: 100% !important;
+    background: rgba(15, 23, 42, 0.55) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+  .servicesStatIcon {
+    margin-bottom: 0 !important;
+    background: rgba(212, 175, 55, 0.1) !important;
+    border: 1px solid rgba(212, 175, 55, 0.2) !important;
+    padding: 10px !important;
+    border-radius: 12px !important;
+    color: var(--accent-gold) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .servicesStatValue {
+    font-size: 1.4rem !important;
+    margin-bottom: 2px !important;
+  }
+  .servicesStatLabel {
+    font-size: 0.78rem !important;
+  }
+  .serviceCardHorizontal {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 24px 20px !important;
+    align-items: flex-start !important;
+  }
+  .footerPremiumGrid {
+    grid-template-columns: 1fr !important;
+    gap: 30px !important;
+  }
+  .footerBrandCol {
+    grid-column: span 1 !important;
+  }
+  .footerLinksCol:nth-child(5) {
+    grid-column: span 1 !important;
+    margin-top: 0 !important;
+  }
+}

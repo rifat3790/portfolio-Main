@@ -469,6 +469,11 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
                     <span className={styles.sessionName}>{s.userName}</span>
                     <span className={styles.sessionTime}>{lastUpdated}</span>
                   </div>
+                  {s.userEmail && (
+                    <div style={{ fontSize: '0.78rem', color: '#60a5fa', marginBottom: '4px', wordBreak: 'break-all' }}>
+                      {s.userEmail}
+                    </div>
+                  )}
                   <div className={styles.sessionSub}>
                     <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>ID: {s.sessionId.substring(0, 8)}</span>
                     {s.unreadCount > 0 && (
@@ -2599,6 +2604,37 @@ interface ISetting {
   stat3Label?: string;
   stat4Value?: string;
   stat4Label?: string;
+  headerFooterRole?: string;
+  serviceStat1Value?: string;
+  serviceStat1Label?: string;
+  serviceStat2Value?: string;
+  serviceStat2Label?: string;
+  serviceStat3Value?: string;
+  serviceStat3Label?: string;
+  projectStat1Value?: string;
+  projectStat1Label?: string;
+  projectStat2Value?: string;
+  projectStat2Label?: string;
+  projectStat3Value?: string;
+  projectStat3Label?: string;
+  projectStat4Value?: string;
+  projectStat4Label?: string;
+  expStat1Value?: string;
+  expStat1Label?: string;
+  expStat2Value?: string;
+  expStat2Label?: string;
+  expStat3Value?: string;
+  expStat3Label?: string;
+  expStat4Value?: string;
+  expStat4Label?: string;
+  testiStat1Value?: string;
+  testiStat1Label?: string;
+  testiStat2Value?: string;
+  testiStat2Label?: string;
+  testiStat3Value?: string;
+  testiStat3Label?: string;
+  testiStat4Value?: string;
+  testiStat4Label?: string;
   footerText: string;
   email?: string;
   phone?: string;
@@ -2849,6 +2885,40 @@ function AboutSettingsManager({ showToast }: { showToast: (message: string, type
   const [stat3Label, setStat3Label] = useState('');
   const [stat4Value, setStat4Value] = useState('');
   const [stat4Label, setStat4Label] = useState('');
+
+  const [serviceStat1Value, setServiceStat1Value] = useState('');
+  const [serviceStat1Label, setServiceStat1Label] = useState('');
+  const [serviceStat2Value, setServiceStat2Value] = useState('');
+  const [serviceStat2Label, setServiceStat2Label] = useState('');
+  const [serviceStat3Value, setServiceStat3Value] = useState('');
+  const [serviceStat3Label, setServiceStat3Label] = useState('');
+
+  const [projectStat1Value, setProjectStat1Value] = useState('');
+  const [projectStat1Label, setProjectStat1Label] = useState('');
+  const [projectStat2Value, setProjectStat2Value] = useState('');
+  const [projectStat2Label, setProjectStat2Label] = useState('');
+  const [projectStat3Value, setProjectStat3Value] = useState('');
+  const [projectStat3Label, setProjectStat3Label] = useState('');
+  const [projectStat4Value, setProjectStat4Value] = useState('');
+  const [projectStat4Label, setProjectStat4Label] = useState('');
+
+  const [expStat1Value, setExpStat1Value] = useState('');
+  const [expStat1Label, setExpStat1Label] = useState('');
+  const [expStat2Value, setExpStat2Value] = useState('');
+  const [expStat2Label, setExpStat2Label] = useState('');
+  const [expStat3Value, setExpStat3Value] = useState('');
+  const [expStat3Label, setExpStat3Label] = useState('');
+  const [expStat4Value, setExpStat4Value] = useState('');
+  const [expStat4Label, setExpStat4Label] = useState('');
+
+  const [testiStat1Value, setTestiStat1Value] = useState('');
+  const [testiStat1Label, setTestiStat1Label] = useState('');
+  const [testiStat2Value, setTestiStat2Value] = useState('');
+  const [testiStat2Label, setTestiStat2Label] = useState('');
+  const [testiStat3Value, setTestiStat3Value] = useState('');
+  const [testiStat3Label, setTestiStat3Label] = useState('');
+  const [testiStat4Value, setTestiStat4Value] = useState('');
+  const [testiStat4Label, setTestiStat4Label] = useState('');
   const [loading, setLoading] = useState(false);
 
   const fetchSettings = async () => {
@@ -2877,6 +2947,40 @@ function AboutSettingsManager({ showToast }: { showToast: (message: string, type
         setStat3Label(data.stat3Label || 'Happy Clients');
         setStat4Value(data.stat4Value || '100%');
         setStat4Label(data.stat4Label || 'Client Satisfaction');
+
+        setServiceStat1Value(data.serviceStat1Value || '99.9%');
+        setServiceStat1Label(data.serviceStat1Label || 'Uptime & Performance');
+        setServiceStat2Value(data.serviceStat2Value || 'Clean');
+        setServiceStat2Label(data.serviceStat2Label || 'Architecture');
+        setServiceStat3Value(data.serviceStat3Value || '24/7');
+        setServiceStat3Label(data.serviceStat3Label || 'Support & Comm');
+
+        setProjectStat1Value(data.projectStat1Value || 'Pixel');
+        setProjectStat1Label(data.projectStat1Label || 'Precision UI');
+        setProjectStat2Value(data.projectStat2Value || 'Fluid');
+        setProjectStat2Label(data.projectStat2Label || 'Animations');
+        setProjectStat3Value(data.projectStat3Value || 'Mobile');
+        setProjectStat3Label(data.projectStat3Label || 'First Design');
+        setProjectStat4Value(data.projectStat4Value || 'SEO');
+        setProjectStat4Label(data.projectStat4Label || 'Optimized (A+)');
+
+        setExpStat1Value(data.expStat1Value || '10k+');
+        setExpStat1Label(data.expStat1Label || 'Hours Coding');
+        setExpStat2Value(data.expStat2Value || 'Agile');
+        setExpStat2Label(data.expStat2Label || 'Workflow');
+        setExpStat3Value(data.expStat3Value || 'Modern');
+        setExpStat3Label(data.expStat3Label || 'Tool Stacks');
+        setExpStat4Value(data.expStat4Value || 'Swift');
+        setExpStat4Label(data.expStat4Label || 'Resolution Rate');
+
+        setTestiStat1Value(data.testiStat1Value || '5.0');
+        setTestiStat1Label(data.testiStat1Label || 'Average Rating');
+        setTestiStat2Value(data.testiStat2Value || '98%');
+        setTestiStat2Label(data.testiStat2Label || 'Client Retention');
+        setTestiStat3Value(data.testiStat3Value || '100%');
+        setTestiStat3Label(data.testiStat3Label || 'Client Trust');
+        setTestiStat4Value(data.testiStat4Value || 'Direct');
+        setTestiStat4Label(data.testiStat4Label || 'Collaboration');
       }
     } catch (err) {
       console.error(err);
@@ -2935,7 +3039,37 @@ function AboutSettingsManager({ showToast }: { showToast: (message: string, type
       stat3Value,
       stat3Label,
       stat4Value,
-      stat4Label
+      stat4Label,
+      serviceStat1Value,
+      serviceStat1Label,
+      serviceStat2Value,
+      serviceStat2Label,
+      serviceStat3Value,
+      serviceStat3Label,
+      projectStat1Value,
+      projectStat1Label,
+      projectStat2Value,
+      projectStat2Label,
+      projectStat3Value,
+      projectStat3Label,
+      projectStat4Value,
+      projectStat4Label,
+      expStat1Value,
+      expStat1Label,
+      expStat2Value,
+      expStat2Label,
+      expStat3Value,
+      expStat3Label,
+      expStat4Value,
+      expStat4Label,
+      testiStat1Value,
+      testiStat1Label,
+      testiStat2Value,
+      testiStat2Label,
+      testiStat3Value,
+      testiStat3Label,
+      testiStat4Value,
+      testiStat4Label
     };
     if (aboutImageDirty) payload.aboutImage = aboutImage;
     if (aboutCvFileDirty) {
@@ -3107,6 +3241,134 @@ function AboutSettingsManager({ showToast }: { showToast: (message: string, type
           <input type="text" value={stat4Label} onChange={(e) => setStat4Label(e.target.value)} className={styles.input} required />
         </div>
 
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '24px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>SERVICES SECTION STATS</h3>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Service Stat 1: Value</label>
+          <input type="text" value={serviceStat1Value} onChange={(e) => setServiceStat1Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Service Stat 1: Label</label>
+          <input type="text" value={serviceStat1Label} onChange={(e) => setServiceStat1Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Service Stat 2: Value</label>
+          <input type="text" value={serviceStat2Value} onChange={(e) => setServiceStat2Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Service Stat 2: Label</label>
+          <input type="text" value={serviceStat2Label} onChange={(e) => setServiceStat2Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Service Stat 3: Value</label>
+          <input type="text" value={serviceStat3Value} onChange={(e) => setServiceStat3Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Service Stat 3: Label</label>
+          <input type="text" value={serviceStat3Label} onChange={(e) => setServiceStat3Label(e.target.value)} className={styles.input} required />
+        </div>
+
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '24px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>PROJECTS SECTION STATS</h3>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Project Stat 1: Value</label>
+          <input type="text" value={projectStat1Value} onChange={(e) => setProjectStat1Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Project Stat 1: Label</label>
+          <input type="text" value={projectStat1Label} onChange={(e) => setProjectStat1Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Project Stat 2: Value</label>
+          <input type="text" value={projectStat2Value} onChange={(e) => setProjectStat2Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Project Stat 2: Label</label>
+          <input type="text" value={projectStat2Label} onChange={(e) => setProjectStat2Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Project Stat 3: Value</label>
+          <input type="text" value={projectStat3Value} onChange={(e) => setProjectStat3Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Project Stat 3: Label</label>
+          <input type="text" value={projectStat3Label} onChange={(e) => setProjectStat3Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Project Stat 4: Value</label>
+          <input type="text" value={projectStat4Value} onChange={(e) => setProjectStat4Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Project Stat 4: Label</label>
+          <input type="text" value={projectStat4Label} onChange={(e) => setProjectStat4Label(e.target.value)} className={styles.input} required />
+        </div>
+
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '24px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>EXPERIENCE SECTION STATS</h3>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Experience Stat 1: Value</label>
+          <input type="text" value={expStat1Value} onChange={(e) => setExpStat1Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Experience Stat 1: Label</label>
+          <input type="text" value={expStat1Label} onChange={(e) => setExpStat1Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Experience Stat 2: Value</label>
+          <input type="text" value={expStat2Value} onChange={(e) => setExpStat2Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Experience Stat 2: Label</label>
+          <input type="text" value={expStat2Label} onChange={(e) => setExpStat2Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Experience Stat 3: Value</label>
+          <input type="text" value={expStat3Value} onChange={(e) => setExpStat3Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Experience Stat 3: Label</label>
+          <input type="text" value={expStat3Label} onChange={(e) => setExpStat3Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Experience Stat 4: Value</label>
+          <input type="text" value={expStat4Value} onChange={(e) => setExpStat4Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Experience Stat 4: Label</label>
+          <input type="text" value={expStat4Label} onChange={(e) => setExpStat4Label(e.target.value)} className={styles.input} required />
+        </div>
+
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '24px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>TESTIMONIALS SECTION STATS</h3>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Testimonial Stat 1: Value</label>
+          <input type="text" value={testiStat1Value} onChange={(e) => setTestiStat1Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Testimonial Stat 1: Label</label>
+          <input type="text" value={testiStat1Label} onChange={(e) => setTestiStat1Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Testimonial Stat 2: Value</label>
+          <input type="text" value={testiStat2Value} onChange={(e) => setTestiStat2Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Testimonial Stat 2: Label</label>
+          <input type="text" value={testiStat2Label} onChange={(e) => setTestiStat2Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Testimonial Stat 3: Value</label>
+          <input type="text" value={testiStat3Value} onChange={(e) => setTestiStat3Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Testimonial Stat 3: Label</label>
+          <input type="text" value={testiStat3Label} onChange={(e) => setTestiStat3Label(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Testimonial Stat 4: Value</label>
+          <input type="text" value={testiStat4Value} onChange={(e) => setTestiStat4Value(e.target.value)} className={styles.input} required />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Testimonial Stat 4: Label</label>
+          <input type="text" value={testiStat4Label} onChange={(e) => setTestiStat4Label(e.target.value)} className={styles.input} required />
+        </div>
+
         <div className={`${styles.formActions} ${styles.formSpanFull}`} style={{ marginTop: '24px', borderTop: '1px solid var(--glass-border-light)', paddingTop: '16px' }}>
           <button type="submit" disabled={loading} className="btn-premium btn-premium-gold" style={{ width: '100%' }}>
             {loading ? 'Saving About Configuration...' : 'Save About Section Changes'}
@@ -3119,6 +3381,7 @@ function AboutSettingsManager({ showToast }: { showToast: (message: string, type
 
 function BrandSettingsManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
   const [logoText, setLogoText] = useState('RIFAT');
+  const [headerFooterRole, setHeaderFooterRole] = useState('Full Stack Developer');
   const [logoImage, setLogoImage] = useState('');
   const [logoImageDirty, setLogoImageDirty] = useState(false);
   const [favicon, setFavicon] = useState('');
@@ -3148,6 +3411,7 @@ function BrandSettingsManager({ showToast }: { showToast: (message: string, type
       if (res.ok) {
         const data = (await res.json()) as ISetting;
         setLogoText(data.logoText || 'RIFAT');
+        setHeaderFooterRole(data.headerFooterRole || 'Full Stack Developer');
         setLogoImage(data.logoImage || '');
         setFavicon(data.favicon || '');
         setFooterText(data.footerText || '');
@@ -3222,6 +3486,7 @@ function BrandSettingsManager({ showToast }: { showToast: (message: string, type
     setLoading(true);
     const payload: any = {
       logoText,
+      headerFooterRole,
       footerText,
       email,
       phone,
@@ -3299,6 +3564,11 @@ function BrandSettingsManager({ showToast }: { showToast: (message: string, type
           <div className={styles.formGroup}>
             <label className={styles.label}>Navbar Brand Text</label>
             <input type="text" value={logoText} onChange={(e) => setLogoText(e.target.value)} className={styles.input} required />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Header/Footer Brand Role</label>
+            <input type="text" value={headerFooterRole} onChange={(e) => setHeaderFooterRole(e.target.value)} className={styles.input} required />
           </div>
 
           <div className={styles.formGroup}>
@@ -3543,10 +3813,11 @@ function ContactMessagesManager({ showToast }: { showToast: (message: string, ty
                     borderLeft: !msg.read ? '4px solid var(--accent-gold)' : '4px solid transparent'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
                     <span style={{ fontWeight: !msg.read ? 'bold' : 'normal', color: 'var(--text-primary)' }}>{msg.name}</span>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(msg.createdAt).toLocaleDateString()}</span>
                   </div>
+                  <div style={{ fontSize: '0.78rem', color: '#60a5fa', marginBottom: 4, fontStyle: 'italic' }}>{msg.email}</div>
                   <div style={{ fontSize: '0.9rem', color: 'var(--accent-gold)', marginBottom: 4 }}>{msg.subject}</div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {msg.message}

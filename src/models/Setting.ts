@@ -36,6 +36,37 @@ export interface ISetting extends Document {
   stat3Label?: string;
   stat4Value?: string;
   stat4Label?: string;
+  headerFooterRole?: string;
+  serviceStat1Value?: string;
+  serviceStat1Label?: string;
+  serviceStat2Value?: string;
+  serviceStat2Label?: string;
+  serviceStat3Value?: string;
+  serviceStat3Label?: string;
+  projectStat1Value?: string;
+  projectStat1Label?: string;
+  projectStat2Value?: string;
+  projectStat2Label?: string;
+  projectStat3Value?: string;
+  projectStat3Label?: string;
+  projectStat4Value?: string;
+  projectStat4Label?: string;
+  expStat1Value?: string;
+  expStat1Label?: string;
+  expStat2Value?: string;
+  expStat2Label?: string;
+  expStat3Value?: string;
+  expStat3Label?: string;
+  expStat4Value?: string;
+  expStat4Label?: string;
+  testiStat1Value?: string;
+  testiStat1Label?: string;
+  testiStat2Value?: string;
+  testiStat2Label?: string;
+  testiStat3Value?: string;
+  testiStat3Label?: string;
+  testiStat4Value?: string;
+  testiStat4Label?: string;
   footerText: string;
   email?: string;
   phone?: string;
@@ -95,6 +126,37 @@ const SettingSchema = new Schema<ISetting>({
   stat3Label: { type: String, default: 'Happy Clients' },
   stat4Value: { type: String, default: '100%' },
   stat4Label: { type: String, default: 'Client Satisfaction' },
+  headerFooterRole: { type: String, default: 'Full Stack Developer' },
+  serviceStat1Value: { type: String, default: '99.9%' },
+  serviceStat1Label: { type: String, default: 'Uptime & Performance' },
+  serviceStat2Value: { type: String, default: 'Clean' },
+  serviceStat2Label: { type: String, default: 'Architecture' },
+  serviceStat3Value: { type: String, default: '24/7' },
+  serviceStat3Label: { type: String, default: 'Support & Comm' },
+  projectStat1Value: { type: String, default: 'Pixel' },
+  projectStat1Label: { type: String, default: 'Precision UI' },
+  projectStat2Value: { type: String, default: 'Fluid' },
+  projectStat2Label: { type: String, default: 'Animations' },
+  projectStat3Value: { type: String, default: 'Mobile' },
+  projectStat3Label: { type: String, default: 'First Design' },
+  projectStat4Value: { type: String, default: 'SEO' },
+  projectStat4Label: { type: String, default: 'Optimized (A+)' },
+  expStat1Value: { type: String, default: '10k+' },
+  expStat1Label: { type: String, default: 'Hours Coding' },
+  expStat2Value: { type: String, default: 'Agile' },
+  expStat2Label: { type: String, default: 'Workflow' },
+  expStat3Value: { type: String, default: 'Modern' },
+  expStat3Label: { type: String, default: 'Tool Stacks' },
+  expStat4Value: { type: String, default: 'Swift' },
+  expStat4Label: { type: String, default: 'Resolution Rate' },
+  testiStat1Value: { type: String, default: '5.0' },
+  testiStat1Label: { type: String, default: 'Average Rating' },
+  testiStat2Value: { type: String, default: '98%' },
+  testiStat2Label: { type: String, default: 'Client Retention' },
+  testiStat3Value: { type: String, default: '100%' },
+  testiStat3Label: { type: String, default: 'Client Trust' },
+  testiStat4Value: { type: String, default: 'Direct' },
+  testiStat4Label: { type: String, default: 'Collaboration' },
   footerText: { type: String, default: '© 2026 Rifat. All rights reserved.' },
   email: { type: String },
   phone: { type: String },
