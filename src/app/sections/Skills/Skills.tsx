@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -51,31 +51,31 @@ export default function Skills({ siteSettings, initialSkills }: SkillsProps) {
             </p>
           </div>
 
-          {/* Skills Overview Card */}
+          {/* Skills Overview Card (Replaces duplicate stats) */}
           <div className={styles.skillsOverviewCard}>
             <div className={styles.skillsOverviewGraphicBox}>
               <div className={styles.skillsOverviewCircle}>
-                <div className={styles.skillsOverviewCircleInner}><Code size={30} /></div>
+                <div className={styles.skillsOverviewCircleInner}><CheckCircle2 size={24} style={{ color: '#818cf8' }} /></div>
               </div>
             </div>
             <div className={styles.skillsOverviewInfo}>
-              <div className={styles.skillsOverviewHeader}>Skills Overview</div>
-              <div className={styles.skillsOverviewStatsGrid}>
-                <div className={styles.skillsOverviewStatItem}>
-                  <div className={styles.skillsOverviewStatVal}>{siteSettings?.stat1Value || '5+'}</div>
-                  <div className={styles.skillsOverviewStatLabel}>Years Experience</div>
+              <div className={styles.skillsOverviewHeader}>Coding Standards</div>
+              <div className={styles.skillsOverviewStatsGrid} style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#ffffff' }}>✓ Clean Architecture</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>SOLID & DRY code styling</span>
                 </div>
-                <div className={styles.skillsOverviewStatItem}>
-                  <div className={styles.skillsOverviewStatVal}>{initialSkills.length}+</div>
-                  <div className={styles.skillsOverviewStatLabel}>Techs Mastered</div>
+                <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#ffffff' }}>✓ Speed Optimized</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Fluid 120 FPS & hardware accelerated</span>
                 </div>
-                <div className={styles.skillsOverviewStatItem}>
-                  <div className={styles.skillsOverviewStatVal}>{siteSettings?.stat2Value || '50+'}</div>
-                  <div className={styles.skillsOverviewStatLabel}>Projects Done</div>
+                <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#ffffff' }}>✓ SEO Architecture</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Semantic HTML5 structure</span>
                 </div>
-                <div className={styles.skillsOverviewStatItem}>
-                  <div className={styles.skillsOverviewStatVal}>{siteSettings?.stat3Value || '15+'}</div>
-                  <div className={styles.skillsOverviewStatLabel}>Happy Clients</div>
+                <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#ffffff' }}>✓ Version Controlled</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Continuous delivery with Git</span>
                 </div>
               </div>
             </div>

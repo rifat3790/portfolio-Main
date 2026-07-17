@@ -306,3 +306,222 @@ html, body {
   }
 }
 
+/* Futuristic Scanning Laser Effect Keyframes */
+@keyframes laserScan {
+  0% {
+    top: 0%;
+    opacity: 0.1;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 98%;
+    opacity: 0.15;
+  }
+}
+
+/* ==========================================
+   PREMIUM LIGHT THEME SYSTEM OVERRIDES
+   ========================================== */
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(129, 140, 248, 0.15);
+  --glass-border-light: rgba(15, 23, 42, 0.05);
+  --glow-color: rgba(129, 140, 248, 0.015);
+}
+
+[data-theme="light"] body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Soft Light-Mode trailing mesh auroras */
+[data-theme="light"] [class*="luxury-mesh-glow"] {
+  opacity: 0.12 !important;
+  background: radial-gradient(at 0% 0%, rgba(129, 140, 248, 0.12) 0px, transparent 50%),
+              radial-gradient(at 50% 0%, rgba(192, 132, 252, 0.08) 0px, transparent 50%) !important;
+}
+
+/* Light Mode specific typography overrides for maximum readability */
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6,
+[data-theme="light"] strong,
+[data-theme="light"] [class*="Title"],
+[data-theme="light"] [class*="title"],
+[data-theme="light"] [class*="company"],
+[data-theme="light"] [class*="Company"],
+[data-theme="light"] [class*="role"],
+[data-theme="light"] [class*="Role"],
+[data-theme="light"] [class*="heading"],
+[data-theme="light"] [class*="Heading"],
+[data-theme="light"] [class*="cursive"],
+[data-theme="light"] [class*="Cursive"],
+[data-theme="light"] [class*="brand"],
+[data-theme="light"] [class*="Brand"] {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] p,
+[data-theme="light"] li,
+[data-theme="light"] span:not([class*="gradient"]):not([class*="Gradient"]):not(.gold-gradient-text):not([class*="Pill"]):not([class*="PillActive"]):not([class*="Badge"]):not([class*="badge"]),
+[data-theme="light"] [class*="Desc"],
+[data-theme="light"] [class*="desc"],
+[data-theme="light"] [class*="subtitle"],
+[data-theme="light"] [class*="Subtitle"],
+[data-theme="light"] [class*="meta"],
+[data-theme="light"] [class*="Meta"],
+[data-theme="light"] [class*="label"],
+[data-theme="light"] [class*="Label"] {
+  color: #334155 !important;
+}
+
+/* Retain structural neon/aurora text gradients */
+[data-theme="light"] [class*="gradient"],
+[data-theme="light"] [class*="Gradient"],
+[data-theme="light"] .gold-gradient-text {
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  color: transparent !important;
+}
+
+/* Section Backings styling */
+[data-theme="light"] [class*="heroPremium"],
+[data-theme="light"] [class*="skillsPremium"],
+[data-theme="light"] [class*="contactPremium"],
+[data-theme="light"] [class*="sectionDark"] {
+  background-color: #f8fafc !important;
+  background: #f8fafc !important;
+}
+
+/* Floating Navbar pill custom light look */
+[data-theme="light"] [class*="navPill"] {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06) !important;
+}
+[data-theme="light"] [class*="navLinkItem"] {
+  color: #475569 !important;
+}
+[data-theme="light"] [class*="navLinkItem"]:hover {
+  color: #818cf8 !important;
+}
+
+/* Card and container borders and backgrounds */
+[data-theme="light"] [class*="Card"],
+[data-theme="light"] [class*="card"],
+[data-theme="light"] [class*="Box"],
+[data-theme="light"] [class*="box"],
+[data-theme="light"] [class*="Container"],
+[data-theme="light"] [class*="aboutStatsRow"],
+[data-theme="light"] [class*="aboutQuoteBlock"],
+[data-theme="light"] [class*="skillsOverviewCard"],
+[data-theme="light"] [class*="skillsCategoryCard"],
+[data-theme="light"] [class*="serviceCardHorizontal"],
+[data-theme="light"] [class*="servicesStatCard"],
+[data-theme="light"] [class*="projectCardHorizontal"],
+[data-theme="light"] [class*="experienceTimelineCard"],
+[data-theme="light"] [class*="testimonialCard"],
+[data-theme="light"] [class*="blogCardHorizontal"] {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04) !important;
+}
+
+/* Timeline specific nodes & items override */
+[data-theme="light"] [class*="expCard"] {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+[data-theme="light"] [class*="expCardActive"] {
+  background: rgba(129, 140, 248, 0.06) !important;
+  border-color: rgba(129, 140, 248, 0.3) !important;
+}
+[data-theme="light"] [class*="expCardActive"]::after {
+  background: rgba(129, 140, 248, 0.06) !important;
+  border-right-color: rgba(129, 140, 248, 0.3) !important;
+  border-top-color: rgba(129, 140, 248, 0.3) !important;
+}
+
+/* Project filters configuration */
+[data-theme="light"] [class*="projectFilterBtn"] {
+  background: rgba(15, 23, 42, 0.04) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  color: #475569 !important;
+}
+[data-theme="light"] [class*="projectFilterBtnActive"] {
+  background: #818cf8 !important;
+  color: #ffffff !important;
+  border-color: #818cf8 !important;
+}
+
+/* Forms input adaptation */
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Footer layout coloring */
+[data-theme="light"] [class*="footer"] {
+  background: #f1f5f9 !important;
+  border-top: 1px solid rgba(15, 23, 42, 0.05) !important;
+}
+[data-theme="light"] [class*="footer"] * {
+  color: #475569 !important;
+}
+[data-theme="light"] [class*="footer"] h4,
+[data-theme="light"] [class*="footer"] a:hover {
+  color: #0f172a !important;
+}
+
+/* Prevent overlapping text on stats numbers */
+[data-theme="light"] [class*="StatVal"],
+[data-theme="light"] [class*="StatValue"],
+[data-theme="light"] [class*="aboutStatItem"] span,
+[data-theme="light"] [class*="aboutStatsRow"] span {
+  color: #818cf8 !important;
+}
+
+/* Keep code window dark for standard IDE syntax highlights readability */
+[data-theme="light"] [class*="heroPremiumSpecsCard"],
+[data-theme="light"] [class*="heroPremiumSpecsCard"] * {
+  background: rgba(7, 8, 15, 0.92) !important;
+}
+[data-theme="light"] [class*="heroPremiumSpecsCard"] span,
+[data-theme="light"] [class*="heroPremiumSpecsCard"] pre {
+  color: #e2e8f0 !important;
+}
+
+/* Buttons and dynamic actions */
+[data-theme="light"] [class*="btn-premium-outline"] {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] [class*="btn-premium-outline"] span {
+  color: #0f172a !important;
+}
+
+
+
+

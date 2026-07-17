@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Menu } from 'lucide-react';
+import { X, Menu, Sun, Moon } from 'lucide-react';
 import styles from '../../home.module.css';
 import { ISetting } from '../shared/types';
 
@@ -10,9 +10,11 @@ interface NavbarProps {
   siteSettings: ISetting | null;
   isDrawerOpen: boolean;
   setIsDrawerOpen: (open: boolean) => void;
+  theme: 'dark' | 'light';
+  toggleTheme: () => void;
 }
 
-export default function Navbar({ siteSettings, isDrawerOpen, setIsDrawerOpen }: NavbarProps) {
+export default function Navbar({ siteSettings, isDrawerOpen, setIsDrawerOpen, theme, toggleTheme }: NavbarProps) {
   return (
     <>
       <header className={styles.floatingNavbar}>
@@ -37,8 +39,8 @@ export default function Navbar({ siteSettings, isDrawerOpen, setIsDrawerOpen }: 
           </nav>
 
           <div className={styles.navActions}>
-            <button type="button" className={styles.themeToggleBtn} aria-label="Toggle Dark Mode">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <button type="button" onClick={toggleTheme} className={styles.themeToggleBtn} aria-label="Toggle Theme" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
             <a href="#contact" className={styles.navCTAButton}>
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>

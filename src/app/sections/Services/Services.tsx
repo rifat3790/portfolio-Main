@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -101,10 +101,40 @@ export default function Services({ siteSettings, initialServices }: ServicesProp
               </div>
             </div>
 
-            {/* Laptop image frame */}
-            <div className={styles.servicesLaptopFrame}>
-              <img src="/services_laptop_display.png" alt="Laptop display" className={styles.servicesLaptopImg} />
-              <div className={styles.servicesLaptopPedestal} />
+            {/* Laptop image frame - Masked inside a perfect responsive circle */}
+            <div
+              style={{
+                position: 'relative',
+                width: 'clamp(260px, 32vw, 360px)',
+                height: 'clamp(260px, 32vw, 360px)',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '3px solid rgba(129, 140, 248, 0.3)',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.65), inset 0 2px 8px rgba(255, 255, 255, 0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 20,
+                background: 'rgba(7, 8, 15, 0.5)',
+                padding: 0,
+                margin: '0 auto',
+              }}
+            >
+              <img
+                src="/services_laptop_display.png"
+                alt="Laptop display"
+                loading="lazy"
+                decoding="async"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transform: 'translate3d(0, 0, 0)',
+                  display: 'block',
+                  padding: 0,
+                  margin: 0,
+                }}
+              />
             </div>
           </motion.div>
         </div>

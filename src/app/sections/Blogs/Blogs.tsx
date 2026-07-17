@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -81,9 +81,37 @@ export default function Blogs({ siteSettings, initialBlogs }: BlogsProps) {
                 View all articles <ArrowRight size={14} />
               </a>
             </div>
-            <div className={styles.blogHeaderRight}>
-              <div className={styles.blogMugContainer}>
-                <img src="/blog_cup_graphic.png" alt="3D Digital Art Mug" className={styles.blogMugImg} />
+            <div className={styles.blogHeaderRight} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div 
+                className={styles.blogMugContainer} 
+                style={{ 
+                  width: 'clamp(260px, 32vw, 340px)', 
+                  height: 'clamp(260px, 32vw, 340px)', 
+                  borderRadius: '50%', 
+                  overflow: 'hidden', 
+                  border: '3px solid rgba(129, 140, 248, 0.3)', 
+                  boxShadow: '0 20px 50px rgba(0, 0, 0, 0.65), inset 0 2px 8px rgba(255, 255, 255, 0.1)',
+                  background: 'rgba(7, 8, 15, 0.5)',
+                  padding: 0,
+                  margin: '0 auto'
+                }}
+              >
+                <img 
+                  src="/blog_cup_graphic.png" 
+                  alt="3D Digital Art Mug" 
+                  className={styles.blogMugImg} 
+                  loading="lazy"
+                  decoding="async"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transform: 'translate3d(0, 0, 0)',
+                    display: 'block',
+                    padding: 0,
+                    margin: 0
+                  }}
+                />
               </div>
             </div>
           </div>

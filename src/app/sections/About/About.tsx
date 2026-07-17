@@ -139,44 +139,30 @@ export default function About({ siteSettings }: AboutProps) {
 
         </div>
 
-        {/* Bottom Stats Container Row */}
-        <div className={styles.aboutStatsRow}>
-          <div className={styles.aboutStatItem}>
-            <div className={styles.aboutStatIcon}><Briefcase size={20} /></div>
-            <div className={styles.aboutStatInfo}>
-              <div className={styles.aboutStatVal}>{siteSettings?.stat1Value || '5+'}</div>
-              <div className={styles.aboutStatLabel}>{siteSettings?.stat1Label || 'Years Experience'}</div>
-            </div>
+        {/* Premium Philosophy / Core Values Showcase (Replaces duplicate stats row) */}
+        <div className={styles.aboutStatsRow} style={{ marginTop: '48px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border-light)', borderRadius: '20px' }}>
+          <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+            <span style={{ fontSize: '0.72rem', color: '#818cf8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>01 / QUALITY</span>
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Quality First</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>Delivering pixel-perfect, premium code matching top international standards.</p>
           </div>
 
-          <div className={styles.aboutStatItem}>
-            <div className={styles.aboutStatIcon}>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            </div>
-            <div className={styles.aboutStatInfo}>
-              <div className={styles.aboutStatVal}>{siteSettings?.stat2Value || '50+'}</div>
-              <div className={styles.aboutStatLabel}>{siteSettings?.stat2Label || 'Projects Completed'}</div>
-            </div>
+          <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+            <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>02 / SPEED</span>
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Agile & Responsive</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>Fast iterations, transparent updates, and super lightweight pages.</p>
           </div>
 
-          <div className={styles.aboutStatItem}>
-            <div className={styles.aboutStatIcon}>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-            </div>
-            <div className={styles.aboutStatInfo}>
-              <div className={styles.aboutStatVal}>{siteSettings?.stat3Value || '20+'}</div>
-              <div className={styles.aboutStatLabel}>{siteSettings?.stat3Label || 'Happy Clients'}</div>
-            </div>
+          <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+            <span style={{ fontSize: '0.72rem', color: '#818cf8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>03 / SECURITY</span>
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Clean & Scalable</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>Future-proof modular structures tailored for high-scale enterprise operations.</p>
           </div>
 
-          <div className={styles.aboutStatItem}>
-            <div className={styles.aboutStatIcon}>
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
-            </div>
-            <div className={styles.aboutStatInfo}>
-              <div className={styles.aboutStatVal}>{siteSettings?.stat4Value || '100%'}</div>
-              <div className={styles.aboutStatLabel}>{siteSettings?.stat4Label || 'Client Satisfaction'}</div>
-            </div>
+          <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+            <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>04 / VISION</span>
+            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Client-Centric</h4>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>Partnering closely to solve real-world problems and drive conversion rates.</p>
           </div>
         </div>
 
