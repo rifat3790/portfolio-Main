@@ -7,36 +7,10 @@ import Setting from '@/models/Setting';
 import Service from '@/models/Service';
 import Experience from '@/models/Experience';
 
-interface DbCache {
-  projects: any[];
-  skills: any[];
-  testimonials: any[];
-  blogs: any[];
-  services: any[];
-  experiences: any[];
-  settings: any;
-  lastFetched: number;
-}
-
-declare global {
-  // eslint-disable-next-line no-var
-  var dbCache: DbCache | undefined;
-}
-
-const CACHE_TTL = 2 * 60 * 1000; // 2 minutes in memory
-
-// Fetch the cached data. Priority: Memory Cache -> MongoDB database query fallback.
+// No caching — always fetch fresh from MongoDB so admin changes reflect instantly
+// on both localhost and live site.
 export async function getHomepageData() {
-  const now = Date.now();
-  
-  // 1. Check memory cache
-  if (global.dbCache && (now - global.dbCache.lastFetched < CACHE_TTL)) {
-    console.log('Returning homepage data from memory cache');
-    return global.dbCache;
-  }
-
-  // 2. Cache missed or invalidated. Query MongoDB for fresh data!
-  console.log('Cache miss. Fetching fresh homepage data from MongoDB...');
+  console.log('Fetching fresh homepage data from MongoDB...');
   await dbConnect();
 
   const [projectsData, skillsData, testimonialsData, blogsData, settingsData, servicesData, experiencesData] = await Promise.all([
@@ -49,7 +23,7 @@ export async function getHomepageData() {
     Experience.find({}).sort({ order: 1, createdAt: -1 }),
   ]);
 
-  const data = {
+  return {
     projects: JSON.parse(JSON.stringify(projectsData)),
     skills: JSON.parse(JSON.stringify(skillsData)),
     testimonials: JSON.parse(JSON.stringify(testimonialsData)),
@@ -57,16 +31,11 @@ export async function getHomepageData() {
     services: JSON.parse(JSON.stringify(servicesData)),
     experiences: JSON.parse(JSON.stringify(experiencesData)),
     settings: settingsData ? JSON.parse(JSON.stringify(settingsData)) : null,
-    lastFetched: now,
   };
-
-  global.dbCache = data;
-  return data;
 }
 
-// Keep it compatible with seeder/admin API hooks but no longer write to files at runtime
+// Kept for API compatibility — no-op since there's no cache to clear
 export async function writeHomepageDataJson() {
-  console.log('Regenerating memory cache...');
   return await getHomepageData();
 }
 
@@ -75,7 +44,7 @@ export async function getSettingsOnly() {
   return data.settings;
 }
 
+// No-op — kept for API compatibility
 export function clearDbCache() {
-  console.log('Clearing database memory cache');
-  global.dbCache = undefined;
+  // Cache removed — nothing to clear
 }
