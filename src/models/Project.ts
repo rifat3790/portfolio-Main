@@ -16,6 +16,7 @@ export interface IProject extends Document {
   projectType?: string;
   keyFeatures?: string;
   isFeatured?: boolean;
+  password?: string;
 }
 
 const ProjectSchema: Schema = new Schema(
@@ -34,9 +35,14 @@ const ProjectSchema: Schema = new Schema(
     duration: { type: String },
     projectType: { type: String, default: 'Web Application' },
     keyFeatures: { type: String },
-    isFeatured: { type: Boolean, default: false }
+    isFeatured: { type: Boolean, default: false },
+    password: { type: String }
   },
   { timestamps: true }
 );
+
+if (process.env.NODE_ENV === 'development' && mongoose.models.Project) {
+  delete (mongoose.models as any).Project;
+}
 
 export default mongoose.models.Project || mongoose.model<IProject>('Project', ProjectSchema);

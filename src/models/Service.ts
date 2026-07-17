@@ -17,4 +17,8 @@ const ServiceSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+if (process.env.NODE_ENV === 'development' && mongoose.models.Service) {
+  delete (mongoose.models as any).Service;
+}
+
 export default mongoose.models.Service || mongoose.model<IService>('Service', ServiceSchema);

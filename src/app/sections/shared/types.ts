@@ -17,6 +17,7 @@ export interface IProject {
   projectType?: string;
   keyFeatures?: string;
   isFeatured?: boolean;
+  password?: string;
 }
 
 export interface ISkill {

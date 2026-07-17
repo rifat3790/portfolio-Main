@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ExternalLink, Code, Check, Briefcase, Calendar, Info, Globe } from 'lucide-react';
+import { X, ExternalLink, Code, Check, Briefcase, Calendar, Info, Globe, Key, Copy, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../home.module.css';
 
 interface IProject {
@@ -20,6 +21,7 @@ interface IProject {
   projectType?: string;
   keyFeatures?: string;
   isFeatured?: boolean;
+  password?: string;
 }
 
 interface ProjectModalProps {
@@ -30,6 +32,22 @@ interface ProjectModalProps {
 export default function ProjectModal({ project, onClose }: ProjectModalProps) {
   const screenshots = [project.image, ...(project.screenshots || [])].filter(Boolean);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [isCopied, setIsCopied] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+
+  const handleCopyPassword = () => {
+    if (project.password) {
+      navigator.clipboard.writeText(project.password);
+      setIsCopied(true);
+      setShowToast(true);
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 2000);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    }
+  };
 
   const features = project.keyFeatures
     ? project.keyFeatures.split(/[,\n]/).map(f => f.trim()).filter(Boolean)
@@ -140,6 +158,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                 )}
               </div>
             </div>
+
           </div>
 
           {/* Column 2: Key Features Checklist */}
@@ -187,7 +206,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
           )}
 
           {/* Action Row */}
-          <div style={{ gridColumn: 'span 2', display: 'flex', gap: '16px', marginTop: '20px' }}>
+          <div style={{ gridColumn: 'span 2', display: 'flex', gap: '16px', marginTop: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
             {project.liveLink && (
               <a 
                 href={project.liveLink}
@@ -210,9 +229,39 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                 View Source Code <Code size={14} />
               </a>
             )}
+            {project.password && (
+              <div 
+                onClick={handleCopyPassword}
+                className={styles.projModalActionPassword}
+                title="Click to copy password"
+              >
+                <Key size={14} style={{ color: '#a78bfa' }} />
+                <span>Password: {project.password}</span>
+                {isCopied ? (
+                  <Check size={12} style={{ color: '#10b981' }} />
+                ) : (
+                  <Copy size={12} />
+                )}
+              </div>
+            )}
           </div>
 
         </div>
+
+        <AnimatePresence>
+          {showToast && (
+            <motion.div
+              initial={{ opacity: 0, y: 50, x: '-50%' }}
+              animate={{ opacity: 1, y: 0, x: '-50%' }}
+              exit={{ opacity: 0, y: 20, x: '-50%' }}
+              transition={{ duration: 0.3 }}
+              className={styles.copyToast}
+            >
+              <Sparkles size={16} style={{ color: '#a78bfa' }} />
+              <span>Password copied to clipboard!</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
     </div>

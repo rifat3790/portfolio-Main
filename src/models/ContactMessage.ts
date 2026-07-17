@@ -17,4 +17,8 @@ const ContactMessageSchema = new Schema<IContactMessage>({
   read: { type: Boolean, default: false }
 }, { timestamps: true });
 
+if (process.env.NODE_ENV === 'development' && mongoose.models.ContactMessage) {
+  delete (mongoose.models as any).ContactMessage;
+}
+
 export default mongoose.models.ContactMessage || mongoose.model<IContactMessage>('ContactMessage', ContactMessageSchema);

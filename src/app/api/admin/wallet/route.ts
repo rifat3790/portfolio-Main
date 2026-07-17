@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       addon: Number(data.addon) || 0,
       bonus: Number(data.bonus) || 0,
       expenses: data.expenses || [],
+      incomes: data.incomes || [],
     });
 
     return NextResponse.json(newMonth);

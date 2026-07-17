@@ -38,5 +38,10 @@ const ChatSessionSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+if (process.env.NODE_ENV === 'development') {
+  if (mongoose.models.Message) delete (mongoose.models as any).Message;
+  if (mongoose.models.ChatSession) delete (mongoose.models as any).ChatSession;
+}
+
 export const Message = mongoose.models.Message || mongoose.model<IMessage>('Message', MessageSchema);
 export const ChatSession = mongoose.models.ChatSession || mongoose.model<IChatSession>('ChatSession', ChatSessionSchema);

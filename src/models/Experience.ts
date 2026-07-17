@@ -31,4 +31,8 @@ const ExperienceSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+if (process.env.NODE_ENV === 'development' && mongoose.models.Experience) {
+  delete (mongoose.models as any).Experience;
+}
+
 export default mongoose.models.Experience || mongoose.model<IExperience>('Experience', ExperienceSchema);

@@ -19,4 +19,8 @@ const SkillSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+if (process.env.NODE_ENV === 'development' && mongoose.models.Skill) {
+  delete (mongoose.models as any).Skill;
+}
+
 export default mongoose.models.Skill || mongoose.model<ISkill>('Skill', SkillSchema);

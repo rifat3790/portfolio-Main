@@ -35,10 +35,17 @@ import {
   DollarSign,
   PieChart,
   Printer,
-  FileText
+  FileText,
+  Download,
+  CheckCircle,
+  AlertTriangle,
+  Save,
+  Eye
 } from 'lucide-react';
 import styles from './admin.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
+import WalletManager from './components/WalletManager';
+import TeamTrackerManager from './components/TeamTrackerManager';
 
 const compressImage = (base64Str: string, maxWidth: number, maxHeight: number, quality = 0.7): Promise<string> => {
   return new Promise((resolve) => {
@@ -83,7 +90,7 @@ const compressImage = (base64Str: string, maxWidth: number, maxHeight: number, q
   });
 };
 
-type Tab = 'chat' | 'messages' | 'projects' | 'skills' | 'testimonials' | 'blogs' | 'services' | 'experiences' | 'newsletter' | 'hero-settings' | 'about-settings' | 'brand-settings' | 'wallet';
+type Tab = 'chat' | 'messages' | 'projects' | 'skills' | 'testimonials' | 'blogs' | 'services' | 'experiences' | 'newsletter' | 'hero-settings' | 'about-settings' | 'brand-settings' | 'wallet' | 'team-tracker';
 
 export default function DashboardClient() {
   const [activeTab, setActiveTab] = useState<Tab>('chat');
@@ -238,6 +245,14 @@ export default function DashboardClient() {
               <Wallet size={18} style={{ color: 'var(--accent-gold)' }} />
               <span style={{ fontWeight: 600 }}>Personal Wallet</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('team-tracker')}
+              className={`${styles.navItem} ${activeTab === 'team-tracker' ? styles.navItemActive : ''}`}
+            >
+              <TrendingUp size={18} style={{ color: '#00e5ff' }} />
+              <span style={{ fontWeight: 600 }}>Team Workload</span>
+            </button>
           </nav>
 
           <button
@@ -265,6 +280,7 @@ export default function DashboardClient() {
           {activeTab === 'about-settings' && <AboutSettingsManager showToast={showToast} />}
           {activeTab === 'brand-settings' && <BrandSettingsManager showToast={showToast} />}
           {activeTab === 'wallet' && <WalletManager showToast={showToast} />}
+          {activeTab === 'team-tracker' && <TeamTrackerManager showToast={showToast} />}
         </main>
       </div>
 
@@ -629,6 +645,7 @@ interface IProject {
   projectType?: string;
   keyFeatures?: string;
   isFeatured?: boolean;
+  password?: string;
 }
 
 function ProjectManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
@@ -652,6 +669,7 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
   const [projectType, setProjectType] = useState('Web Application');
   const [keyFeatures, setKeyFeatures] = useState('');
   const [isFeatured, setIsFeatured] = useState(false);
+  const [password, setPassword] = useState('');
   const [categoriesList, setCategoriesList] = useState<string[]>(['Web Applications', 'E-Commerce', 'Dashboard', 'Landing Page', 'Other']);
   const [newCategoryInput, setNewCategoryInput] = useState('');
 
@@ -703,6 +721,7 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
     setProjectType('Web Application');
     setKeyFeatures('');
     setIsFeatured(false);
+    setPassword('');
     setOrder(projects.length);
     setIsModalOpen(true);
   };
@@ -723,6 +742,7 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
     setProjectType(p.projectType || 'Web Application');
     setKeyFeatures(p.keyFeatures || '');
     setIsFeatured(!!p.isFeatured);
+    setPassword(p.password || '');
     setOrder(p.order);
     setIsModalOpen(true);
   };
@@ -785,6 +805,7 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
       projectType,
       keyFeatures,
       isFeatured,
+      password,
     };
 
     try {
@@ -804,11 +825,15 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
       }
 
       if (res.ok) {
+        showToast(editId ? 'Project updated successfully!' : 'Project created successfully!', 'success');
         setIsModalOpen(false);
         fetchProjects();
+      } else {
+        showToast(editId ? 'Failed to update project.' : 'Failed to create project.', 'error');
       }
     } catch (err) {
       console.error(err);
+      showToast('An error occurred while saving the project.', 'error');
     }
   };
 
@@ -817,10 +842,14 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
     try {
       const res = await fetch(`/api/admin/projects/${id}`, { method: 'DELETE' });
       if (res.ok) {
+        showToast('Project deleted successfully!', 'success');
         fetchProjects();
+      } else {
+        showToast('Failed to delete project.', 'error');
       }
     } catch (err) {
       console.error(err);
+      showToast('An error occurred while deleting the project.', 'error');
     }
   };
 
@@ -1016,6 +1045,16 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   type="url"
                   value={githubLink}
                   onChange={(e) => setGithubLink(e.target.value)}
+                  className={styles.input}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Project Password (Optional)</label>
+                <input
+                  type="text"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="e.g. secret123"
                   className={styles.input}
                 />
               </div>
@@ -4108,1125 +4147,6 @@ function NewsletterManager({ showToast }: { showToast: (message: string, type?: 
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-/* ==========================================================================
-   13. PERSONAL WALLET MANAGER COMPONENT
-   ========================================================================== */
-interface IWalletExpense {
-  _id?: string;
-  description: string;
-  amount: number;
-  category: string;
-  date: string | Date;
-}
-
-interface IWalletMonthData {
-  _id: string;
-  monthName: string;
-  salary: number;
-  addon: number;
-  bonus: number;
-  expenses: IWalletExpense[];
-  createdAt: string;
-}
-
-function WalletManager({ showToast }: { showToast: (msg: string, type?: 'success' | 'error' | 'info') => void }) {
-  const [months, setMonths] = useState<IWalletMonthData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedMonthId, setSelectedMonthId] = useState<string>('');
-  
-  // Search & Filter State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
-
-  // Modal states
-  const [isAddMonthOpen, setIsAddMonthOpen] = useState(false);
-  const [isEditMonthOpen, setIsEditMonthOpen] = useState(false);
-  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
-  const [isEditExpenseOpen, setIsEditExpenseOpen] = useState(false);
-  
-  // Month Form Inputs
-  const [monthName, setMonthName] = useState('');
-  const [salary, setSalary] = useState('');
-  const [addon, setAddon] = useState('');
-  const [bonus, setBonus] = useState('');
-  
-  // Expense Form Inputs
-  const [expDesc, setExpDesc] = useState('');
-  const [expAmount, setExpAmount] = useState('');
-  const [expCategory, setExpCategory] = useState('Food');
-  const [expDate, setExpDate] = useState('');
-  const [editingExpenseId, setEditingExpenseId] = useState<string>('');
-
-  const fetchMonths = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/admin/wallet');
-      if (res.ok) {
-        const data = await res.json();
-        setMonths(data);
-        if (data.length > 0 && !selectedMonthId) {
-          setSelectedMonthId(data[data.length - 1]._id); // default to latest month
-        }
-      } else {
-        showToast('Failed to load wallet data', 'error');
-      }
-    } catch (err) {
-      console.error(err);
-      showToast('Error connecting to database', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMonths();
-  }, []);
-
-  const activeMonth = months.find(m => m._id === selectedMonthId) || null;
-
-  // Helper calculation formulas
-  const getIncomeTotal = (m: IWalletMonthData) => (m.salary || 0) + (m.addon || 0) + (m.bonus || 0);
-  const getExpenseTotal = (m: IWalletMonthData) => (m.expenses || []).reduce((acc, curr) => acc + (curr.amount || 0), 0);
-  const getSavings = (m: IWalletMonthData) => getIncomeTotal(m) - getExpenseTotal(m);
-  const getSavingsRate = (m: IWalletMonthData) => {
-    const inc = getIncomeTotal(m);
-    if (inc === 0) return 0;
-    return Math.max(0, (getSavings(m) / inc) * 100);
-  };
-
-  // Global calculations
-  const globalTotalIncome = months.reduce((acc, m) => acc + getIncomeTotal(m), 0);
-  const globalTotalSpent = months.reduce((acc, m) => acc + getExpenseTotal(m), 0);
-  const globalTotalSavings = globalTotalIncome - globalTotalSpent;
-  const globalSavingsRate = globalTotalIncome > 0 ? (globalTotalSavings / globalTotalIncome) * 100 : 0;
-
-  // Expense Categories mapping & colors
-  const categoriesList = ['Food', 'Rent', 'Utility', 'Gadgets', 'Server', 'Entertainment', 'Other'];
-  const categoryColors: { [key: string]: string } = {
-    Food: '#ff9800',
-    Rent: '#4caf50',
-    Utility: '#2196f3',
-    Gadgets: '#9c27b0',
-    Server: '#f44336',
-    Entertainment: '#e91e63',
-    Other: '#607d8b'
-  };
-
-  // 📐 Premium Financial Score Algorithm
-  const getHealthScore = (m: IWalletMonthData) => {
-    const inc = getIncomeTotal(m);
-    if (inc === 0) return 0;
-    const savingsRate = getSavingsRate(m);
-    // 60% of score is based on savings rate (target 40%+)
-    const savingsPoints = Math.min(60, (savingsRate / 40) * 60);
-
-    // 20% based on expense diversity/over-concentration
-    const expTotal = getExpenseTotal(m);
-    let categoryPoints = 20;
-    if (expTotal > 0) {
-      const maxCategorySpent = Math.max(...categoriesList.map(cat =>
-        (m.expenses || []).filter(e => e.category === cat).reduce((sum, e) => sum + e.amount, 0)
-      ));
-      const concentration = maxCategorySpent / expTotal;
-      if (concentration > 0.7) categoryPoints = 5; 
-      else if (concentration > 0.4) categoryPoints = 12;
-    }
-
-    // 20% bonus reward for side-gig diversification
-    const sideGigRatio = m.addon / inc;
-    const sidePoints = Math.min(20, sideGigRatio * 100);
-
-    return Math.round(savingsPoints + categoryPoints + sidePoints);
-  };
-
-  const getHealthGrade = (score: number) => {
-    if (score >= 80) return { grade: 'Excellent', color: '#10b981', border: '#10b981' };
-    if (score >= 60) return { grade: 'Healthy', color: '#818cf8', border: '#818cf8' };
-    if (score >= 40) return { grade: 'Balanced', color: '#fbbf24', border: '#fbbf24' };
-    return { grade: 'Over-concentrated', color: '#f87171', border: '#f87171' };
-  };
-
-  // 💡 Smart Automated Warnings
-  const getSmartRecommendations = (m: IWalletMonthData) => {
-    const recs: string[] = [];
-    const inc = getIncomeTotal(m);
-    const exp = getExpenseTotal(m);
-    if (inc === 0) return ['Add income resources to build smart metrics.'];
-
-    if (exp / inc > 0.65) {
-      recs.push(`Spending Ratio is at ${( (exp / inc) * 100 ).toFixed(0)}%. Consider auditing non-essential items to push it below 50%.`);
-    } else {
-      recs.push('Excellent! Spending ratio is under control. Keep saving!');
-    }
-
-    // Find highest spending category
-    let topCat = '';
-    let topAmount = 0;
-    categoriesList.forEach(cat => {
-      const sum = (m.expenses || []).filter(e => e.category === cat).reduce((acc, curr) => acc + curr.amount, 0);
-      if (sum > topAmount) {
-        topAmount = sum;
-        topCat = cat;
-      }
-    });
-
-    if (topAmount > 0) {
-      recs.push(`Largest outlay sector: "${topCat}" at ৳${topAmount.toLocaleString()} (${((topAmount / exp) * 100).toFixed(0)}% of expenses).`);
-    }
-
-    if (m.addon > m.salary) {
-      recs.push('Outstanding: Side-gigs and addon revenue outperformed your primary base salary! 🚀');
-    }
-
-    return recs;
-  };
-
-  // 📊 Excel / CSV Spreadsheet Exporter
-  const exportMonthToCSV = (m: IWalletMonthData) => {
-    const headers = ['Category', 'Description', 'Date', 'Amount (৳)'];
-    const rows = (m.expenses || []).map(e => [
-      e.category,
-      `"${e.description.replace(/"/g, '""')}"`,
-      new Date(e.date).toLocaleDateString(),
-      e.amount
-    ]);
-    
-    const metaRows = [
-      ['Rifat Finance Console - Ledger Summary', m.monthName],
-      ['Base Salary', m.salary],
-      ['Add-on Revenue', m.addon],
-      ['Bonuses Received', m.bonus],
-      ['Total Income', getIncomeTotal(m)],
-      ['Total Expenses', getExpenseTotal(m)],
-      ['Net Savings', getSavings(m)],
-      [],
-      headers
-    ];
-
-    const csvString = metaRows.map(r => r.join(',')).join('\n') + '\n' + rows.map(r => r.join(',')).join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `Finance_Ledger_${m.monthName.replace(/\s+/g, '_')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast('Ledger CSV file generated successfully!', 'success');
-  };
-
-  // CRUD functions
-  const handleAddMonth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!monthName) return showToast('Month name is required', 'error');
-    try {
-      const res = await fetch('/api/admin/wallet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          monthName,
-          salary: Number(salary) || 0,
-          addon: Number(addon) || 0,
-          bonus: Number(bonus) || 0,
-        })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast('Month sheet created successfully!', 'success');
-        setMonths(prev => [...prev, data]);
-        setSelectedMonthId(data._id);
-        setIsAddMonthOpen(false);
-        // Reset inputs
-        setMonthName('');
-        setSalary('');
-        setAddon('');
-        setBonus('');
-      } else {
-        showToast(data.error || 'Failed to create month sheet', 'error');
-      }
-    } catch (err) {
-      showToast('Error saving month', 'error');
-    }
-  };
-
-  const handleEditMonth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeMonth) return;
-    try {
-      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          salary: Number(salary) || 0,
-          addon: Number(addon) || 0,
-          bonus: Number(bonus) || 0,
-        })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast('Income settings updated', 'success');
-        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
-        setIsEditMonthOpen(false);
-      } else {
-        showToast(data.error || 'Failed to update income settings', 'error');
-      }
-    } catch (err) {
-      showToast('Error saving data', 'error');
-    }
-  };
-
-  const handleDeleteMonth = async () => {
-    if (!activeMonth) return;
-    if (!confirm(`Are you sure you want to delete the financial sheet for ${activeMonth.monthName}?`)) return;
-    try {
-      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, { method: 'DELETE' });
-      if (res.ok) {
-        showToast('Month sheet deleted', 'success');
-        const remaining = months.filter(m => m._id !== activeMonth._id);
-        setMonths(remaining);
-        setSelectedMonthId(remaining.length > 0 ? remaining[remaining.length - 1]._id : '');
-      } else {
-        showToast('Failed to delete sheet', 'error');
-      }
-    } catch (err) {
-      showToast('Error deleting sheet', 'error');
-    }
-  };
-
-  const handleAddExpense = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeMonth || !expDesc || !expAmount) return showToast('Please enter description and amount', 'error');
-    
-    const newExpense: IWalletExpense = {
-      description: expDesc,
-      amount: Number(expAmount) || 0,
-      category: expCategory,
-      date: expDate || new Date().toISOString().split('T')[0],
-    };
-
-    const updatedExpenses = [...(activeMonth.expenses || []), newExpense];
-
-    try {
-      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ expenses: updatedExpenses })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast('Expense logged successfully', 'success');
-        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
-        setIsAddExpenseOpen(false);
-        // Reset
-        setExpDesc('');
-        setExpAmount('');
-        setExpCategory('Food');
-        setExpDate('');
-      } else {
-        showToast(data.error || 'Failed to save expense', 'error');
-      }
-    } catch (err) {
-      showToast('Error logging expense', 'error');
-    }
-  };
-
-  const handleEditExpense = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeMonth || !editingExpenseId || !expDesc || !expAmount) return;
-
-    const updatedExpenses = activeMonth.expenses.map(exp => {
-      if (exp._id === editingExpenseId) {
-        return {
-          ...exp,
-          description: expDesc,
-          amount: Number(expAmount) || 0,
-          category: expCategory,
-          date: expDate || exp.date,
-        };
-      }
-      return exp;
-    });
-
-    try {
-      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ expenses: updatedExpenses })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast('Expense updated', 'success');
-        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
-        setIsEditExpenseOpen(false);
-        setEditingExpenseId('');
-        // Reset
-        setExpDesc('');
-        setExpAmount('');
-        setExpCategory('Food');
-        setExpDate('');
-      } else {
-        showToast(data.error || 'Failed to update expense', 'error');
-      }
-    } catch (err) {
-      showToast('Error saving changes', 'error');
-    }
-  };
-
-  const handleDeleteExpense = async (expenseId: string) => {
-    if (!activeMonth) return;
-    if (!confirm('Are you sure you want to delete this expense record?')) return;
-
-    const updatedExpenses = activeMonth.expenses.filter(exp => exp._id !== expenseId);
-
-    try {
-      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ expenses: updatedExpenses })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        showToast('Expense record removed', 'success');
-        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
-      } else {
-        showToast('Failed to remove expense', 'error');
-      }
-    } catch (err) {
-      showToast('Error removing expense', 'error');
-    }
-  };
-
-  const openEditIncomeModal = () => {
-    if (!activeMonth) return;
-    setSalary(String(activeMonth.salary));
-    setAddon(String(activeMonth.addon));
-    setBonus(String(activeMonth.bonus));
-    setIsEditMonthOpen(true);
-  };
-
-  const openEditExpenseModal = (exp: IWalletExpense) => {
-    if (!exp._id) return;
-    setEditingExpenseId(exp._id);
-    setExpDesc(exp.description);
-    setExpAmount(String(exp.amount));
-    setExpCategory(exp.category);
-    setExpDate(new Date(exp.date).toISOString().split('T')[0]);
-    setIsEditExpenseOpen(true);
-  };
-
-  // Get active month's category percentages
-  const activeMonthCategoryTotals = categoriesList.reduce((acc, cat) => {
-    const total = (activeMonth?.expenses || [])
-      .filter(e => e.category === cat)
-      .reduce((sum, e) => sum + e.amount, 0);
-    acc[cat] = total;
-    return acc;
-  }, {} as { [key: string]: number });
-
-  // Filter Ledger client-side (instantaneous loading search)
-  const filteredExpenses = (activeMonth?.expenses || []).filter(e => {
-    const matchesSearch = e.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategoryFilter === 'All' || e.category === selectedCategoryFilter;
-    return matchesSearch && matchesCategory;
-  });
-
-  const activeHealthScore = activeMonth ? getHealthScore(activeMonth) : 0;
-  const activeHealthInfo = getHealthGrade(activeHealthScore);
-  const activeMonthSavings = activeMonth ? getSavings(activeMonth) : 0;
-
-  return (
-    <div style={{ fontFamily: 'var(--font-sans)', color: '#ffffff', padding: '10px' }}>
-      
-      {/* HEADER SECTION */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Wallet size={28} style={{ color: 'var(--accent-gold)' }} /> Personal Wallet Ledger
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '4px 0 0' }}>
-            Monitor side gig revenues, base salaries, bonuses, and detail monthly expenses.
-          </p>
-        </div>
-        <button
-          onClick={() => setIsAddMonthOpen(true)}
-          style={{
-            background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
-            color: '#fff',
-            border: 'none',
-            padding: '10px 18px',
-            borderRadius: '8px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: '0 4px 12px rgba(129, 140, 248, 0.3)'
-          }}
-        >
-          <Plus size={16} /> Add Month Sheet
-        </button>
-      </div>
-
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-secondary)' }}>
-          Connecting ledger databases...
-        </div>
-      ) : months.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 20px', background: 'rgba(15, 23, 42, 0.25)', border: '1px dashed var(--glass-border)', borderRadius: '16px' }}>
-          <Wallet size={48} style={{ color: 'var(--text-muted)', marginBottom: '16px', opacity: 0.5 }} />
-          <h3 style={{ margin: '0 0 8px', fontSize: '1.2rem', color: '#fff' }}>No Wallet Data Recorded</h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', maxWidth: '380px', margin: '0 auto 20px' }}>
-            Create your first month sheet to log revenues and detail your spending habits.
-          </p>
-          <button
-            onClick={() => setIsAddMonthOpen(true)}
-            style={{ background: 'transparent', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
-          >
-            Create Month Sheet
-          </button>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
-          {/* ─── GLOBAL VISUAL REPRESENTATION PANEL ─── */}
-          <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '24px' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0 0 20px', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <TrendingUp size={18} style={{ color: '#4caf50' }} /> Global Financial Summary
-            </h2>
-            
-            {/* Global Stats Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
-              <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Total Revenues</span>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#4caf50', marginTop: '6px' }}>৳{globalTotalIncome.toLocaleString()}</div>
-              </div>
-              <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Total Spent</span>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f44336', marginTop: '6px' }}>৳{globalTotalSpent.toLocaleString()}</div>
-              </div>
-              <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Net Savings</span>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2196f3', marginTop: '6px' }}>৳{globalTotalSavings.toLocaleString()}</div>
-              </div>
-              <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Savings Rate</span>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-gold)', marginTop: '6px' }}>{globalSavingsRate.toFixed(1)}%</div>
-              </div>
-            </div>
-
-            {/* Income vs Expenses Dynamic SVG Column Chart */}
-            <div style={{ marginTop: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Revenue vs Spending Trend</span>
-                <div style={{ display: 'flex', gap: '16px', fontSize: '0.72rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: 8, height: 8, background: '#818cf8', borderRadius: 2 }} /> Income</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><span style={{ width: 8, height: 8, background: '#f44336', borderRadius: 2 }} /> Expenses</div>
-                </div>
-              </div>
-              
-              {/* Responsive SVG Chart */}
-              <div style={{ width: '100%', overflowX: 'auto', background: 'rgba(7, 8, 15, 0.3)', borderRadius: '10px', padding: '12px' }}>
-                <svg viewBox="0 0 600 180" width="100%" height="150" style={{ display: 'block', overflow: 'visible' }}>
-                  {/* Grid Lines */}
-                  <line x1="40" y1="20" x2="580" y2="20" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                  <line x1="40" y1="70" x2="580" y2="70" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                  <line x1="40" y1="120" x2="580" y2="120" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
-                  <line x1="40" y1="150" x2="580" y2="150" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" />
-                  
-                  {/* Y Axis Legend */}
-                  <text x="30" y="24" fill="var(--text-muted)" fontSize="8" textAnchor="end">High</text>
-                  <text x="30" y="74" fill="var(--text-muted)" fontSize="8" textAnchor="end">Mid</text>
-                  <text x="30" y="124" fill="var(--text-muted)" fontSize="8" textAnchor="end">Low</text>
-                  <text x="30" y="154" fill="var(--text-muted)" fontSize="8" textAnchor="end">0</text>
-
-                  {/* Draw Bar Groups */}
-                  {months.map((m, idx) => {
-                    const maxVal = Math.max(...months.map(x => Math.max(getIncomeTotal(x), getExpenseTotal(x))), 1);
-                    const chartHeight = 120; // max px height for bars
-                    
-                    const incHeight = (getIncomeTotal(m) / maxVal) * chartHeight;
-                    const expHeight = (getExpenseTotal(m) / maxVal) * chartHeight;
-                    
-                    const numMonths = months.length;
-                    const colWidth = 40;
-                    const spacing = (500 - (numMonths * colWidth)) / (numMonths + 1);
-                    const startX = 50 + spacing + idx * (colWidth + spacing);
-                    
-                    return (
-                      <g key={m._id}>
-                        {/* Income Bar */}
-                        <rect
-                          x={startX}
-                          y={150 - incHeight}
-                          width="12"
-                          height={Math.max(incHeight, 2)}
-                          fill="#818cf8"
-                          rx="2"
-                        />
-                        {/* Expense Bar */}
-                        <rect
-                          x={startX + 14}
-                          y={150 - expHeight}
-                          width="12"
-                          height={Math.max(expHeight, 2)}
-                          fill="#f44336"
-                          rx="2"
-                        />
-                        {/* X label */}
-                        <text
-                          x={startX + 13}
-                          y="165"
-                          fill="var(--text-secondary)"
-                          fontSize="8"
-                          textAnchor="middle"
-                        >
-                          {m.monthName.split(' ')[0].slice(0, 3)}
-                        </text>
-                      </g>
-                    );
-                  })}
-                </svg>
-              </div>
-            </div>
-
-          </div>
-
-          {/* ACTIVE MONTH DATA LAYER WITH NEW HUD WIDGETS */}
-          <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '24px', alignItems: 'start' }}>
-            
-            {/* Months Selector Sidebar */}
-            <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '16px' }}>
-              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '14px', paddingLeft: '8px' }}>Months Sheets</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {months.map((m) => {
-                  const isSelected = m._id === selectedMonthId;
-                  const monthTotalInc = getIncomeTotal(m);
-                  return (
-                    <button
-                      key={m._id}
-                      onClick={() => {
-                        setSelectedMonthId(m._id);
-                        setSearchQuery('');
-                        setSelectedCategoryFilter('All');
-                      }}
-                      style={{
-                        background: isSelected ? 'rgba(129, 140, 248, 0.12)' : 'transparent',
-                        border: '1px solid',
-                        borderColor: isSelected ? 'rgba(129, 140, 248, 0.25)' : 'transparent',
-                        color: isSelected ? '#ffffff' : 'var(--text-secondary)',
-                        padding: '12px 14px',
-                        borderRadius: '10px',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '4px',
-                        transition: 'all 0.25s ease'
-                      }}
-                    >
-                      <span style={{ fontWeight: isSelected ? 700 : 500, fontSize: '0.9rem' }}>{m.monthName}</span>
-                      <span style={{ fontSize: '0.72rem', color: isSelected ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
-                        Earned: ৳{monthTotalInc.toLocaleString()}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Selected Month Sheet details ledger */}
-            {activeMonth ? (
-              <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '24px' }}>
-                
-                {/* Upper toolbar actions */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '16px', marginBottom: '20px' }}>
-                  <div>
-                    <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>{activeMonth.monthName} Sheet</h2>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Savings Rate: {getSavingsRate(activeMonth).toFixed(1)}%</span>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={() => exportMonthToCSV(activeMonth)}
-                      style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#10b981', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 600 }}
-                    >
-                      Export CSV
-                    </button>
-                    <button
-                      onClick={openEditIncomeModal}
-                      style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
-                    >
-                      <Edit size={14} /> Edit Income
-                    </button>
-                    <button
-                      onClick={handleDeleteMonth}
-                      style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem' }}
-                    >
-                      <Trash2 size={14} /> Delete Month
-                    </button>
-                  </div>
-                </div>
-
-                {/* PREMIUM HUD: Score Ring, Forecast, recommendations alerts */}
-                <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr 1fr', gap: '20px', marginBottom: '24px', background: 'rgba(7, 8, 15, 0.3)', border: '1px solid rgba(255,255,255,0.02)', borderRadius: '14px', padding: '16px' }}>
-                  
-                  {/* Gauge 1: Health Score Circular Gauge */}
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ position: 'relative', width: '80px', height: '80px' }}>
-                      <svg width="80" height="80" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}>
-                        <path
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="rgba(255,255,255,0.05)"
-                          strokeWidth="2"
-                        />
-                        <path
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke={activeHealthInfo.color}
-                          strokeWidth="2.5"
-                          strokeDasharray={`${activeHealthScore}, 100`}
-                          strokeLinecap="round"
-                          style={{ filter: `drop-shadow(0 0 4px ${activeHealthInfo.color}40)` }}
-                        />
-                      </svg>
-                      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                        <span style={{ fontSize: '1.25rem', fontWeight: 800, color: activeHealthInfo.color }}>{activeHealthScore}</span>
-                        <span style={{ fontSize: '0.45rem', display: 'block', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Score</span>
-                      </div>
-                    </div>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: activeHealthInfo.color, marginTop: '8px', textAlign: 'center' }}>
-                      {activeHealthInfo.grade}
-                    </span>
-                  </div>
-
-                  {/* Smart Projections */}
-                  <div style={{ borderRight: '1px solid rgba(255,255,255,0.05)', paddingRight: '12px' }}>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>Future Net Worth Forecasts</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>6-Month Proj:</span>
-                        <span style={{ fontWeight: 700, color: '#4caf50' }}>৳{(activeMonthSavings * 6).toLocaleString()}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>12-Month Proj:</span>
-                        <span style={{ fontWeight: 700, color: '#2196f3' }}>৳{(activeMonthSavings * 12).toLocaleString()}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>5-Year Proj:</span>
-                        <span style={{ fontWeight: 700, color: 'var(--accent-gold)' }}>৳{(activeMonthSavings * 60).toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Smart Automated Advice Alerts */}
-                  <div>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>Ledger Insight Advisor</div>
-                    <div style={{ marginTop: '8px', fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {getSmartRecommendations(activeMonth).map((rec, i) => (
-                        <div key={i} style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
-                          <span style={{ color: 'var(--accent-gold)', fontSize: '0.8rem' }}>•</span>
-                          <span>{rec}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Sub-sheet metrics summary cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
-                  <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Earned</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4caf50', marginTop: '4px' }}>৳{getIncomeTotal(activeMonth).toLocaleString()}</div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                      Salary: ৳{activeMonth.salary.toLocaleString()} • Side: ৳{activeMonth.addon.toLocaleString()}
-                    </div>
-                  </div>
-                  <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Spent</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f44336', marginTop: '4px' }}>৳{getExpenseTotal(activeMonth).toLocaleString()}</div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                      Across {(activeMonth.expenses || []).length} ledger items logged
-                    </div>
-                  </div>
-                  <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Month Savings</div>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2196f3', marginTop: '4px' }}>৳{activeMonthSavings.toLocaleString()}</div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                      Saved {getSavingsRate(activeMonth).toFixed(1)}% of total revenues
-                    </div>
-                  </div>
-                </div>
-
-                {/* Ledger Heading and Action Toolbar */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                  <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <PieChart size={16} style={{ color: 'var(--accent-gold)' }} /> Expenses Ledger
-                  </h3>
-                  <button
-                    onClick={() => setIsAddExpenseOpen(true)}
-                    style={{ background: 'rgba(129, 140, 248, 0.1)', border: '1px solid rgba(129, 140, 248, 0.2)', color: 'var(--accent-gold)', padding: '6px 12px', borderRadius: '6px', fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
-                  >
-                    <Plus size={14} /> Log Expense
-                  </button>
-                </div>
-
-                {/* Filter & Instant Search Input (Super-fast performance) */}
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                  <input
-                    type="text"
-                    placeholder="Search ledger items instantly..."
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    style={{
-                      flex: 1,
-                      minWidth: '200px',
-                      padding: '8px 12px',
-                      background: 'rgba(7,8,15,0.4)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      borderRadius: '6px',
-                      color: '#fff',
-                      fontSize: '0.8rem',
-                      fontFamily: 'var(--font-sans)'
-                    }}
-                  />
-                  <select
-                    value={selectedCategoryFilter}
-                    onChange={e => setSelectedCategoryFilter(e.target.value)}
-                    style={{
-                      padding: '8px 12px',
-                      background: 'rgba(7,8,15,0.4)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      borderRadius: '6px',
-                      color: '#fff',
-                      fontSize: '0.8rem'
-                    }}
-                  >
-                    <option value="All">All Categories</option>
-                    {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-
-                {/* Categories progress visualization */}
-                <div style={{ background: 'rgba(7, 8, 15, 0.2)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '12px', marginBottom: '20px' }}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', fontSize: '0.72rem' }}>
-                    {categoriesList.map(cat => {
-                      const amount = activeMonthCategoryTotals[cat] || 0;
-                      if (amount === 0) return null;
-                      const pct = getExpenseTotal(activeMonth) > 0 ? (amount / getExpenseTotal(activeMonth)) * 100 : 0;
-                      return (
-                        <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '6px' }}>
-                          <span style={{ width: 8, height: 8, background: categoryColors[cat], borderRadius: '50%' }} />
-                          <span style={{ fontWeight: 600 }}>{cat}:</span>
-                          <span style={{ color: 'var(--text-secondary)' }}>৳{amount.toLocaleString()} ({pct.toFixed(0)}%)</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Expenses Table */}
-                {filteredExpenses.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-secondary)', background: 'rgba(7, 8, 15, 0.15)', border: '1px dashed rgba(255,255,255,0.04)', borderRadius: '10px', fontSize: '0.85rem' }}>
-                    {searchQuery || selectedCategoryFilter !== 'All' ? 'No matching expenses found.' : 'No expenses logged for this month.'}
-                  </div>
-                ) : (
-                  <div style={{ overflowX: 'auto', background: 'rgba(7, 8, 15, 0.15)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '10px' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
-                      <thead>
-                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
-                          <th style={{ padding: '12px 16px' }}>Category</th>
-                          <th style={{ padding: '12px 16px' }}>Description</th>
-                          <th style={{ padding: '12px 16px' }}>Date</th>
-                          <th style={{ padding: '12px 16px', textAlign: 'right' }}>Amount</th>
-                          <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredExpenses.map((exp) => (
-                          <tr key={exp._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                            <td style={{ padding: '12px 16px' }}>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '2px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 600, background: `${categoryColors[exp.category]}15`, color: categoryColors[exp.category], border: `1px solid ${categoryColors[exp.category]}30` }}>
-                                {exp.category}
-                              </span>
-                            </td>
-                            <td style={{ padding: '12px 16px', fontWeight: 500, color: '#fff' }}>{exp.description}</td>
-                            <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>
-                              {new Date(exp.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: '#ff6b6b' }}>৳{exp.amount.toLocaleString()}</td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => openEditExpenseModal(exp)}
-                                  style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
-                                >
-                                  <Edit size={14} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => exp._id && handleDeleteExpense(exp._id)}
-                                  style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-              </div>
-            ) : null}
-
-          </div>
-
-        </div>
-      )}
-
-      {/* ─── MODALS DIALOGS PANELS ─── */}
-
-      {/* Modal 1: Create Month Sheet */}
-      {isAddMonthOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Create Month Sheet</h3>
-              <button onClick={() => setIsAddMonthOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
-            </div>
-            <form onSubmit={handleAddMonth} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Month Name (e.g. "January 2026")</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="January 2026"
-                  value={monthName}
-                  onChange={e => setMonthName(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Base Salary (৳)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={salary}
-                  onChange={e => setSalary(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Freelance / Add-on (৳)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={addon}
-                  onChange={e => setAddon(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Bonuses (৳)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={bonus}
-                  onChange={e => setBonus(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <button
-                type="submit"
-                style={{ background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', marginTop: '8px' }}
-              >
-                Create Month Sheet
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal 2: Edit Income settings */}
-      {isEditMonthOpen && activeMonth && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Income Details: {activeMonth.monthName}</h3>
-              <button onClick={() => setIsEditMonthOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
-            </div>
-            <form onSubmit={handleEditMonth} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Salary (৳)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={salary}
-                  onChange={e => setSalary(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Freelance / Add-on (৳)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={addon}
-                  onChange={e => setAddon(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Bonus (৳)</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={bonus}
-                  onChange={e => setBonus(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <button
-                type="submit"
-                style={{ background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', marginTop: '8px' }}
-              >
-                Save Changes
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal 3: Log Expense */}
-      {isAddExpenseOpen && activeMonth && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Log Expense record</h3>
-              <button onClick={() => setIsAddExpenseOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
-            </div>
-            <form onSubmit={handleAddExpense} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Category</label>
-                <select
-                  value={expCategory}
-                  onChange={e => setExpCategory(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                >
-                  {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Description / Item</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. AWS server cost"
-                  value={expDesc}
-                  onChange={e => setExpDesc(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Amount (৳)</label>
-                <input
-                  type="number"
-                  required
-                  placeholder="0"
-                  value={expAmount}
-                  onChange={e => setExpAmount(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Date</label>
-                <input
-                  type="date"
-                  value={expDate}
-                  onChange={e => setExpDate(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <button
-                type="submit"
-                style={{ background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', marginTop: '8px' }}
-              >
-                Log Expense
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal 4: Edit Expense */}
-      {isEditExpenseOpen && activeMonth && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Edit Expense details</h3>
-              <button onClick={() => { setIsEditExpenseOpen(false); setEditingExpenseId(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
-            </div>
-            <form onSubmit={handleEditExpense} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Category</label>
-                <select
-                  value={expCategory}
-                  onChange={e => setExpCategory(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                >
-                  {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Description / Item</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. AWS server cost"
-                  value={expDesc}
-                  onChange={e => setExpDesc(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Amount (৳)</label>
-                <input
-                  type="number"
-                  required
-                  placeholder="0"
-                  value={expAmount}
-                  onChange={e => setExpAmount(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Date</label>
-                <input
-                  type="date"
-                  value={expDate}
-                  onChange={e => setExpDate(e.target.value)}
-                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                />
-              </div>
-              <button
-                type="submit"
-                style={{ background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', marginTop: '8px' }}
-              >
-                Save Changes
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

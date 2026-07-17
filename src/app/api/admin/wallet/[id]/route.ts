@@ -25,6 +25,7 @@ export async function PUT(req: NextRequest, segmentData: { params: Params }) {
     if (data.addon !== undefined) existing.addon = Number(data.addon);
     if (data.bonus !== undefined) existing.bonus = Number(data.bonus);
     if (data.expenses !== undefined) existing.expenses = data.expenses;
+    if (data.incomes !== undefined) existing.incomes = data.incomes;
 
     await existing.save();
     return NextResponse.json(existing);

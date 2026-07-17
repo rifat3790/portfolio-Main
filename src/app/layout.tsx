@@ -58,8 +58,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${syne.variable}`}>
-      <body>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} ${syne.variable}`} suppressHydrationWarning>
+      <body suppressHydrationWarning>
         {children}
       </body>
     </html>

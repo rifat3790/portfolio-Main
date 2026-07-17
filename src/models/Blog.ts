@@ -26,4 +26,8 @@ const BlogSchema = new Schema<IBlog>({
   order: { type: Number, default: 0 }
 }, { timestamps: true });
 
+if (process.env.NODE_ENV === 'development' && mongoose.models.Blog) {
+  delete (mongoose.models as any).Blog;
+}
+
 export default mongoose.models.Blog || mongoose.model<IBlog>('Blog', BlogSchema);
