@@ -2,6 +2,7 @@ import { getHomepageData } from '@/lib/data-cache';
 import HomeClient from './HomeClient';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function Home() {
   let projects = [];

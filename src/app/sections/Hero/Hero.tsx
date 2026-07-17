@@ -80,7 +80,7 @@ export default function Hero({ siteSettings }: HeroProps) {
             </div>
 
             {/* Premium Stat Row (directly in Hero below buttons as requested in mockup) */}
-            <div className={styles.aboutStatsRow} style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '20px 24px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', textAlign: 'left', marginBottom: '32px' }}>
+            <div className={styles.aboutStatsRow} style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '20px 24px', textAlign: 'left', marginBottom: '32px' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-primary)' }}>{siteSettings?.stat1Value || '5+'}</span>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{siteSettings?.stat1Label || 'Years Experience'}</span>
@@ -109,20 +109,7 @@ export default function Hero({ siteSettings }: HeroProps) {
             style={{ minHeight: '520px', display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}
           >
             {/* Glowing Neon Blue Ring Background */}
-            <div
-              style={{
-                position: 'absolute',
-                width: '460px',
-                height: '460px',
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(129, 140, 248, 0.16) 0%, rgba(59, 130, 246, 0.04) 50%, transparent 70%)',
-                border: '1.5px solid rgba(129, 140, 248, 0.25)',
-                boxShadow: '0 0 60px rgba(129, 140, 248, 0.15)',
-                zIndex: 0,
-                transform: 'translate3d(0,0,0)',
-                animation: 'slowSpin 35s linear infinite',
-              }}
-            />
+            <div className={styles.heroPremiumGlowRing} />
 
             {/* Main Portrait Frame - Masked inside a perfect responsive circle */}
             <div
@@ -282,7 +269,7 @@ export default function Hero({ siteSettings }: HeroProps) {
                 <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginLeft: '6px', fontFamily: 'monospace' }}>success.js</span>
               </div>
               {/* Window Body (Code) */}
-              <pre style={{ margin: 0, fontSize: '0.76rem', color: '#e2e8f0', fontFamily: 'monospace', textAlign: 'left', lineHeight: 1.45 }}>
+              <pre style={{ margin: 0, fontSize: '0.7rem', color: '#e2e8f0', fontFamily: 'monospace', textAlign: 'left', lineHeight: 1.45, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                 <span style={{ color: '#569cd6' }}>const</span> success = <span style={{ color: '#569cd6' }}>await</span> createAmazingThings({`{`}
                 {`\n  `}ideas: <span style={{ color: '#4fc1ff' }}>true</span>,
                 {`\n  `}code: <span style={{ color: '#ce9178' }}>"clean"</span>,

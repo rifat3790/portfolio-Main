@@ -3,6 +3,9 @@ import { Inter, Playfair_Display, Syne } from 'next/font/google';
 import './globals.css';
 import { getSettingsOnly } from '@/lib/data-cache';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',

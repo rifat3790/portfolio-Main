@@ -922,7 +922,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
           </div>
 
           {walletSubTab === 'single' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '24px', alignItems: 'start' }}>
+            <div className={styles.grid260_1fr}>
               
               {/* Months Selector Sidebar */}
               <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '16px' }}>
@@ -1025,7 +1025,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   </div>
 
                   {/* PREMIUM HUD: Score Ring, Forecast, recommendations alerts */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr 1fr', gap: '20px', marginBottom: '24px', background: 'rgba(7, 8, 15, 0.3)', border: '1px solid rgba(255,255,255,0.02)', borderRadius: '14px', padding: '16px' }}>
+                  <div className={styles.grid150_1fr_1fr} style={{ marginBottom: '24px', background: 'rgba(7, 8, 15, 0.3)', border: '1px solid rgba(255,255,255,0.02)', borderRadius: '14px', padding: '16px' }}>
                     
                     {/* Gauge 1: Health Score Circular Gauge */}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
@@ -1092,7 +1092,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   </div>
 
                   {/* Sub-sheet metrics summary cards */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+                  <div className={styles.grid3} style={{ marginBottom: '24px' }}>
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Earned</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4caf50', marginTop: '4px' }}>৳{getIncomeTotal(activeMonth).toLocaleString()}</div>
@@ -1117,7 +1117,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   </div>
 
                   {/* 2-Column Ledger Tables Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', alignItems: 'start' }}>
+                  <div className={styles.grid2}>
                     
                     {/* Left Column: Incomes Ledger */}
                     <div style={{ background: 'rgba(7, 8, 15, 0.15)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
@@ -1402,7 +1402,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 </div>
                 
                 {/* Global Stats Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
+                <div className={styles.grid4} style={{ marginBottom: '24px' }}>
                   <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Total Revenues</span>
                     <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#4caf50', marginTop: '6px' }}>৳{globalTotalIncome.toLocaleString()}</div>
@@ -1422,7 +1422,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 </div>
 
                 {/* Grid of Two Dynamic SVG Charts */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '20px' }}>
+                <div className={styles.grid2} style={{ gap: '24px', marginTop: '20px' }}>
                   
                   {/* Left Column: Revenue vs Spending Column Chart */}
                   <div style={{ background: 'rgba(7, 8, 15, 0.2)', border: '1px solid rgba(255, 255, 255, 0.02)', borderRadius: '12px', padding: '16px' }}>
@@ -1568,7 +1568,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   return (
                     <div style={{ marginTop: '24px', background: 'rgba(7, 8, 15, 0.2)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '12px', padding: '18px' }}>
                       <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Consolidated Expense Outlay Breakdown</h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                      <div className={styles.grid2} style={{ gap: '16px' }}>
                         {categoriesList.map(cat => {
                           const amt = globalCategoryTotals[cat] || 0;
                           const pct = (amt / globalTotalExpense) * 100;

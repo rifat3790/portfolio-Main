@@ -168,19 +168,11 @@
   box-shadow: 0 0 8px #10b981;
 }
 
-.nav {
+.navMenu {
   display: flex;
   flex-direction: column;
   gap: 8px;
   flex-grow: 1;
-}
-
-@media (max-width: 1024px) {
-  .nav {
-    flex-direction: row;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
 }
 
 .navItem {
@@ -201,12 +193,6 @@
   font-weight: 500;
 }
 
-@media (max-width: 1024px) {
-  .navItem {
-    width: auto;
-  }
-}
-
 .navItem:hover {
   color: var(--text-primary);
   background: rgba(246, 239, 226, 0.04);
@@ -216,14 +202,6 @@
   color: var(--accent-gold);
   background: rgba(var(--accent-gold-rgb), 0.06);
   border-left: 2px solid var(--accent-gold);
-}
-
-@media (max-width: 1024px) {
-  .navItemActive {
-    border-left: none;
-    border-bottom: 2px solid var(--accent-gold);
-    border-radius: 0;
-  }
 }
 
 .logoutBtn {
@@ -696,4 +674,276 @@
 .emptyStateIcon {
   color: var(--text-muted);
   margin-bottom: 16px;
+}
+
+/* Mobile Header & Sidebar Drawer Styles */
+.mobileHeader {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 60px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--glass-border-light);
+  position: sticky;
+  top: 0;
+  z-index: 1010;
+}
+
+.menuToggleBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.mobileBrand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.mobileActiveTab {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold);
+  background: rgba(var(--accent-gold-rgb), 0.08);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.sidebarBackdrop {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+}
+
+@media (max-width: 1024px) {
+  .mobileHeader {
+    display: flex;
+  }
+  
+  .sidebar {
+    position: fixed !important;
+    top: 60px !important;
+    left: -280px !important;
+    width: 280px !important;
+    height: calc(100vh - 60px) !important;
+    z-index: 1000 !important;
+    transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    overflow-y: auto !important;
+    border-right: 1px solid var(--glass-border-light) !important;
+    border-bottom: none !important;
+  }
+  
+  .sidebarOpen {
+    left: 0 !important;
+  }
+  
+  .dashboardLayout {
+    grid-template-columns: 1fr !important;
+    padding-top: 0px !important;
+  }
+  
+  .mainContent {
+    height: calc(100vh - 60px) !important;
+    max-height: calc(100vh - 60px) !important;
+  }
+}
+
+/* Responsive Grid Utilities */
+.grid260_1fr {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 991px) {
+  .grid260_1fr {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.grid150_1fr_1fr {
+  display: grid;
+  grid-template-columns: 150px 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .grid150_1fr_1fr {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 991px) {
+  .grid4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .grid4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 991px) {
+  .grid3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.brandSettingsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 991px) {
+  .brandSettingsGrid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* Responsive Message Board Utilities */
+.chatBackButton,
+.inboxBackButton {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--glass-border-light);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+  width: fit-content;
+}
+
+.chatBackButton:hover,
+.inboxBackButton:hover {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  background: rgba(var(--accent-gold-rgb), 0.05);
+}
+
+.chatConsoleWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.contactMessagesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .chatBackButton,
+  .inboxBackButton {
+    display: flex;
+  }
+
+  .chatManagerGrid.chatActive .sessionList {
+    display: none;
+  }
+  
+  .chatManagerGrid:not(.chatActive) .chatConsoleWrapper {
+    display: none;
+  }
+
+  .contactMessagesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .contactMessagesGrid.msgActive .inboxListWrapper {
+    display: none;
+  }
+  
+  .contactMessagesGrid:not(.msgActive) .messageDetailsWrapper {
+    display: none;
+  }
+}
+
+/* CRUD List and Modal Responsive Modifiers */
+@media (max-width: 768px) {
+  .crudItemCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .crudActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .modalContent {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .formSpanFull {
+    grid-column: span 1;
+  }
 }

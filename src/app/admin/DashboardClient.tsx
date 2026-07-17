@@ -37,10 +37,9 @@ import {
   Printer,
   FileText,
   Download,
-  CheckCircle,
-  AlertTriangle,
-  Save,
-  Eye
+  Eye,
+  Menu,
+  ArrowLeft
 } from 'lucide-react';
 import styles from './admin.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -94,8 +93,14 @@ type Tab = 'chat' | 'messages' | 'projects' | 'skills' | 'testimonials' | 'blogs
 
 export default function DashboardClient() {
   const [activeTab, setActiveTab] = useState<Tab>('chat');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const router = useRouter();
+
+  const selectTab = (tab: Tab) => {
+    setActiveTab(tab);
+    setIsSidebarOpen(false);
+  };
 
   // Toast Notification State
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; visible: boolean }>({
@@ -129,9 +134,24 @@ export default function DashboardClient() {
 
   return (
     <div className={styles.container}>
+      {/* Mobile Header */}
+      <header className={styles.mobileHeader}>
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={styles.menuToggleBtn} aria-label="Toggle Sidebar">
+          <Menu size={24} />
+        </button>
+        <span className={styles.mobileBrand}>Rifat Console</span>
+        <div className={styles.mobileActiveTab}>
+          {activeTab.replace('-', ' ')}
+        </div>
+      </header>
+
+      {isSidebarOpen && (
+        <div className={styles.sidebarBackdrop} onClick={() => setIsSidebarOpen(false)} />
+      )}
+
       <div className={styles.dashboardLayout}>
         {/* Sidebar */}
-        <aside className={styles.sidebar}>
+        <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ''}`}>
           <div className={styles.sidebarHeader}>
             <h2 className={styles.adminBrand}>Rifat Console</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--accent-gold)' }}>
@@ -142,7 +162,7 @@ export default function DashboardClient() {
 
           <nav className={styles.navMenu}>
             <button
-              onClick={() => setActiveTab('chat')}
+              onClick={() => selectTab('chat')}
               className={`${styles.navItem} ${activeTab === 'chat' ? styles.navItemActive : ''}`}
             >
               <MessageSquare size={18} />
@@ -150,7 +170,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('messages')}
+              onClick={() => selectTab('messages')}
               className={`${styles.navItem} ${activeTab === 'messages' ? styles.navItemActive : ''}`}
             >
               <Send size={18} />
@@ -158,7 +178,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('projects')}
+              onClick={() => selectTab('projects')}
               className={`${styles.navItem} ${activeTab === 'projects' ? styles.navItemActive : ''}`}
             >
               <Briefcase size={18} />
@@ -166,7 +186,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('skills')}
+              onClick={() => selectTab('skills')}
               className={`${styles.navItem} ${activeTab === 'skills' ? styles.navItemActive : ''}`}
             >
               <Layers size={18} />
@@ -174,7 +194,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('testimonials')}
+              onClick={() => selectTab('testimonials')}
               className={`${styles.navItem} ${activeTab === 'testimonials' ? styles.navItemActive : ''}`}
             >
               <Quote size={18} />
@@ -182,7 +202,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('blogs')}
+              onClick={() => selectTab('blogs')}
               className={`${styles.navItem} ${activeTab === 'blogs' ? styles.navItemActive : ''}`}
             >
               <BookOpen size={18} />
@@ -190,7 +210,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('services')}
+              onClick={() => selectTab('services')}
               className={`${styles.navItem} ${activeTab === 'services' ? styles.navItemActive : ''}`}
             >
               <Sparkles size={18} />
@@ -198,7 +218,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('experiences')}
+              onClick={() => selectTab('experiences')}
               className={`${styles.navItem} ${activeTab === 'experiences' ? styles.navItemActive : ''}`}
             >
               <Clock size={18} />
@@ -206,7 +226,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('hero-settings')}
+              onClick={() => selectTab('hero-settings')}
               className={`${styles.navItem} ${activeTab === 'hero-settings' ? styles.navItemActive : ''}`}
             >
               <Layout size={18} />
@@ -214,7 +234,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('about-settings')}
+              onClick={() => selectTab('about-settings')}
               className={`${styles.navItem} ${activeTab === 'about-settings' ? styles.navItemActive : ''}`}
             >
               <Briefcase size={18} />
@@ -222,7 +242,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('brand-settings')}
+              onClick={() => selectTab('brand-settings')}
               className={`${styles.navItem} ${activeTab === 'brand-settings' ? styles.navItemActive : ''}`}
             >
               <Globe size={18} />
@@ -230,7 +250,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('newsletter')}
+              onClick={() => selectTab('newsletter')}
               className={`${styles.navItem} ${activeTab === 'newsletter' ? styles.navItemActive : ''}`}
             >
               <Mail size={18} />
@@ -238,7 +258,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('wallet')}
+              onClick={() => selectTab('wallet')}
               className={`${styles.navItem} ${activeTab === 'wallet' ? styles.navItemActive : ''}`}
               style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', marginTop: '8px', paddingTop: '12px' }}
             >
@@ -247,7 +267,7 @@ export default function DashboardClient() {
             </button>
 
             <button
-              onClick={() => setActiveTab('team-tracker')}
+              onClick={() => selectTab('team-tracker')}
               className={`${styles.navItem} ${activeTab === 'team-tracker' ? styles.navItemActive : ''}`}
             >
               <TrendingUp size={18} style={{ color: '#00e5ff' }} />
@@ -256,7 +276,7 @@ export default function DashboardClient() {
           </nav>
 
           <button
-            onClick={handleLogout}
+            onClick={() => { setIsSidebarOpen(false); handleLogout(); }}
             disabled={logoutLoading}
             className={`${styles.navItem} ${styles.logoutBtn}`}
           >
@@ -482,7 +502,7 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
         <p className={styles.adminStatus}>Live conversations with your visitors</p>
       </div>
 
-      <div className={styles.chatManagerGrid}>
+      <div className={`${styles.chatManagerGrid} ${selectedSession ? styles.chatActive : ''}`}>
         {/* Sidebar Sessions */}
         <div className={styles.sessionList}>
           {sessions.length === 0 ? (
@@ -499,7 +519,7 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
                   className={`${styles.sessionItem} ${selectedSession?.sessionId === s.sessionId ? styles.sessionItemActive : ''}`}
                 >
                   <div className={styles.sessionItemHeader}>
-                    <span className={styles.sessionName}>{s.userName}</span>
+                     <span className={styles.sessionName}>{s.userName}</span>
                     <span className={styles.sessionTime}>{lastUpdated}</span>
                   </div>
                   {s.userEmail && (
@@ -520,10 +540,17 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
         </div>
 
         {/* Chat Console */}
-        <div style={{ background: 'var(--bg-tertiary)', display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+        <div className={styles.chatConsoleWrapper} style={{ background: 'var(--bg-tertiary)', display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
           {selectedSession ? (
             <div className={styles.chatConsole}>
               <div className={styles.chatConsoleHeader}>
+                <button
+                  onClick={() => setSelectedSession(null)}
+                  className={styles.chatBackButton}
+                  title="Back to conversations"
+                >
+                  <ArrowLeft size={20} />
+                </button>
                 <div className={styles.chatConsoleUser}>
                   <span className={styles.chatConsoleName}>{selectedSession.userName}</span>
                   <span className={styles.chatConsoleId}>
@@ -2731,6 +2758,25 @@ interface ISetting {
   heroSpecializationText?: string;
   heroShowFreelanceBadge?: boolean;
   heroFreelanceText?: string;
+  // About Feature Cards
+  aboutFeature1Title?: string;
+  aboutFeature1Desc?: string;
+  aboutFeature2Title?: string;
+  aboutFeature2Desc?: string;
+  aboutFeature3Title?: string;
+  aboutFeature3Desc?: string;
+  // About Signature & Quote
+  aboutSignatureRole?: string;
+  aboutQuoteText?: string;
+  // About Core Values
+  aboutValue1Title?: string;
+  aboutValue1Desc?: string;
+  aboutValue2Title?: string;
+  aboutValue2Desc?: string;
+  aboutValue3Title?: string;
+  aboutValue3Desc?: string;
+  aboutValue4Title?: string;
+  aboutValue4Desc?: string;
 }
 
 function HeroSettingsManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
@@ -3771,7 +3817,7 @@ function BrandSettingsManager({ showToast }: { showToast: (message: string, type
         <h1 className={styles.contentTitle}>Branding & General Settings</h1>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px', alignItems: 'start' }}>
+      <div className={styles.brandSettingsGrid}>
         <form onSubmit={handleSubmit} className={styles.formGrid} style={{ background: 'var(--bg-secondary)', padding: '32px', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
           <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>BRANDING IDENTITY</h3>
 
@@ -4003,8 +4049,8 @@ function ContactMessagesManager({ showToast }: { showToast: (message: string, ty
         <h1 className={styles.contentTitle}>Contact Form Submissions</h1>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
-        <div style={{ background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--glass-border)', overflow: 'hidden' }}>
+      <div className={`${styles.contactMessagesGrid} ${activeMessage ? styles.msgActive : ''}`}>
+        <div className={styles.inboxListWrapper} style={{ background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--glass-border)', overflow: 'hidden' }}>
           <div style={{ padding: '16px', borderBottom: '1px solid var(--glass-border-light)' }}>
             <h3 style={{ color: 'var(--accent-gold)' }}>Inbox</h3>
           </div>
@@ -4042,13 +4088,20 @@ function ContactMessagesManager({ showToast }: { showToast: (message: string, ty
           )}
         </div>
 
-        <div style={{ background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--glass-border)', padding: '24px', minHeight: '400px' }}>
+        <div className={styles.messageDetailsWrapper} style={{ background: 'var(--bg-secondary)', borderRadius: '8px', border: '1px solid var(--glass-border)', padding: '24px', minHeight: '400px' }}>
           {!activeMessage ? (
             <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>
               Select a message to read.
             </div>
           ) : (
             <div>
+              <button
+                onClick={() => setActiveMessage(null)}
+                className={styles.inboxBackButton}
+                title="Back to inbox"
+              >
+                <ArrowLeft size={16} /> Back to Inbox
+              </button>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '16px' }}>
                 <div>
                   <h2 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)' }}>{activeMessage.subject}</h2>

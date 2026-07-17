@@ -460,7 +460,7 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
       </div>
 
       {/* ─── DYNAMIC STATISTICS HUD MATRIX ─── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', zIndex: 1 }}>
+      <div className={styles.grid3} style={{ zIndex: 1 }}>
         <div style={{ background: 'rgba(7, 8, 15, 0.45)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', backdropFilter: 'blur(10px)' }}>
           <div style={{ background: 'rgba(129, 140, 248, 0.1)', color: '#818cf8', borderRadius: '10px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FileText size={24} />
@@ -1007,7 +1007,7 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
               {/* Workload Optimization Advisor */}
               <div style={{ background: 'rgba(15, 23, 42, 0.2)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '14px', padding: '20px' }}>
                 <h4 style={{ margin: '0 0 12px', fontSize: '0.85rem', color: '#a855f7', textTransform: 'uppercase', fontWeight: 700 }}>Workload Optimization Advisor</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                <div className={styles.grid3}>
                   <div style={{ background: 'rgba(7, 8, 15, 0.3)', padding: '12px', borderRadius: '8px' }}>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>RESOURCE ALLOCATION</div>
                     <div style={{ fontSize: '0.9rem', fontWeight: 700, marginTop: '4px', color: overloadedAssignees.length > 0 ? '#ff6b6b' : '#10b981' }}>
@@ -1037,7 +1037,7 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
               </div>
 
               {/* Workload grid cards detail */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+              <div className={styles.grid4}>
                 {Object.entries(wipByAssignee).sort((a, b) => b[1] - a[1]).map(([team, count]) => {
                   const val = wipValueByAssignee[team] || 0;
                   const members = wipMembersByAssignee[team] || [];

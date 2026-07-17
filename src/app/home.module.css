@@ -3278,7 +3278,7 @@
 }
 
 .heroPremiumTitle {
-  font-size: clamp(2.8rem, 5vw, 4.5rem);
+  font-size: clamp(2.2rem, 5.5vw, 4.5rem);
   font-family: var(--font-display);
   font-weight: 800;
   line-height: 1.15;
@@ -3391,13 +3391,15 @@
 
 .heroPremiumGlowRing {
   position: absolute;
-  width: 380px;
-  height: 380px;
+  width: clamp(280px, 35vw, 460px);
+  height: clamp(280px, 35vw, 460px);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
-  filter: blur(40px);
-  z-index: 1;
-  animation: slowSpin 20s linear infinite;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.16) 0%, rgba(59, 130, 246, 0.04) 50%, transparent 70%);
+  border: 1.5px solid rgba(129, 140, 248, 0.25);
+  box-shadow: 0 0 60px rgba(129, 140, 248, 0.15);
+  z-index: 0;
+  transform: translate3d(0,0,0);
+  animation: slowSpin 35s linear infinite;
 }
 
 .heroPremiumPortraitFrame {
@@ -3428,7 +3430,7 @@
 /* Badges overlay */
 .heroPremiumFreelanceBadge {
   position: absolute;
-  left: -8%;
+  left: -3%;
   top: 30%;
   background: rgba(7, 8, 15, 0.85);
   border: 1px solid rgba(129, 140, 248, 0.25);
@@ -3464,8 +3466,8 @@
 
 .heroPremiumSpecsCard {
   position: absolute;
-  right: -14%;
-  top: 15%;
+  right: -8%;
+  top: 55%;
   background: rgba(7, 8, 15, 0.9);
   border: 1px solid rgba(129, 140, 248, 0.25);
   borderRadius: 16px;
@@ -3478,7 +3480,7 @@
 
 .heroPremiumSatisfactionCard {
   position: absolute;
-  left: -12%;
+  left: -5%;
   bottom: 15%;
   background: rgba(7, 8, 15, 0.85);
   border: 1px solid rgba(129, 140, 248, 0.2);
