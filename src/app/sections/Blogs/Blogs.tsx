@@ -6,6 +6,8 @@ import { ArrowRight, BookOpen, ExternalLink, X, User, CheckCircle2 } from 'lucid
 import styles from '../../home.module.css';
 import { ISetting, IBlog } from '../shared/types';
 import { TwitterIcon, LinkedinIcon, FacebookIcon } from '../shared/icons';
+import Image from 'next/image';
+
 
 interface BlogsProps {
   siteSettings: ISetting | null;
@@ -96,9 +98,11 @@ export default function Blogs({ siteSettings, initialBlogs }: BlogsProps) {
                   margin: '0 auto'
                 }}
               >
-                <img 
+                <Image 
                   src="/blog_cup_graphic.png" 
                   alt="3D Digital Art Mug" 
+                  width={360}
+                  height={360}
                   className={styles.blogMugImg} 
                   loading="lazy"
                   decoding="async"
@@ -135,7 +139,7 @@ export default function Blogs({ siteSettings, initialBlogs }: BlogsProps) {
                   >
                     <div className={styles.blogCardImageWrapper}>
                       {blog.image ? (
-                        <img src={blog.image} alt={blog.title} className={styles.blogCardImage} />
+                        <img src={blog.image} alt={blog.title} className={styles.blogCardImage} loading="lazy" decoding="async" />
                       ) : (
                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-tertiary)' }}>
                           <BookOpen size={48} color="var(--text-muted)" />
@@ -152,9 +156,9 @@ export default function Blogs({ siteSettings, initialBlogs }: BlogsProps) {
                       <div className={styles.blogCardFooter}>
                         <div className={styles.blogCardAuthor}>
                           {siteSettings?.aboutImage ? (
-                            <img src={siteSettings.aboutImage} alt="Author" className={styles.blogCardAvatar} />
+                            <img src={siteSettings.aboutImage} alt="Author" className={styles.blogCardAvatar} loading="lazy" decoding="async" />
                           ) : siteSettings?.logoImage ? (
-                            <img src={siteSettings.logoImage} alt="Author" className={styles.blogCardAvatar} />
+                            <img src={siteSettings.logoImage} alt="Author" className={styles.blogCardAvatar} loading="lazy" decoding="async" />
                           ) : (
                             <div className={styles.blogCardAvatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-tertiary)' }}>
                               <User size={16} />
@@ -208,9 +212,9 @@ export default function Blogs({ siteSettings, initialBlogs }: BlogsProps) {
                     <div className={styles.blogReaderAuthorCard}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         {siteSettings?.aboutImage ? (
-                          <img src={siteSettings.aboutImage} alt="Author" className={styles.blogReaderAuthorAvatar} />
+                          <img src={siteSettings.aboutImage} alt="Author" className={styles.blogReaderAuthorAvatar} loading="lazy" decoding="async" />
                         ) : siteSettings?.logoImage ? (
-                          <img src={siteSettings.logoImage} alt="Author" className={styles.blogReaderAuthorAvatar} />
+                          <img src={siteSettings.logoImage} alt="Author" className={styles.blogReaderAuthorAvatar} loading="lazy" decoding="async" />
                         ) : (
                           <div className={styles.blogReaderAuthorAvatar} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-tertiary)' }}>
                             <User size={18} />
@@ -230,7 +234,7 @@ export default function Blogs({ siteSettings, initialBlogs }: BlogsProps) {
                   </div>
                   <div className={styles.blogReaderImageWrapper}>
                     {selectedBlog.image ? (
-                      <img src={selectedBlog.image} alt={selectedBlog.title} className={styles.blogReaderImage} />
+                      <img src={selectedBlog.image} alt={selectedBlog.title} className={styles.blogReaderImage} loading="lazy" decoding="async" />
                     ) : (
                       <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-tertiary)' }}>
                         <BookOpen size={64} color="var(--text-muted)" />

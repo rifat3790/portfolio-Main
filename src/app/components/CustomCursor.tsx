@@ -6,6 +6,7 @@ import { motion, useMotionValue, useSpring } from 'framer-motion';
 export default function CustomCursor() {
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   // Mouse coordinates
   const mouseX = useMotionValue(-100);
@@ -20,6 +21,15 @@ export default function CustomCursor() {
   const dotY = useSpring(mouseY, { damping: 45, stiffness: 450, mass: 0.2 });
 
   useEffect(() => {
+    // Check if device supports touch
+    const checkTouch = () => {
+      setIsTouchDevice(
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0
+      );
+    };
+    checkTouch();
+
     const handleMouseMove = (e: MouseEvent) => {
       // Offset by half of cursor size to center
       mouseX.set(e.clientX);
@@ -59,7 +69,7 @@ export default function CustomCursor() {
     };
   }, [mouseX, mouseY, isVisible]);
 
-  if (!isVisible) return null;
+  if (isTouchDevice || !isVisible) return null;
 
   return (
     <>

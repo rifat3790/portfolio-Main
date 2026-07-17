@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Briefcase, ArrowRight, CheckCircle2, Code, Clock, MapPin } from 'lucide-react';
@@ -98,7 +98,7 @@ export default function Experience({ siteSettings, initialExperiences }: Experie
                     <div className={`${styles.expCard} ${isActive ? styles.expCardActive : ''}`}>
                       <div className={styles.expCardLogoBox}>
                         {item.logo ? (
-                          <img src={item.logo} alt={item.company} className={styles.expCardLogoImg} />
+                          <img src={item.logo} alt={item.company} className={styles.expCardLogoImg} loading="lazy" decoding="async" />
                         ) : (
                           <div className={styles.expCardLogoPlaceholder}>{item.company.charAt(0)}</div>
                         )}
@@ -124,7 +124,7 @@ export default function Experience({ siteSettings, initialExperiences }: Experie
                   <div className={styles.expDetailHeader}>
                     <div className={styles.expDetailLogoBox}>
                       {selectedExp.logo ? (
-                        <img src={selectedExp.logo} alt={selectedExp.company} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={selectedExp.logo} alt={selectedExp.company} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
                         <div className={styles.expCardLogoPlaceholder} style={{ fontSize: '1.8rem', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {selectedExp.company.charAt(0)}

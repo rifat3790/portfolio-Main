@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -127,7 +127,7 @@ export default function Projects({ siteSettings, initialProjects, onSelectProjec
                   onClick={() => onSelectProject(p)}
                 >
                   <div className={styles.projectCardImageWrapper}>
-                    <img src={p.image} alt={p.title} className={styles.projectCardImage} />
+                    <img src={p.image} alt={p.title} className={styles.projectCardImage} loading="lazy" decoding="async" />
                     <div className={styles.projectCardIndex}>{(idx + 1).toString().padStart(2, '0')}</div>
                   </div>
                   <div className={styles.projectCardContent}>

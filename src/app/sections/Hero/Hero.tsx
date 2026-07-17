@@ -136,6 +136,7 @@ export default function Hero({ siteSettings }: HeroProps) {
                   alt="Refayet Hossen Portrait"
                   loading="eager"
                   decoding="async"
+                  fetchPriority="high"
                   style={{
                     width: '100%',
                     height: '100%',

@@ -6,6 +6,8 @@ import { Briefcase, CheckCircle2, Star, Database, ShoppingBag, Cpu, MessageSquar
 import styles from '../../home.module.css';
 import { ISetting, IService } from '../shared/types';
 import { renderServiceIcon } from '../shared/icons';
+import Image from 'next/image';
+
 
 interface ServicesProps {
   siteSettings: ISetting | null;
@@ -120,9 +122,11 @@ export default function Services({ siteSettings, initialServices }: ServicesProp
                 margin: '0 auto',
               }}
             >
-              <img
+              <Image
                 src="/services_laptop_display.png"
                 alt="Laptop display"
+                width={360}
+                height={360}
                 loading="lazy"
                 decoding="async"
                 style={{

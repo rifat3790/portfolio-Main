@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -68,7 +68,7 @@ export default function Testimonials({ siteSettings, initialTestimonials }: Test
                 <div className={styles.testimonialCardAuthor}>
                   <div className={styles.testimonialCardAvatarBox}>
                     {t.avatar ? (
-                      <img src={t.avatar} alt={t.name} />
+                      <img src={t.avatar} alt={t.name} loading="lazy" decoding="async" />
                     ) : (
                       <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-tertiary)' }}>
                         <User size={16} color="var(--accent-gold)" />

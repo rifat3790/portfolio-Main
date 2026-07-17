@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Satisfy&display=swap');
 
 .container {
   min-height: 100vh;
@@ -3295,7 +3294,7 @@
 }
 
 .heroPremiumCursiveWord {
-  font-family: 'Satisfy', cursive;
+  font-family: var(--font-cursive), cursive;
   color: #ffffff;
   font-weight: 300;
   font-size: 0.92em;
@@ -4279,7 +4278,7 @@
 }
 
 .contactPremiumSignatureText {
-  font-family: 'Satisfy', cursive;
+  font-family: var(--font-cursive), cursive;
   color: #94a3b8;
   font-size: 1.6rem;
   margin-bottom: 16px;
@@ -5293,7 +5292,7 @@
 }
 
 .aboutSignatureText {
-  font-family: 'Satisfy', cursive;
+  font-family: var(--font-cursive), cursive;
   font-size: 1.8rem;
   color: #94a3b8;
   margin-bottom: 4px;
@@ -6733,4 +6732,261 @@
   border-color: #c084fc;
   box-shadow: 0 6px 20px rgba(167, 139, 250, 0.25);
   transform: translateY(-2px);
+}
+
+/* Redesigned About Section Custom Classes */
+.aboutLuxuryAura {
+  position: absolute;
+  width: 140%;
+  height: 140%;
+  top: -20%;
+  left: -20%;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.09) 0%, rgba(192, 132, 252, 0.04) 50%, transparent 70%);
+  z-index: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: spinAuraAbout 22s linear infinite;
+}
+
+@keyframes spinAuraAbout {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.aboutPortraitArchedFrame {
+  width: 100%;
+  height: 485px;
+  border-radius: 240px 240px 24px 24px;
+  overflow: hidden;
+  border: 1px solid rgba(129, 140, 248, 0.25);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), inset 0 0 20px rgba(129, 140, 248, 0.15);
+  position: relative;
+  z-index: 5;
+  background: var(--bg-tertiary);
+}
+
+.aboutPortraitArchedFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.aboutPortraitArchedFrame:hover img {
+  transform: scale(1.04) translateY(-1%);
+}
+
+.aboutPortraitArchedFrame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(3, 3, 5, 0.92) 100%);
+  pointer-events: none;
+}
+
+.aboutFloatingProfileCard {
+  position: absolute;
+  bottom: 24px;
+  left: -28px;
+  background: rgba(7, 8, 15, 0.82);
+  border: 1px solid rgba(129, 140, 248, 0.25);
+  padding: 14px 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  text-align: left;
+}
+
+.aboutActiveIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #22c55e;
+  position: relative;
+  display: inline-block;
+}
+
+.aboutActiveIndicator::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #22c55e;
+  animation: pingIndicator 1.6s infinite;
+  opacity: 0.8;
+}
+
+@keyframes pingIndicator {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.aboutFloatingTechCard {
+  position: absolute;
+  top: 36px;
+  right: -36px;
+  background: rgba(7, 8, 15, 0.82);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  padding: 12px 18px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  max-width: 180px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  text-align: left;
+}
+
+.aboutTechTag {
+  font-size: 0.65rem;
+  color: var(--text-primary);
+  background: rgba(129, 140, 248, 0.1);
+  border: 1px solid rgba(129, 140, 248, 0.18);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+.aboutFeatureCardFull {
+  grid-column: span 2;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 20px;
+}
+
+@media (max-width: 991px) {
+  .aboutPortraitArchedFrame {
+    height: 440px;
+  }
+}
+
+@media (max-width: 768px) {
+  .aboutFeatureCardFull {
+    grid-column: span 1;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px;
+  }
+  .aboutFloatingProfileCard {
+    left: 10px;
+    bottom: -15px;
+    padding: 10px 16px;
+  }
+  .aboutFloatingTechCard {
+    left: 10px;
+    right: auto;
+    top: -15px;
+    padding: 10px 16px;
+    max-width: 160px;
+  }
+  .aboutPortraitArchedFrame {
+    height: 380px;
+    border-radius: 160px 160px 20px 20px;
+  }
+}
+
+/* Core Philosophy grid */
+.aboutPhilosophyGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-top: 64px;
+  width: 100%;
+}
+
+.aboutPhilosophyItem {
+  background: rgba(12, 13, 18, 0.35);
+  border: 1px solid var(--glass-border-light);
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: left;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.aboutPhilosophyItem:hover {
+  background: rgba(12, 13, 18, 0.6);
+  border-color: var(--glass-border);
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 20px rgba(129, 140, 248, 0.04);
+}
+
+.aboutPhilosophyItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #818cf8, #c084fc);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.aboutPhilosophyItem:hover::before {
+  opacity: 1;
+}
+
+.aboutPhilosophyHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.aboutPhilosophyNumber {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.aboutPhilosophyLine {
+  flex-grow: 1;
+  height: 1px;
+  background: var(--glass-border-light);
+  transition: background-color 0.3s ease;
+}
+
+.aboutPhilosophyItem:hover .aboutPhilosophyLine {
+  background: var(--glass-border);
+}
+
+.aboutPhilosophyTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.aboutPhilosophyDesc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+@media (max-width: 991px) {
+  .aboutPhilosophyGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .aboutPhilosophyGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }

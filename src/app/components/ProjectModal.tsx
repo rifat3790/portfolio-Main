@@ -96,6 +96,8 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                   src={screenshots[activeIdx] || project.image} 
                   alt={`${project.title} screenshot view`} 
                   className={styles.projModalLaptopScreen} 
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             </div>
@@ -198,7 +200,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                     onClick={() => setActiveIdx(idx)}
                     className={`${styles.projModalThumbnailWrapper} ${activeIdx === idx ? styles.projModalThumbnailActive : ''}`}
                   >
-                    <img src={shot} alt="Screenshot thumb" className={styles.projModalThumbnail} />
+                    <img src={shot} alt="Screenshot thumb" className={styles.projModalThumbnail} loading="lazy" decoding="async" />
                   </div>
                 ))}
               </div>

@@ -22,19 +22,23 @@ export default function About({ siteSettings }: AboutProps) {
             initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.4 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
+            {/* Slow Spinning Background Aura */}
+            <div className={styles.aboutLuxuryAura} />
+
             {/* Dot Pattern Background Graphic */}
             <div className={styles.aboutDotPattern}>
               <svg width="64" height="64" fill="currentColor" viewBox="0 0 20 20">
-                <pattern id="dot-pattern" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+                <pattern id="dot-pattern-about" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
                   <circle cx="1" cy="1" r="1" fill="currentColor" />
                 </pattern>
-                <rect width="20" height="20" fill="url(#dot-pattern)" />
+                <rect width="20" height="20" fill="url(#dot-pattern-about)" />
               </svg>
             </div>
 
-            <div className={styles.aboutPortraitImage}>
+            {/* Asymmetrical Arched Frame */}
+            <div className={styles.aboutPortraitArchedFrame}>
               {siteSettings?.aboutImage ? (
                 <img src={siteSettings.aboutImage} alt="Biography portrait" loading="lazy" decoding="async" />
               ) : (
@@ -44,12 +48,46 @@ export default function About({ siteSettings }: AboutProps) {
               )}
             </div>
 
-            {/* absolute overlay badge */}
-            <div className={styles.aboutCupOverlay}>
-              <div style={{ background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)', width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
-                <span>&lt;/&gt;</span>
+            {/* Overlay 1: Floating Profile Card */}
+            <motion.div
+              className={styles.aboutFloatingProfileCard}
+              whileHover={{ scale: 1.05, y: -5 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className={styles.aboutActiveIndicator} />
+                <span style={{ fontSize: '0.78rem', color: '#ffffff', fontWeight: 700 }}>
+                  {siteSettings?.aboutName || 'Refayet Hossen'}
+                </span>
               </div>
-            </div>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                {siteSettings?.aboutSignatureRole || 'Full Stack Developer'}
+              </span>
+            </motion.div>
+
+            {/* Overlay 2: Floating Tech Stack Blueprint */}
+            <motion.div
+              className={styles.aboutFloatingTechCard}
+              whileHover={{ scale: 1.05, y: -5 }}
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '6px' }}>
+                <Briefcase size={12} style={{ color: 'var(--accent-gold)' }} />
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Blueprint Stack</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                <span className={styles.aboutTechTag}>React</span>
+                <span className={styles.aboutTechTag}>Next.js</span>
+                <span className={styles.aboutTechTag}>Mongoose</span>
+                <span className={styles.aboutTechTag}>Node.js</span>
+              </div>
+            </motion.div>
           </motion.div>
 
           {/* Right Side: Copy & Info Cards */}
@@ -58,35 +96,24 @@ export default function About({ siteSettings }: AboutProps) {
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.4, delay: 0.08 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
           >
             <span className={styles.aboutSubBadge}>
               {siteSettings?.aboutHeading || 'ABOUT ME'}
             </span>
-            <h2 style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.4rem)', fontFamily: 'var(--font-display)', marginBottom: '20px', letterSpacing: '-0.01em', lineHeight: 1.2, color: '#ffffff', fontWeight: 800 }}>
-              {(() => {
-                const title = siteSettings?.aboutTitle || 'Crafting Digital Experiences That Drive Real Results.';
-                const splitIndex = title.indexOf('That');
-                if (splitIndex !== -1) {
-                  return (
-                    <>
-                      {title.substring(0, splitIndex)} <span className={styles.aboutGradientText} style={{ background: 'linear-gradient(135deg, #60a5fa, #c084fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{title.substring(splitIndex)}</span>
-                    </>
-                  );
-                }
-                return title;
-              })()}
+            <h2 className="gold-gradient-text" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.4rem)', fontFamily: 'var(--font-display)', marginBottom: '20px', letterSpacing: '-0.01em', lineHeight: 1.2, fontWeight: 800 }}>
+              {siteSettings?.aboutTitle || 'Crafting Digital Experiences That Drive Real Results.'}
             </h2>
 
             <p style={{ fontSize: '0.98rem', color: '#94a3b8', lineHeight: '1.7', fontFamily: 'var(--font-sans)', fontWeight: 300, marginBottom: '24px' }}>
               {siteSettings?.aboutText || "I'm Md. Refayet Hossen, a Full Stack Developer with a passion for building modern, scalable, and user-centric web applications."}
             </p>
 
-            {/* 3 columns feature list */}
+            {/* Bento feature list */}
             <div className={styles.aboutFeaturesList}>
               <div className={styles.aboutFeatureCard}>
                 <div className={styles.aboutFeatureIconBox}>
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
                 </div>
                 <h4 className={styles.aboutFeatureTitle}>{siteSettings?.aboutFeature1Title || 'Purpose-Driven'}</h4>
                 <p className={styles.aboutFeatureDesc}>{siteSettings?.aboutFeature1Desc || 'I build with purpose, focused on solving real problems.'}</p>
@@ -94,18 +121,20 @@ export default function About({ siteSettings }: AboutProps) {
 
               <div className={styles.aboutFeatureCard}>
                 <div className={styles.aboutFeatureIconBox}>
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="22" y2="7"/><line x1="2" y1="17" x2="22" y2="17"/></svg>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2" ry="2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="22" y2="7"/><line x1="2" y1="17" x2="22" y2="17"/></svg>
                 </div>
                 <h4 className={styles.aboutFeatureTitle}>{siteSettings?.aboutFeature2Title || 'Modern & Scalable'}</h4>
                 <p className={styles.aboutFeatureDesc}>{siteSettings?.aboutFeature2Desc || 'I use the latest technologies to build fast, secure applications.'}</p>
               </div>
 
-              <div className={styles.aboutFeatureCard}>
+              <div className={`${styles.aboutFeatureCard} ${styles.aboutFeatureCardFull}`}>
                 <div className={styles.aboutFeatureIconBox}>
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
-                <h4 className={styles.aboutFeatureTitle}>{siteSettings?.aboutFeature3Title || 'Collaborative'}</h4>
-                <p className={styles.aboutFeatureDesc}>{siteSettings?.aboutFeature3Desc || 'I believe in clear communication and strong collaboration.'}</p>
+                <div>
+                  <h4 className={styles.aboutFeatureTitle}>{siteSettings?.aboutFeature3Title || 'Collaborative Engineering'}</h4>
+                  <p className={styles.aboutFeatureDesc}>{siteSettings?.aboutFeature3Desc || 'I believe in clear communication, direct collaboration, and rapid agile workflows to make ideas happen.'}</p>
+                </div>
               </div>
             </div>
 
@@ -117,9 +146,9 @@ export default function About({ siteSettings }: AboutProps) {
               </div>
 
               <div className={styles.aboutQuoteBlock}>
-                <Quote size={20} className={styles.aboutQuoteIcon} style={{ transform: 'rotate(180deg)', opacity: 0.6 }} />
+                <Quote size={18} className={styles.aboutQuoteIcon} style={{ transform: 'rotate(180deg)', opacity: 0.6 }} />
                 <p className={styles.aboutQuoteText}>
-                  {siteSettings?.aboutQuoteText || 'My goal is to help businesses and individuals turn their ideas into powerful digital solutions that make a difference.'}
+                  {siteSettings?.aboutQuoteText || 'My goal is to help businesses and individuals turn their ideas into powerful digital solutions.'}
                 </p>
               </div>
             </div>
@@ -139,30 +168,42 @@ export default function About({ siteSettings }: AboutProps) {
 
         </div>
 
-        {/* Premium Philosophy / Core Values Showcase (Replaces duplicate stats row) */}
-        <div className={styles.aboutStatsRow} style={{ marginTop: '48px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border-light)', borderRadius: '20px' }}>
-          <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-            <span style={{ fontSize: '0.72rem', color: '#818cf8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>01 / QUALITY</span>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{siteSettings?.aboutValue1Title || 'Quality First'}</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>{siteSettings?.aboutValue1Desc || 'Delivering pixel-perfect, premium code matching top international standards.'}</p>
+        {/* Premium Philosophy / Core Values Showcase */}
+        <div className={styles.aboutPhilosophyGrid}>
+          <div className={styles.aboutPhilosophyItem}>
+            <div className={styles.aboutPhilosophyHeader}>
+              <span className={styles.aboutPhilosophyNumber}>01</span>
+              <span className={styles.aboutPhilosophyLine} />
+            </div>
+            <h4 className={styles.aboutPhilosophyTitle}>{siteSettings?.aboutValue1Title || 'Quality First'}</h4>
+            <p className={styles.aboutPhilosophyDesc}>{siteSettings?.aboutValue1Desc || 'Delivering pixel-perfect, premium code matching top international standards.'}</p>
           </div>
 
-          <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-            <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>02 / SPEED</span>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{siteSettings?.aboutValue2Title || 'Agile & Responsive'}</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>{siteSettings?.aboutValue2Desc || 'Fast iterations, transparent updates, and super lightweight pages.'}</p>
+          <div className={styles.aboutPhilosophyItem}>
+            <div className={styles.aboutPhilosophyHeader}>
+              <span className={styles.aboutPhilosophyNumber}>02</span>
+              <span className={styles.aboutPhilosophyLine} />
+            </div>
+            <h4 className={styles.aboutPhilosophyTitle}>{siteSettings?.aboutValue2Title || 'Agile & Responsive'}</h4>
+            <p className={styles.aboutPhilosophyDesc}>{siteSettings?.aboutValue2Desc || 'Fast iterations, transparent updates, and super lightweight pages.'}</p>
           </div>
 
-          <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-            <span style={{ fontSize: '0.72rem', color: '#818cf8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>03 / SECURITY</span>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{siteSettings?.aboutValue3Title || 'Clean & Scalable'}</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>{siteSettings?.aboutValue3Desc || 'Future-proof modular structures tailored for high-scale enterprise operations.'}</p>
+          <div className={styles.aboutPhilosophyItem}>
+            <div className={styles.aboutPhilosophyHeader}>
+              <span className={styles.aboutPhilosophyNumber}>03</span>
+              <span className={styles.aboutPhilosophyLine} />
+            </div>
+            <h4 className={styles.aboutPhilosophyTitle}>{siteSettings?.aboutValue3Title || 'Clean & Scalable'}</h4>
+            <p className={styles.aboutPhilosophyDesc}>{siteSettings?.aboutValue3Desc || 'Future-proof modular structures tailored for high-scale enterprise operations.'}</p>
           </div>
 
-          <div className={styles.aboutStatItem} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-            <span style={{ fontSize: '0.72rem', color: '#c084fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>04 / VISION</span>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{siteSettings?.aboutValue4Title || 'Client-Centric'}</h4>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, fontWeight: 300, lineHeight: 1.4 }}>{siteSettings?.aboutValue4Desc || 'Partnering closely to solve real-world problems and drive conversion rates.'}</p>
+          <div className={styles.aboutPhilosophyItem}>
+            <div className={styles.aboutPhilosophyHeader}>
+              <span className={styles.aboutPhilosophyNumber}>04</span>
+              <span className={styles.aboutPhilosophyLine} />
+            </div>
+            <h4 className={styles.aboutPhilosophyTitle}>{siteSettings?.aboutValue4Title || 'Client-Centric'}</h4>
+            <p className={styles.aboutPhilosophyDesc}>{siteSettings?.aboutValue4Desc || 'Partnering closely to solve real-world problems and drive conversion rates.'}</p>
           </div>
         </div>
 

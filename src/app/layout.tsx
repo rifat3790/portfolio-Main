@@ -1,10 +1,7 @@
 import type { Metadata } from 'next';
-import { Inter, Playfair_Display, Syne } from 'next/font/google';
+import { Inter, Playfair_Display, Syne, Satisfy } from 'next/font/google';
 import './globals.css';
 import { getSettingsOnly } from '@/lib/data-cache';
-
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,6 +18,13 @@ const playfair = Playfair_Display({
 const syne = Syne({
   subsets: ['latin'],
   variable: '--font-display',
+  display: 'swap',
+});
+
+const satisfy = Satisfy({
+  subsets: ['latin'],
+  variable: '--font-cursive',
+  weight: '400',
   display: 'swap',
 });
 
@@ -61,7 +65,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${syne.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} ${syne.variable} ${satisfy.variable}`} suppressHydrationWarning>
       <body suppressHydrationWarning>
         {children}
       </body>
