@@ -352,17 +352,17 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
   // 📄 On-Demand Direct PDF Download Engine (Bypasses popup-blockers and downloads direct vector PDF files)
   const downloadPDFHelper = (htmlContent: string, filename: string) => {
-    const fallbackPrint = (html: string) => {
-      showToast('Opening print preview to save PDF...', 'info');
+    const fallbackPrint = (html: string, title: string) => {
+      showToast('Opening print preview for PDF...', 'info');
       const printWindow = window.open('', '_blank');
       if (printWindow) {
         printWindow.document.write(`
           <!DOCTYPE html>
           <html>
             <head>
-              <title>${filename}</title>
+              <title>${title}</title>
               <style>
-                body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #1e293b; }
+                body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #1e293b; background: #ffffff; }
                 @page { size: A4; margin: 12mm; }
               </style>
             </head>
@@ -378,52 +378,60 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
         `);
         printWindow.document.close();
       } else {
-        showToast('Please allow popups to save or print PDF', 'error');
+        showToast('Please allow popups to download or print PDF', 'error');
       }
     };
 
+    // Render container with fixed A4 width in active viewport for crisp 100% non-blank PDF capture
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.width = '794px';
+    container.style.zIndex = '999999';
+    container.style.background = '#ffffff';
+    container.style.color = '#0f172a';
+    container.style.opacity = '1';
+    container.style.pointerEvents = 'none';
+    container.innerHTML = htmlContent;
+    document.body.appendChild(container);
+
     const runDownload = () => {
       const opt = {
-        margin:       10,
+        margin:       [10, 10, 10, 10],
         filename:     filename,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, windowWidth: 800 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
-      
-      const element = document.createElement('div');
-      element.innerHTML = htmlContent;
-      element.style.position = 'absolute';
-      element.style.left = '-9999px';
-      element.style.top = '-9999px';
-      document.body.appendChild(element);
-      
+
       if ((window as any).html2pdf) {
-        (window as any).html2pdf().from(element).set(opt).save().then(() => {
-          if (document.body.contains(element)) document.body.removeChild(element);
+        (window as any).html2pdf().from(container).set(opt).save().then(() => {
+          if (document.body.contains(container)) document.body.removeChild(container);
           showToast('PDF downloaded successfully!', 'success');
         }).catch((err: any) => {
           console.error('html2pdf error:', err);
-          if (document.body.contains(element)) document.body.removeChild(element);
-          fallbackPrint(htmlContent);
+          if (document.body.contains(container)) document.body.removeChild(container);
+          fallbackPrint(htmlContent, filename);
         });
       } else {
-        if (document.body.contains(element)) document.body.removeChild(element);
-        fallbackPrint(htmlContent);
+        if (document.body.contains(container)) document.body.removeChild(container);
+        fallbackPrint(htmlContent, filename);
       }
     };
 
     if ((window as any).html2pdf) {
-      runDownload();
+      setTimeout(runDownload, 150);
     } else {
       showToast('Initializing secure PDF engine...', 'info');
       const script = document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
       script.onload = () => {
-        runDownload();
+        setTimeout(runDownload, 250);
       };
       script.onerror = () => {
-        fallbackPrint(htmlContent);
+        if (document.body.contains(container)) document.body.removeChild(container);
+        fallbackPrint(htmlContent, filename);
       };
       document.body.appendChild(script);
     }
