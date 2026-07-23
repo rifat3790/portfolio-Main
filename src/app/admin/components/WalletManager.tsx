@@ -352,6 +352,36 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
   // 📄 On-Demand Direct PDF Download Engine (Bypasses popup-blockers and downloads direct vector PDF files)
   const downloadPDFHelper = (htmlContent: string, filename: string) => {
+    const fallbackPrint = (html: string) => {
+      showToast('Opening print preview to save PDF...', 'info');
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <title>${filename}</title>
+              <style>
+                body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #1e293b; }
+                @page { size: A4; margin: 12mm; }
+              </style>
+            </head>
+            <body>
+              ${html}
+              <script>
+                window.onload = function() {
+                  window.print();
+                };
+              </script>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+      } else {
+        showToast('Please allow popups to save or print PDF', 'error');
+      }
+    };
+
     const runDownload = () => {
       const opt = {
         margin:       10,
@@ -363,13 +393,24 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       
       const element = document.createElement('div');
       element.innerHTML = htmlContent;
+      element.style.position = 'absolute';
+      element.style.left = '-9999px';
+      element.style.top = '-9999px';
+      document.body.appendChild(element);
       
-      (window as any).html2pdf().from(element).set(opt).save().then(() => {
-        showToast('PDF downloaded successfully!', 'success');
-      }).catch((err: any) => {
-        console.error(err);
-        showToast('Failed to download PDF', 'error');
-      });
+      if ((window as any).html2pdf) {
+        (window as any).html2pdf().from(element).set(opt).save().then(() => {
+          if (document.body.contains(element)) document.body.removeChild(element);
+          showToast('PDF downloaded successfully!', 'success');
+        }).catch((err: any) => {
+          console.error('html2pdf error:', err);
+          if (document.body.contains(element)) document.body.removeChild(element);
+          fallbackPrint(htmlContent);
+        });
+      } else {
+        if (document.body.contains(element)) document.body.removeChild(element);
+        fallbackPrint(htmlContent);
+      }
     };
 
     if ((window as any).html2pdf) {
@@ -377,12 +418,12 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     } else {
       showToast('Initializing secure PDF engine...', 'info');
       const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/cloudflare/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
       script.onload = () => {
         runDownload();
       };
       script.onerror = () => {
-        showToast('Failed to initialize PDF engine.', 'error');
+        fallbackPrint(htmlContent);
       };
       document.body.appendChild(script);
     }
