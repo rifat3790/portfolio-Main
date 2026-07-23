@@ -1341,6 +1341,18 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const activeHealthInfo = getHealthGrade(activeHealthScore);
   const activeMonthSavings = activeMonth ? getSavings(activeMonth) : 0;
 
+  // 📦 1-Click JSON Data Backup Engine
+  const exportAllDataJSON = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(months, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `Wallet_Full_Backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showToast('Full Wallet JSON backup file downloaded!', 'success');
+  };
+
   return (
     <div style={{ fontFamily: 'var(--font-sans)', color: '#ffffff', padding: '10px' }}>
       
@@ -1354,24 +1366,45 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             Monitor side gig revenues, base salaries, bonuses, and detail monthly expenses.
           </p>
         </div>
-        <button
-          onClick={() => setIsAddMonthOpen(true)}
-          style={{
-            background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
-            color: '#fff',
-            border: 'none',
-            padding: '10px 18px',
-            borderRadius: '8px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: '0 4px 12px rgba(129, 140, 248, 0.3)'
-          }}
-        >
-          <Plus size={16} /> Add Month Sheet
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button
+            onClick={exportAllDataJSON}
+            style={{
+              background: 'rgba(15, 23, 42, 0.4)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'var(--text-secondary)',
+              padding: '10px 16px',
+              borderRadius: '8px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.82rem'
+            }}
+            title="Download full database JSON backup"
+          >
+            <FileText size={15} /> Backup JSON
+          </button>
+          <button
+            onClick={() => setIsAddMonthOpen(true)}
+            style={{
+              background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
+              color: '#fff',
+              border: 'none',
+              padding: '10px 18px',
+              borderRadius: '8px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(129, 140, 248, 0.3)'
+            }}
+          >
+            <Plus size={16} /> Add Month Sheet
+          </button>
+        </div>
       </div>
 
       {loading ? (
