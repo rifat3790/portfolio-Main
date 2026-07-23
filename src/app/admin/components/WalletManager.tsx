@@ -350,10 +350,11 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     showToast('Ledger CSV file generated successfully!', 'success');
   };
 
-  // 📄 On-Demand Direct PDF Download Engine (Bypasses popup-blockers and downloads direct vector PDF files)
+  // 📄 On-Demand Direct Vector PDF Download Engine (100% Crisp Vector Text & Zero Blank Pages)
   const downloadPDFHelper = (htmlContent: string, filename: string) => {
-    // 1. Native Iframe Vector PDF / Print Engine (100% Reliable, Zero Blank Space, Selectable Text)
-    const printWithIframe = (html: string, title: string) => {
+    const title = filename.replace('.pdf', '').replace(/_/g, ' ');
+
+    const printWithIframe = (html: string, docTitle: string) => {
       showToast('Preparing PDF document...', 'info');
       const iframe = document.createElement('iframe');
       iframe.style.position = 'fixed';
@@ -376,7 +377,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
         <html>
           <head>
             <meta charset="utf-8" />
-            <title>${title}</title>
+            <title>${docTitle}</title>
             <style>
               @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
               * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -423,62 +424,92 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       }, 350);
     };
 
-    // 2. Direct File Download via html2pdf (with window.scrollTo(0,0) scroll fix)
-    const runDirectDownload = () => {
-      const origScrollY = window.scrollY;
-      window.scrollTo(0, 0);
+    try {
+      const printWindow = window.open('', '_blank');
+      
+      const fullDoc = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8" />
+            <title>${title}</title>
+            <style>
+              @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+              * { box-sizing: border-box; margin: 0; padding: 0; }
+              body {
+                font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+                background: #ffffff !important;
+                color: #0f172a !important;
+                padding: 30px;
+                font-size: 12px;
+                line-height: 1.5;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              @page {
+                size: A4 portrait;
+                margin: 10mm;
+              }
+              .no-print {
+                background: #0f172a;
+                color: #ffffff;
+                padding: 12px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                border-radius: 8px;
+                font-family: system-ui, sans-serif;
+              }
+              .no-print button {
+                background: #6366f1;
+                color: #ffffff;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-weight: 700;
+                cursor: pointer;
+                font-size: 13px;
+              }
+              @media print {
+                .no-print { display: none !important; }
+                body { padding: 0 !important; }
+              }
+              table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+              th, td { padding: 8px 10px; text-align: left; }
+              tr { page-break-inside: avoid; }
+            </style>
+          </head>
+          <body>
+            <div class="no-print">
+              <span style="font-weight: 700; font-size: 14px;">📄 Rifat Finance Console PDF Statement</span>
+              <div style="display: flex; gap: 10px;">
+                <button onclick="window.print()">📥 Save as PDF / Print</button>
+                <button onclick="window.close()" style="background: #334155;">✖ Close</button>
+              </div>
+            </div>
+            ${htmlContent}
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                }, 300);
+              };
+            </script>
+          </body>
+        </html>
+      `;
 
-      const container = document.createElement('div');
-      container.style.position = 'absolute';
-      container.style.top = '0';
-      container.style.left = '0';
-      container.style.width = '800px';
-      container.style.zIndex = '999999';
-      container.style.background = '#ffffff';
-      container.style.color = '#0f172a';
-      container.style.opacity = '1';
-      container.innerHTML = htmlContent;
-      document.body.appendChild(container);
-
-      const opt = {
-        margin:       [10, 10, 10, 10],
-        filename:     filename,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, x: 0, y: 0, windowWidth: 800 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      if ((window as any).html2pdf) {
-        (window as any).html2pdf().from(container).set(opt).save().then(() => {
-          if (document.body.contains(container)) document.body.removeChild(container);
-          window.scrollTo(0, origScrollY);
-          showToast('PDF downloaded successfully!', 'success');
-        }).catch((err: any) => {
-          console.error('html2pdf error:', err);
-          if (document.body.contains(container)) document.body.removeChild(container);
-          window.scrollTo(0, origScrollY);
-          printWithIframe(htmlContent, filename);
-        });
+      if (printWindow) {
+        printWindow.document.open();
+        printWindow.document.write(fullDoc);
+        printWindow.document.close();
+        showToast('Vector PDF Statement ready! Click Save as PDF.', 'success');
       } else {
-        if (document.body.contains(container)) document.body.removeChild(container);
-        window.scrollTo(0, origScrollY);
-        printWithIframe(htmlContent, filename);
+        printWithIframe(htmlContent, title);
       }
-    };
-
-    if ((window as any).html2pdf) {
-      setTimeout(runDirectDownload, 100);
-    } else {
-      showToast('Initializing PDF engine...', 'info');
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      script.onload = () => {
-        setTimeout(runDirectDownload, 200);
-      };
-      script.onerror = () => {
-        printWithIframe(htmlContent, filename);
-      };
-      document.body.appendChild(script);
+    } catch (err) {
+      printWithIframe(htmlContent, title);
     }
   };
 
