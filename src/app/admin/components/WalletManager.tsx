@@ -308,7 +308,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
         predictedExpense: singleExp,
         predictedSavings: singleInc - singleExp,
         trendDirection: 'Stable Baseline',
-        confidenceScore: 78
+        confidenceScore: 78,
+        slopeInc: 0,
+        slopeExp: 0
       };
     }
 
