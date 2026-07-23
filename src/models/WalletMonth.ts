@@ -16,6 +16,17 @@ export interface IIncome {
   date: Date | string;
 }
 
+export interface ILoan {
+  _id?: string;
+  personName: string;
+  amount: number;
+  date: Date | string;
+  dueDate?: Date | string;
+  status: 'Pending' | 'Returned';
+  returnedDate?: Date | string;
+  notes?: string;
+}
+
 export interface IWalletMonth extends Document {
   monthName: string; // e.g., "January 2026" or "2026-01"
   salary: number;
@@ -23,6 +34,7 @@ export interface IWalletMonth extends Document {
   bonus: number;
   expenses: IExpense[];
   incomes: IIncome[];
+  loans: ILoan[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +53,16 @@ const IncomeSchema: Schema = new Schema({
   date: { type: Date, required: true, default: Date.now },
 });
 
+const LoanSchema: Schema = new Schema({
+  personName: { type: String, required: true },
+  amount: { type: Number, required: true, min: 0 },
+  date: { type: Date, required: true, default: Date.now },
+  dueDate: { type: Date },
+  status: { type: String, enum: ['Pending', 'Returned'], default: 'Pending' },
+  returnedDate: { type: Date },
+  notes: { type: String, default: '' },
+});
+
 const WalletMonthSchema: Schema = new Schema(
   {
     monthName: { type: String, required: true, unique: true },
@@ -49,6 +71,7 @@ const WalletMonthSchema: Schema = new Schema(
     bonus: { type: Number, required: true, default: 0 },
     expenses: { type: [ExpenseSchema], default: [] },
     incomes: { type: [IncomeSchema], default: [] },
+    loans: { type: [LoanSchema], default: [] },
   },
   { timestamps: true }
 );

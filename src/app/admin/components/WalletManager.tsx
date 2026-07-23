@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Wallet, Plus, Layers, TrendingUp, Edit, Download, Trash2, FileText, X, PieChart 
+  Wallet, Plus, Layers, TrendingUp, Edit, Download, Trash2, FileText, X, PieChart,
+  HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../admin.module.css';
@@ -23,6 +24,17 @@ export interface IWalletIncome {
   date: string | Date;
 }
 
+export interface IWalletLoan {
+  _id?: string;
+  personName: string;
+  amount: number;
+  date: string | Date;
+  dueDate?: string | Date;
+  status: 'Pending' | 'Returned';
+  returnedDate?: string | Date;
+  notes?: string;
+}
+
 export interface IWalletMonthData {
   _id: string;
   monthName: string;
@@ -31,6 +43,7 @@ export interface IWalletMonthData {
   bonus: number;
   expenses: IWalletExpense[];
   incomes?: IWalletIncome[];
+  loans?: IWalletLoan[];
   createdAt: string;
 }
 
@@ -51,6 +64,19 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [isEditExpenseOpen, setIsEditExpenseOpen] = useState(false);
   const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false);
   const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
+
+  // Loan / Debt Ledger Modal states & inputs
+  const [isAddLoanOpen, setIsAddLoanOpen] = useState(false);
+  const [isEditLoanOpen, setIsEditLoanOpen] = useState(false);
+  const [loanPersonName, setLoanPersonName] = useState('');
+  const [loanAmount, setLoanAmount] = useState('');
+  const [loanDate, setLoanDate] = useState('');
+  const [loanDueDate, setLoanDueDate] = useState('');
+  const [loanNotes, setLoanNotes] = useState('');
+  const [loanStatus, setLoanStatus] = useState<'Pending' | 'Returned'>('Pending');
+  const [editingLoanId, setEditingLoanId] = useState<string>('');
+  const [loanFilterStatus, setLoanFilterStatus] = useState<'All' | 'Pending' | 'Returned'>('All');
+  const [loanSearchQuery, setLoanSearchQuery] = useState('');
   
   // Month Form Inputs
   const [monthName, setMonthName] = useState('');
@@ -131,6 +157,29 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   };
 
   const getExpenseTotal = (m: IWalletMonthData) => (m.expenses || []).reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+  // Loan & Debt calculations
+  const getActiveLoansTotal = (m: IWalletMonthData) => {
+    return (m.loans || [])
+      .filter(l => l.status === 'Pending')
+      .reduce((acc, curr) => acc + (curr.amount || 0), 0);
+  };
+
+  const getReturnedLoansTotal = (m: IWalletMonthData) => {
+    return (m.loans || [])
+      .filter(l => l.status === 'Returned')
+      .reduce((acc, curr) => acc + (curr.amount || 0), 0);
+  };
+
+  const getTotalLoansGiven = (m: IWalletMonthData) => {
+    return (m.loans || []).reduce((acc, curr) => acc + (curr.amount || 0), 0);
+  };
+
+  // Main Available Balance (Total Income minus Total Expenses minus Active Pending Loans)
+  const getNetBalance = (m: IWalletMonthData) => {
+    return getIncomeTotal(m) - getExpenseTotal(m) - getActiveLoansTotal(m);
+  };
+
   const getSavings = (m: IWalletMonthData) => getIncomeTotal(m) - getExpenseTotal(m);
   const getSavingsRate = (m: IWalletMonthData) => {
     const inc = getIncomeTotal(m);
@@ -141,7 +190,10 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   // Global calculations
   const globalTotalIncome = months.reduce((acc, m) => acc + getIncomeTotal(m), 0);
   const globalTotalSpent = months.reduce((acc, m) => acc + getExpenseTotal(m), 0);
+  const globalActiveLoans = months.reduce((acc, m) => acc + getActiveLoansTotal(m), 0);
+  const globalReturnedLoans = months.reduce((acc, m) => acc + getReturnedLoansTotal(m), 0);
   const globalTotalSavings = globalTotalIncome - globalTotalSpent;
+  const globalNetBalance = globalTotalIncome - globalTotalSpent - globalActiveLoans;
   const globalSavingsRate = globalTotalIncome > 0 ? (globalTotalSavings / globalTotalIncome) * 100 : 0;
 
   // Expense Categories mapping & colors
@@ -238,6 +290,17 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       e.amount
     ]);
     
+    const loanHeaders = ['Person Name (Debtor)', 'Amount (৳)', 'Date Given', 'Due Date', 'Status', 'Returned Date', 'Notes'];
+    const loanRows = (m.loans || []).map(l => [
+      `"${l.personName.replace(/"/g, '""')}"`,
+      l.amount,
+      new Date(l.date).toLocaleDateString(),
+      l.dueDate ? new Date(l.dueDate).toLocaleDateString() : 'N/A',
+      l.status,
+      l.returnedDate ? new Date(l.returnedDate).toLocaleDateString() : 'N/A',
+      `"${(l.notes || '').replace(/"/g, '""')}"`
+    ]);
+
     const metaRows = [
       ['Rifat Finance Console - Ledger Summary', m.monthName],
       ['Base Salary', m.salary],
@@ -245,12 +308,19 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       ['Bonuses Received', m.bonus],
       ['Total Income', getIncomeTotal(m)],
       ['Total Expenses', getExpenseTotal(m)],
-      ['Net Savings', getSavings(m)],
+      ['Active Money Lent Out', getActiveLoansTotal(m)],
+      ['Returned Money Recovered', getReturnedLoansTotal(m)],
+      ['Main Available Cash Balance', getNetBalance(m)],
       [],
       headers
     ];
 
-    const csvString = metaRows.map(r => r.join(',')).join('\n') + '\n' + rows.map(r => r.join(',')).join('\n');
+    const csvString = metaRows.map(r => r.join(',')).join('\n') + 
+      '\n' + rows.map(r => r.join(',')).join('\n') + 
+      '\n\n--- LOANS & MONEY LENT LEDGER ---\n' + 
+      loanHeaders.join(',') + '\n' + 
+      loanRows.map(r => r.join(',')).join('\n');
+
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -289,7 +359,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     } else {
       showToast('Initializing secure PDF engine...', 'info');
       const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.src = 'https://cdnjs.cloudflare.com/ajax/cloudflare/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
       script.onload = () => {
         runDownload();
       };
@@ -304,6 +374,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     const totalIncome = getIncomeTotal(m);
     const totalExpense = getExpenseTotal(m);
     const netSavings = getSavings(m);
+    const activeLoans = getActiveLoansTotal(m);
+    const returnedLoans = getReturnedLoansTotal(m);
+    const netBalance = getNetBalance(m);
     const savingsRate = totalIncome > 0 ? ((netSavings / totalIncome) * 100).toFixed(1) : '0.0';
 
     const htmlContent = `
@@ -311,7 +384,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 24px;">
           <div>
             <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #4f46e5;">RIFAT FINANCE CONSOLE</h1>
-            <p style="margin: 4px 0 0 0; font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Personal Wallet Ledger</p>
+            <p style="margin: 4px 0 0 0; font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Personal Wallet & Debt Ledger</p>
           </div>
           <div style="text-align: right;">
             <h2 style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">Monthly Statement</h2>
@@ -319,18 +392,22 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px;">
-          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc;">
-            <div style="font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Salary & Incomes</div>
-            <div style="font-size: 16px; font-weight: 700; color: #0f172a;">৳${totalIncome.toLocaleString()}</div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; background: #f8fafc;">
+            <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Total Income</div>
+            <div style="font-size: 14px; font-weight: 700; color: #16a34a;">৳${totalIncome.toLocaleString()}</div>
           </div>
-          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc;">
-            <div style="font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Total Outlays</div>
-            <div style="font-size: 16px; font-weight: 700; color: #0f172a;">৳${totalExpense.toLocaleString()}</div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; background: #f8fafc;">
+            <div style="font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Total Outlays</div>
+            <div style="font-size: 14px; font-weight: 700; color: #dc2626;">৳${totalExpense.toLocaleString()}</div>
           </div>
-          <div style="border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px; background: #e0e7ff;">
-            <div style="font-size: 10px; color: #3730a3; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Net Savings (${savingsRate}%)</div>
-            <div style="font-size: 16px; font-weight: 700; color: #3730a3;">৳${netSavings.toLocaleString()}</div>
+          <div style="border: 1px solid #fed7aa; border-radius: 8px; padding: 10px; background: #fff7ed;">
+            <div style="font-size: 9px; color: #c2410c; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Active Money Lent</div>
+            <div style="font-size: 14px; font-weight: 700; color: #ea580c;">৳${activeLoans.toLocaleString()}</div>
+          </div>
+          <div style="border: 1px solid #c7d2fe; border-radius: 8px; padding: 10px; background: #e0e7ff;">
+            <div style="font-size: 9px; color: #3730a3; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Net Cash Balance</div>
+            <div style="font-size: 14px; font-weight: 700; color: #3730a3;">৳${netBalance.toLocaleString()}</div>
           </div>
         </div>
 
@@ -344,8 +421,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             <div style="font-size: 13px; font-weight:700; color:#334155;">৳${m.addon.toLocaleString()}</div>
           </div>
           <div style="padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; background: #ffffff;">
-            <div style="font-size: 9px; color: #64748b; font-weight:600; text-transform:uppercase;">Bonuses</div>
-            <div style="font-size: 13px; font-weight:700; color:#334155;">৳${m.bonus.toLocaleString()}</div>
+            <div style="font-size: 9px; color: #64748b; font-weight:600; text-transform:uppercase;">Recovered Loans</div>
+            <div style="font-size: 13px; font-weight:700; color:#16a34a;">৳${returnedLoans.toLocaleString()}</div>
           </div>
         </div>
 
@@ -371,6 +448,40 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   <td style="padding: 10px; font-size: 11px;"><span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; background: #e2e8f0; color: #475569;">${e.category}</span></td>
                   <td style="padding: 10px; font-size: 11px; color: #334155;">${e.description}</td>
                   <td style="padding: 10px; font-size: 11px; text-align: right; font-weight: 600; color: #0f172a;">৳${e.amount.toLocaleString()}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <h3 style="font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Money Lent Ledger (ধারের হিসাব)</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+              <tr style="background: #fff7ed; border-bottom: 2px solid #fed7aa;">
+                <th style="color: #9a3412; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 10px;">Debtor Name</th>
+                <th style="color: #9a3412; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 10px;">Date Given</th>
+                <th style="color: #9a3412; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 10px;">Due Date</th>
+                <th style="color: #9a3412; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 10px;">Status</th>
+                <th style="color: #9a3412; text-align: right; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 10px;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(m.loans || []).length === 0 ? `
+                <tr>
+                  <td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px; font-size: 12px;">No loan records registered for this month.</td>
+                </tr>
+              ` : (m.loans || []).map(l => `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 10px; font-size: 11px; font-weight: 700; color: #0f172a;">${l.personName}</td>
+                  <td style="padding: 10px; font-size: 11px;">${new Date(l.date).toLocaleDateString()}</td>
+                  <td style="padding: 10px; font-size: 11px;">${l.dueDate ? new Date(l.dueDate).toLocaleDateString() : 'N/A'}</td>
+                  <td style="padding: 10px; font-size: 11px;">
+                    <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; background: ${l.status === 'Pending' ? '#ffedd5; color: #c2410c;' : '#dcfce7; color: #15803d;'}">
+                      ${l.status}
+                    </span>
+                  </td>
+                  <td style="padding: 10px; font-size: 11px; text-align: right; font-weight: 700; color: #0f172a;">৳${l.amount.toLocaleString()}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -786,6 +897,206 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     setIsEditExpenseOpen(true);
   };
 
+  const handleAddLoan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeMonth || !loanPersonName || !loanAmount) return showToast('Please enter person name and amount', 'error');
+
+    const newLoan: IWalletLoan = {
+      personName: loanPersonName.trim(),
+      amount: Number(loanAmount) || 0,
+      date: loanDate || new Date().toISOString().split('T')[0],
+      dueDate: loanDueDate || undefined,
+      status: loanStatus,
+      notes: loanNotes.trim(),
+      returnedDate: loanStatus === 'Returned' ? new Date().toISOString().split('T')[0] : undefined,
+    };
+
+    const updatedLoans = [...(activeMonth.loans || []), newLoan];
+
+    try {
+      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ loans: updatedLoans })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`Loan logged for ${loanPersonName.trim()}! Amount deducted from main balance.`, 'success');
+        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        setIsAddLoanOpen(false);
+        setLoanPersonName('');
+        setLoanAmount('');
+        setLoanDate('');
+        setLoanDueDate('');
+        setLoanNotes('');
+        setLoanStatus('Pending');
+      } else {
+        showToast(data.error || 'Failed to save loan record', 'error');
+      }
+    } catch (err) {
+      showToast('Error saving loan record', 'error');
+    }
+  };
+
+  const handleEditLoan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeMonth || !editingLoanId || !loanPersonName || !loanAmount) return;
+
+    const updatedLoans = (activeMonth.loans || []).map(loan => {
+      if (loan._id === editingLoanId) {
+        const isNowReturned = loanStatus === 'Returned';
+        const wasReturned = loan.status === 'Returned';
+        let retDate = loan.returnedDate;
+        if (isNowReturned && !wasReturned) {
+          retDate = new Date().toISOString().split('T')[0];
+        } else if (!isNowReturned) {
+          retDate = undefined;
+        }
+
+        return {
+          ...loan,
+          personName: loanPersonName.trim(),
+          amount: Number(loanAmount) || 0,
+          date: loanDate || loan.date,
+          dueDate: loanDueDate || undefined,
+          status: loanStatus,
+          returnedDate: retDate,
+          notes: loanNotes.trim(),
+        };
+      }
+      return loan;
+    });
+
+    try {
+      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ loans: updatedLoans })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Loan record updated successfully', 'success');
+        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        setIsEditLoanOpen(false);
+        setEditingLoanId('');
+        setLoanPersonName('');
+        setLoanAmount('');
+        setLoanDate('');
+        setLoanDueDate('');
+        setLoanNotes('');
+        setLoanStatus('Pending');
+      } else {
+        showToast(data.error || 'Failed to update loan record', 'error');
+      }
+    } catch (err) {
+      showToast('Error saving changes', 'error');
+    }
+  };
+
+  const handleDeleteLoan = async (loanId: string) => {
+    if (!activeMonth) return;
+    if (!confirm('Are you sure you want to delete this loan record?')) return;
+
+    const updatedLoans = (activeMonth.loans || []).filter(loan => loan._id !== loanId);
+
+    try {
+      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ loans: updatedLoans })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('Loan record removed', 'success');
+        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+      } else {
+        showToast('Failed to remove loan record', 'error');
+      }
+    } catch (err) {
+      showToast('Error removing loan record', 'error');
+    }
+  };
+
+  const handleToggleLoanStatus = async (loan: IWalletLoan) => {
+    if (!activeMonth || !loan._id) return;
+
+    const newStatus = loan.status === 'Pending' ? 'Returned' : 'Pending';
+    const returnedDate = newStatus === 'Returned' ? new Date().toISOString().split('T')[0] : undefined;
+
+    const updatedLoans = (activeMonth.loans || []).map(l => {
+      if (l._id === loan._id) {
+        return {
+          ...l,
+          status: newStatus as 'Pending' | 'Returned',
+          returnedDate: returnedDate,
+        };
+      }
+      return l;
+    });
+
+    // ⚡ Optimistic UI Update for instant 0ms feedback!
+    const previousMonths = [...months];
+    setMonths(prev => prev.map(m => m._id === activeMonth._id ? { ...m, loans: updatedLoans } : m));
+
+    if (newStatus === 'Returned') {
+      showToast(`🎉 ৳${loan.amount.toLocaleString()} returned by ${loan.personName}! Added back to main balance.`, 'success');
+    } else {
+      showToast(`Loan status set to pending for ${loan.personName}. Deducted from main balance.`, 'info');
+    }
+
+    try {
+      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ loans: updatedLoans })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+      } else {
+        // Rollback on error
+        setMonths(previousMonths);
+        showToast(data.error || 'Failed to toggle loan status', 'error');
+      }
+    } catch (err) {
+      // Rollback on error
+      setMonths(previousMonths);
+      showToast('Error updating loan status', 'error');
+    }
+  };
+
+  const openEditLoanModal = (loan: IWalletLoan) => {
+    if (!loan._id) return;
+    setEditingLoanId(loan._id);
+    setLoanPersonName(loan.personName);
+    setLoanAmount(String(loan.amount));
+    setLoanDate(new Date(loan.date).toISOString().split('T')[0]);
+    setLoanDueDate(loan.dueDate ? new Date(loan.dueDate).toISOString().split('T')[0] : '');
+    setLoanNotes(loan.notes || '');
+    setLoanStatus(loan.status);
+    setIsEditLoanOpen(true);
+  };
+
+  const handleCopyReminder = (loan: IWalletLoan) => {
+    const loanDateFormatted = new Date(loan.date).toLocaleDateString();
+    const reminderText = `Salam ${loan.personName} bhai, hope you are well! Just a gentle reminder regarding the ৳${loan.amount.toLocaleString()} lent on ${loanDateFormatted}. Please let me know whenever convenient. Thanks!`;
+    
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(reminderText);
+      showToast(`Reminder copied to clipboard for ${loan.personName}!`, 'success');
+    } else {
+      showToast(`Reminder message: "${reminderText}"`, 'info');
+    }
+  };
+
+  const handleOpenWhatsApp = (loan: IWalletLoan) => {
+    const loanDateFormatted = new Date(loan.date).toLocaleDateString();
+    const reminderText = `Salam ${loan.personName} bhai, hope you are well! Just a gentle reminder regarding the ৳${loan.amount.toLocaleString()} lent on ${loanDateFormatted}. Please let me know whenever convenient. Thanks!`;
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(reminderText)}`;
+    window.open(waUrl, '_blank');
+    showToast(`Opening WhatsApp for ${loan.personName}...`, 'info');
+  };
+
   // Get active month's category percentages
   const activeMonthCategoryTotals = categoriesList.reduce((acc, cat) => {
     const total = (activeMonth?.expenses || [])
@@ -1092,7 +1403,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   </div>
 
                   {/* Sub-sheet metrics summary cards */}
-                  <div className={styles.grid3} style={{ marginBottom: '24px' }}>
+                  <div className={styles.grid4} style={{ marginBottom: '24px' }}>
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Earned</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4caf50', marginTop: '4px' }}>৳{getIncomeTotal(activeMonth).toLocaleString()}</div>
@@ -1107,11 +1418,18 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         Across {(activeMonth.expenses || []).length} ledger items logged
                       </div>
                     </div>
-                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Month Savings</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#2196f3', marginTop: '4px' }}>৳{activeMonthSavings.toLocaleString()}</div>
+                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ fontSize: '0.72rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700 }}>Active Money Lent (ধারে দেওয়া)</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24', marginTop: '4px' }}>৳{getActiveLoansTotal(activeMonth).toLocaleString()}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Saved {getSavingsRate(activeMonth).toFixed(1)}% of total revenues
+                        Recovered: ৳{getReturnedLoansTotal(activeMonth).toLocaleString()}
+                      </div>
+                    </div>
+                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>Main Cash Balance (মেইন ব্যালেন্স)</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#818cf8', marginTop: '4px' }}>৳{getNetBalance(activeMonth).toLocaleString()}</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        Net Savings: ৳{getSavings(activeMonth).toLocaleString()}
                       </div>
                     </div>
                   </div>
@@ -1188,11 +1506,11 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     <div style={{ background: 'rgba(7, 8, 15, 0.15)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                         <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <PieChart size={16} style={{ color: 'var(--accent-gold)' }} /> Expenses Ledger
+                          <PieChart size={16} style={{ color: '#ff6b6b' }} /> Expenses Ledger
                         </h3>
                         <button
                           onClick={() => setIsAddExpenseOpen(true)}
-                          style={{ background: 'rgba(129, 140, 248, 0.1)', border: '1px solid rgba(129, 140, 248, 0.2)', color: 'var(--accent-gold)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
+                          style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ff6b6b', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
                         >
                           <Plus size={12} /> Log Expense
                         </button>
@@ -1235,7 +1553,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       {/* Expenses Table */}
                       {filteredExpenses.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '24px 10px', color: 'var(--text-secondary)', background: 'rgba(7, 8, 15, 0.1)', border: '1px dashed rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem' }}>
-                          No matching expenses found.
+                          No expenses matching criteria.
                         </div>
                       ) : (
                         <div style={{ overflowX: 'auto', background: 'rgba(7, 8, 15, 0.1)', border: '1px solid rgba(255, 255, 255, 0.02)', borderRadius: '8px' }}>
@@ -1252,7 +1570,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                               {filteredExpenses.map((exp) => (
                                 <tr key={exp._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
                                   <td style={{ padding: '8px' }}>
-                                    <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 600, background: `${categoryColors[exp.category] || '#607d8b'}15`, color: categoryColors[exp.category] || '#607d8b', border: `1px solid ${categoryColors[exp.category] || '#607d8b'}30` }}>
+                                    <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, background: `${categoryColors[exp.category] || '#607d8b'}20`, color: categoryColors[exp.category] || '#607d8b' }}>
                                       {exp.category}
                                     </span>
                                   </td>
@@ -1284,6 +1602,283 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       )}
                     </div>
 
+                  </div>
+
+                  {/* Money Lent Ledger (ধারের হিসাব & পাওনা) */}
+                  <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '16px', padding: '20px', marginTop: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                          <HandCoins size={20} style={{ color: '#fbbf24' }} /> Money Lent Ledger (ধারের হিসাব & পাওনা)
+                        </h3>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                          কাকে কত টাকা ধার দিয়েছেন তার হিসাব। ফেরত পাওয়া বাটনে ক্লিক করলে তা স্বয়ংক্রিয়ভাবে মেইন ব্যালেন্সে যুক্ত হয়ে যাবে।
+                        </span>
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          setLoanPersonName('');
+                          setLoanAmount('');
+                          setLoanDate(new Date().toISOString().split('T')[0]);
+                          setLoanDueDate('');
+                          setLoanNotes('');
+                          setLoanStatus('Pending');
+                          setIsAddLoanOpen(true);
+                        }}
+                        style={{
+                          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          fontWeight: 700,
+                          fontSize: '0.82rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: '0 4px 12px rgba(245, 158, 11, 0.25)'
+                        }}
+                      >
+                        <Plus size={15} /> Log New Loan (ধার দিন)
+                      </button>
+                    </div>
+
+                    {/* Debt Recovery Progress Indicator */}
+                    {(() => {
+                      const totalLent = getTotalLoansGiven(activeMonth);
+                      const totalReturned = getReturnedLoansTotal(activeMonth);
+                      const recoveryPct = totalLent > 0 ? Math.round((totalReturned / totalLent) * 100) : 100;
+
+                      return totalLent > 0 ? (
+                        <div style={{ marginBottom: '16px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px 16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', marginBottom: '6px' }}>
+                            <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Debt Recovery Progress (ধার আদায়ের হার)</span>
+                            <span style={{ fontWeight: 800, color: recoveryPct >= 80 ? '#10b981' : recoveryPct >= 50 ? '#fbbf24' : '#f87171' }}>
+                              {recoveryPct}% Recovered (৳{totalReturned.toLocaleString()} / ৳{totalLent.toLocaleString()})
+                            </span>
+                          </div>
+                          <div style={{ height: '8px', width: '100%', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${recoveryPct}%`, background: 'linear-gradient(90deg, #f59e0b, #10b981)', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
+
+                    {/* Filter & Search Bar */}
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        {(['All', 'Pending', 'Returned'] as const).map((st) => (
+                          <button
+                            key={st}
+                            onClick={() => setLoanFilterStatus(st)}
+                            style={{
+                              background: loanFilterStatus === st ? 'rgba(245, 158, 11, 0.2)' : 'rgba(15, 23, 42, 0.4)',
+                              border: '1px solid',
+                              borderColor: loanFilterStatus === st ? '#f59e0b' : 'rgba(255,255,255,0.06)',
+                              color: loanFilterStatus === st ? '#fbbf24' : 'var(--text-secondary)',
+                              padding: '4px 12px',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            {st === 'All' ? 'All Records' : st === 'Pending' ? '⌛ Pending (ধারে আছে)' : '✅ Returned (ফেরত পাওয়া)'}
+                          </button>
+                        ))}
+                      </div>
+
+                      <input
+                        type="text"
+                        placeholder="Search by person or note..."
+                        value={loanSearchQuery}
+                        onChange={(e) => setLoanSearchQuery(e.target.value)}
+                        style={{
+                          background: '#07070b',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          borderRadius: '6px',
+                          padding: '6px 12px',
+                          fontSize: '0.78rem',
+                          color: '#fff',
+                          width: '220px'
+                        }}
+                      />
+                    </div>
+
+                    {/* Loan Records Table */}
+                    {(!activeMonth.loans || activeMonth.loans.length === 0) ? (
+                      <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--text-secondary)', background: 'rgba(7, 8, 15, 0.2)', border: '1px dashed rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                        <HandCoins size={36} style={{ color: 'var(--text-muted)', marginBottom: '10px', opacity: 0.5 }} />
+                        <p style={{ margin: 0, fontSize: '0.85rem' }}>No loans logged for this month. Click &quot;Log New Loan&quot; to record money given.</p>
+                      </div>
+                    ) : (
+                      <div style={{ overflowX: 'auto', background: 'rgba(7, 8, 15, 0.2)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '10px' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
+                          <thead>
+                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)', background: 'rgba(15, 23, 42, 0.5)' }}>
+                              <th style={{ padding: '10px 12px' }}>Person Name (কাকে দেওয়া)</th>
+                              <th style={{ padding: '10px 12px' }}>Amount (৳)</th>
+                              <th style={{ padding: '10px 12px' }}>Date Given</th>
+                              <th style={{ padding: '10px 12px' }}>Target Due Date</th>
+                              <th style={{ padding: '10px 12px' }}>Status</th>
+                              <th style={{ padding: '10px 12px', textAlign: 'right' }}>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {activeMonth.loans
+                              .filter(loan => {
+                                const matchesSt = loanFilterStatus === 'All' || loan.status === loanFilterStatus;
+                                const matchesQ = loan.personName.toLowerCase().includes(loanSearchQuery.toLowerCase()) || (loan.notes || '').toLowerCase().includes(loanSearchQuery.toLowerCase());
+                                return matchesSt && matchesQ;
+                              })
+                              .map((loan) => {
+                                const isPending = loan.status === 'Pending';
+                                return (
+                                  <tr key={loan._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s' }}>
+                                    <td style={{ padding: '12px' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isPending ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isPending ? '#fbbf24' : '#10b981', fontWeight: 800, fontSize: '0.85rem' }}>
+                                          {loan.personName.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                          <div style={{ fontWeight: 700, color: '#fff' }}>{loan.personName}</div>
+                                          {loan.notes && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{loan.notes}</div>}
+                                        </div>
+                                      </div>
+                                    </td>
+
+                                    <td style={{ padding: '12px', fontWeight: 800, fontSize: '0.95rem', color: isPending ? '#fbbf24' : '#10b981' }}>
+                                      ৳{loan.amount.toLocaleString()}
+                                    </td>
+
+                                    <td style={{ padding: '12px', color: 'var(--text-secondary)' }}>
+                                      {new Date(loan.date).toLocaleDateString()}
+                                    </td>
+
+                                    <td style={{ padding: '12px', color: 'var(--text-secondary)' }}>
+                                      {loan.dueDate ? new Date(loan.dueDate).toLocaleDateString() : 'N/A'}
+                                    </td>
+
+                                    <td style={{ padding: '12px' }}>
+                                      {isPending ? (
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                                          <Clock size={12} /> Pending (ধারে আছে)
+                                        </span>
+                                      ) : (
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                                          <CheckCircle2 size={12} /> Returned ({loan.returnedDate ? new Date(loan.returnedDate).toLocaleDateString() : 'Yes'})
+                                        </span>
+                                      )}
+                                    </td>
+
+                                    <td style={{ padding: '12px', textAlign: 'right' }}>
+                                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                                        {/* TOGGLE RETURN BUTTON */}
+                                        <button
+                                          onClick={() => handleToggleLoanStatus(loan)}
+                                          style={{
+                                            background: isPending ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'rgba(255,255,255,0.06)',
+                                            border: '1px solid',
+                                            borderColor: isPending ? '#10b981' : 'rgba(255,255,255,0.1)',
+                                            color: isPending ? '#fff' : 'var(--text-secondary)',
+                                            padding: '6px 12px',
+                                            borderRadius: '6px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '5px',
+                                            boxShadow: isPending ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none'
+                                          }}
+                                          title={isPending ? 'Click to mark as returned and add money back to Main Balance' : 'Click to revert back to Pending status'}
+                                        >
+                                          {isPending ? (
+                                            <>
+                                              <CheckCircle2 size={13} /> ফেরত পেয়েছি
+                                            </>
+                                          ) : (
+                                            <>
+                                              <RefreshCw size={13} /> Mark Pending
+                                            </>
+                                          )}
+                                        </button>
+
+                                        {/* WhatsApp Direct Action Button */}
+                                        {isPending && (
+                                          <button
+                                            onClick={() => handleOpenWhatsApp(loan)}
+                                            style={{
+                                              background: 'rgba(34, 197, 94, 0.15)',
+                                              border: '1px solid rgba(34, 197, 94, 0.3)',
+                                              color: '#4ade80',
+                                              padding: '6px 10px',
+                                              borderRadius: '6px',
+                                              fontSize: '0.75rem',
+                                              cursor: 'pointer',
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '4px',
+                                              fontWeight: 600
+                                            }}
+                                            title="Open WhatsApp directly with payment reminder"
+                                          >
+                                            <MessageCircle size={12} /> WhatsApp
+                                          </button>
+                                        )}
+
+                                        {/* Copy Text Reminder Button */}
+                                        {isPending && (
+                                          <button
+                                            onClick={() => handleCopyReminder(loan)}
+                                            style={{
+                                              background: 'rgba(59, 130, 246, 0.15)',
+                                              border: '1px solid rgba(59, 130, 246, 0.3)',
+                                              color: '#60a5fa',
+                                              padding: '6px 10px',
+                                              borderRadius: '6px',
+                                              fontSize: '0.75rem',
+                                              cursor: 'pointer',
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '4px',
+                                              fontWeight: 600
+                                            }}
+                                            title="Copy polite payment reminder message text"
+                                          >
+                                            <Copy size={12} /> Copy
+                                          </button>
+                                        )}
+
+                                        {/* Edit Loan */}
+                                        <button
+                                          onClick={() => openEditLoanModal(loan)}
+                                          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
+                                          title="Edit Loan details"
+                                        >
+                                          <Edit size={14} />
+                                        </button>
+
+                                        {/* Delete Loan */}
+                                        <button
+                                          onClick={() => handleDeleteLoan(loan._id!)}
+                                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                                          title="Delete Loan record"
+                                        >
+                                          <Trash2 size={14} />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
 
                 </div>
@@ -2003,6 +2598,179 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     } catch (err) {}
                   }}
                   style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', cursor: 'pointer' }}
+                />
+              </div>
+              <button
+                type="submit"
+                style={{ background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', marginTop: '8px' }}
+              >
+                Save Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 6: Log New Loan */}
+      {isAddLoanOpen && activeMonth && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '420px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <HandCoins size={20} style={{ color: '#fbbf24' }} /> Log Money Lent (ধার দিন)
+              </h3>
+              <button onClick={() => setIsAddLoanOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleAddLoan} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Person Name (কাকে ধার দিয়েছেন)</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Rahim / Shakil"
+                  value={loanPersonName}
+                  onChange={e => setLoanPersonName(e.target.value)}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Amount (৳) - Will deduct from main balance</label>
+                <input
+                  type="number"
+                  required
+                  placeholder="0"
+                  value={loanAmount}
+                  onChange={e => setLoanAmount(e.target.value)}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Date Given</label>
+                  <input
+                    type="date"
+                    required
+                    value={loanDate}
+                    onChange={e => setLoanDate(e.target.value)}
+                    onClick={(e) => {
+                      try { e.currentTarget.showPicker(); } catch (err) {}
+                    }}
+                    style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', cursor: 'pointer' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Target Due Date (Optional)</label>
+                  <input
+                    type="date"
+                    value={loanDueDate}
+                    onChange={e => setLoanDueDate(e.target.value)}
+                    onClick={(e) => {
+                      try { e.currentTarget.showPicker(); } catch (err) {}
+                    }}
+                    style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', cursor: 'pointer' }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Initial Status</label>
+                <select
+                  value={loanStatus}
+                  onChange={e => setLoanStatus(e.target.value as 'Pending' | 'Returned')}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                >
+                  <option value="Pending">⌛ Pending (ধারে দেওয়া হলো)</option>
+                  <option value="Returned">✅ Already Returned (ফেরত চলে এসেছে)</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Notes / Reason (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Emergency loan for tuition"
+                  value={loanNotes}
+                  onChange={e => setLoanNotes(e.target.value)}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                />
+              </div>
+              <button
+                type="submit"
+                style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', marginTop: '8px' }}
+              >
+                Log Loan Record
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 7: Edit Loan */}
+      {isEditLoanOpen && activeMonth && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '420px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Edit Loan Record</h3>
+              <button onClick={() => { setIsEditLoanOpen(false); setEditingLoanId(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleEditLoan} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Person Name</label>
+                <input
+                  type="text"
+                  required
+                  value={loanPersonName}
+                  onChange={e => setLoanPersonName(e.target.value)}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Amount (৳)</label>
+                <input
+                  type="number"
+                  required
+                  value={loanAmount}
+                  onChange={e => setLoanAmount(e.target.value)}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Date Given</label>
+                  <input
+                    type="date"
+                    required
+                    value={loanDate}
+                    onChange={e => setLoanDate(e.target.value)}
+                    style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Due Date</label>
+                  <input
+                    type="date"
+                    value={loanDueDate}
+                    onChange={e => setLoanDueDate(e.target.value)}
+                    style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Status</label>
+                <select
+                  value={loanStatus}
+                  onChange={e => setLoanStatus(e.target.value as 'Pending' | 'Returned')}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                >
+                  <option value="Pending">⌛ Pending (ধারে আছে)</option>
+                  <option value="Returned">✅ Returned (ফেরত পাওয়া গেছে)</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Notes / Reason</label>
+                <input
+                  type="text"
+                  value={loanNotes}
+                  onChange={e => setLoanNotes(e.target.value)}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
                 />
               </div>
               <button

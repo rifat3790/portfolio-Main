@@ -40,9 +40,13 @@ async function dbConnect() {
     return cached!.promise;
   }
 
-  // If disconnected (0) or disconnecting (3), clear promise/cache and reconnect
+  // Optimized MongoDB Connection Options for high performance and low latency
   const opts = {
     bufferCommands: false,
+    maxPoolSize: 10,
+    minPoolSize: 2,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
   };
 
   cached!.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {

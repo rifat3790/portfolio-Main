@@ -16,13 +16,44 @@ interface CacheContainer {
 declare global {
   // eslint-disable-next-line no-var
   var homepageDataCache: CacheContainer | undefined;
+  // eslint-disable-next-line no-var
+  var isRevalidatingData: boolean | undefined;
 }
 
-const CACHE_TTL_MS = 60 * 1000; // Cache for 60 seconds globally across all requests
+const CACHE_STALE_TTL_MS = 10 * 60 * 1000; // 10 minutes cache TTL
 
-// Helper to fetch homepage data directly from MongoDB.
+function cleanBsonDoc(doc: any): any {
+  if (!doc) return doc;
+  if (Array.isArray(doc)) {
+    return doc.map(cleanBsonDoc);
+  }
+  if (typeof doc === 'object') {
+    const clean: any = {};
+    for (const key in doc) {
+      if (Object.prototype.hasOwnProperty.call(doc, key)) {
+        const val = doc[key];
+        if (val && typeof val === 'object' && val._bsontype === 'ObjectID') {
+          clean[key] = val.toString();
+        } else if (val instanceof Date) {
+          clean[key] = val.toISOString();
+        } else if (key === '_id') {
+          clean[key] = val.toString();
+        } else if (Array.isArray(val)) {
+          clean[key] = val.map(cleanBsonDoc);
+        } else if (val && typeof val === 'object') {
+          clean[key] = cleanBsonDoc(val);
+        } else {
+          clean[key] = val;
+        }
+      }
+    }
+    return clean;
+  }
+  return doc;
+}
+
+// Helper to fetch homepage data directly from MongoDB with lean queries
 async function fetchFreshHomepageData() {
-  console.log('Fetching fresh homepage data from MongoDB...');
   await dbConnect();
 
   const [projectsData, skillsData, testimonialsData, blogsData, settingsData, servicesData, experiencesData] = await Promise.all([
@@ -36,22 +67,32 @@ async function fetchFreshHomepageData() {
   ]);
 
   return {
-    projects: JSON.parse(JSON.stringify(projectsData)),
-    skills: JSON.parse(JSON.stringify(skillsData)),
-    testimonials: JSON.parse(JSON.stringify(testimonialsData)),
-    blogs: JSON.parse(JSON.stringify(blogsData)),
-    services: JSON.parse(JSON.stringify(servicesData)),
-    experiences: JSON.parse(JSON.stringify(experiencesData)),
-    settings: settingsData ? JSON.parse(JSON.stringify(settingsData)) : null,
+    projects: cleanBsonDoc(projectsData),
+    skills: cleanBsonDoc(skillsData),
+    testimonials: cleanBsonDoc(testimonialsData),
+    blogs: cleanBsonDoc(blogsData),
+    services: cleanBsonDoc(servicesData),
+    experiences: cleanBsonDoc(experiencesData),
+    settings: settingsData ? cleanBsonDoc(settingsData) : null,
   };
 }
 
 export async function getHomepageData() {
   const now = Date.now();
   
-  // Use in-memory cache if available and not expired
-  if (global.homepageDataCache && (now - global.homepageDataCache.timestamp < CACHE_TTL_MS)) {
-    console.log('Serving homepage data from in-memory cache...');
+  // Stale-While-Revalidate pattern for ZERO-LATENCY 0ms response!
+  if (global.homepageDataCache) {
+    const isStale = (now - global.homepageDataCache.timestamp > CACHE_STALE_TTL_MS);
+    if (isStale && !global.isRevalidatingData) {
+      global.isRevalidatingData = true;
+      // Background non-blocking revalidation
+      fetchFreshHomepageData().then((freshData) => {
+        global.homepageDataCache = { data: freshData, timestamp: Date.now() };
+        global.isRevalidatingData = false;
+      }).catch(() => {
+        global.isRevalidatingData = false;
+      });
+    }
     return global.homepageDataCache.data;
   }
 
@@ -79,10 +120,11 @@ export async function getSettingsOnly() {
 
 // Triggers an on-demand invalidation of the Next.js page and in-memory cache.
 export function clearDbCache() {
-  console.log('Clearing database query cache and revalidating paths...');
   global.homepageDataCache = undefined;
+  global.isRevalidatingData = false;
   try {
     revalidatePath('/');
+    revalidatePath('/admin');
   } catch (error) {
     console.error('Failed to revalidate path:', error);
   }
