@@ -2068,20 +2068,66 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Total Revenues</span>
                     <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#4caf50', marginTop: '6px' }}>৳{globalTotalIncome.toLocaleString()}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>Across {months.length} monthly sheets</div>
                   </div>
                   <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Total Spent</span>
                     <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f44336', marginTop: '6px' }}>৳{globalTotalSpent.toLocaleString()}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>Cumulative Outlays</div>
                   </div>
-                  <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Net Savings</span>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#2196f3', marginTop: '6px' }}>৳{globalTotalSavings.toLocaleString()}</div>
+                  <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '12px', padding: '16px' }}>
+                    <span style={{ fontSize: '0.72rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Active Loans (ধারে আছে)</span>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fbbf24', marginTop: '6px' }}>৳{globalActiveLoans.toLocaleString()}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>Recovered: ৳{globalReturnedLoans.toLocaleString()}</div>
                   </div>
-                  <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Savings Rate</span>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-gold)', marginTop: '6px' }}>{globalSavingsRate.toFixed(1)}%</div>
+                  <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: '12px', padding: '16px' }}>
+                    <span style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Net Liquid Savings</span>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#818cf8', marginTop: '6px' }}>৳{globalTotalSavings.toLocaleString()}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>Gross: ৳{globalGrossSavings.toLocaleString()} • Rate: {globalSavingsRate.toFixed(1)}%</div>
                   </div>
                 </div>
+
+                {/* Lifetime Debt Recovery & Liquidity Visual Gauge */}
+                {(() => {
+                  const globalTotalLent = globalActiveLoans + globalReturnedLoans;
+                  const globalRecoveryRate = globalTotalLent > 0 ? Math.round((globalReturnedLoans / globalTotalLent) * 100) : 100;
+                  const lockedPct = globalGrossSavings > 0 ? Math.min(100, Math.round((globalActiveLoans / globalGrossSavings) * 100)) : 0;
+
+                  return (
+                    <div style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <HandCoins size={18} style={{ color: '#fbbf24' }} /> Lifetime Debt Recovery & Liquidity Visual Hub
+                        </div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: globalRecoveryRate >= 80 ? '#10b981' : '#fbbf24' }}>
+                          Recovery Rate: {globalRecoveryRate}% (৳{globalReturnedLoans.toLocaleString()} / ৳{globalTotalLent.toLocaleString()})
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '12px' }}>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                            <span>Lifetime Debt Recovery Progress</span>
+                            <span>{globalRecoveryRate}%</span>
+                          </div>
+                          <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${globalRecoveryRate}%`, background: 'linear-gradient(90deg, #f59e0b, #10b981)', borderRadius: '4px', transition: 'width 0.6s ease' }} />
+                          </div>
+                        </div>
+
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                            <span>Capital at Risk (Savings Locked in Loans)</span>
+                            <span style={{ color: lockedPct > 30 ? '#f87171' : '#818cf8' }}>{lockedPct}%</span>
+                          </div>
+                          <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${lockedPct}%`, background: 'linear-gradient(90deg, #818cf8, #ef4444)', borderRadius: '4px', transition: 'width 0.6s ease' }} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Grid of Two Dynamic SVG Charts */}
                 <div className={styles.grid2} style={{ gap: '24px', marginTop: '20px' }}>
