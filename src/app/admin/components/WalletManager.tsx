@@ -175,25 +175,32 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     return (m.loans || []).reduce((acc, curr) => acc + (curr.amount || 0), 0);
   };
 
-  // Main Available Balance (Total Income minus Total Expenses minus Active Pending Loans)
-  const getNetBalance = (m: IWalletMonthData) => {
+  // Gross Savings (Total Income minus Total Expenses, before active loan deductions)
+  const getGrossSavings = (m: IWalletMonthData) => getIncomeTotal(m) - getExpenseTotal(m);
+
+  // Net Liquid Savings (Total Income minus Total Expenses minus Active Pending Loans)
+  // Loan money is deducted from Savings until it is returned!
+  const getSavings = (m: IWalletMonthData) => {
     return getIncomeTotal(m) - getExpenseTotal(m) - getActiveLoansTotal(m);
   };
 
-  const getSavings = (m: IWalletMonthData) => getIncomeTotal(m) - getExpenseTotal(m);
   const getSavingsRate = (m: IWalletMonthData) => {
     const inc = getIncomeTotal(m);
     if (inc === 0) return 0;
     return Math.max(0, (getSavings(m) / inc) * 100);
   };
 
+  // Main Available Balance (Equal to Net Liquid Savings)
+  const getNetBalance = (m: IWalletMonthData) => getSavings(m);
+
   // Global calculations
   const globalTotalIncome = months.reduce((acc, m) => acc + getIncomeTotal(m), 0);
   const globalTotalSpent = months.reduce((acc, m) => acc + getExpenseTotal(m), 0);
   const globalActiveLoans = months.reduce((acc, m) => acc + getActiveLoansTotal(m), 0);
   const globalReturnedLoans = months.reduce((acc, m) => acc + getReturnedLoansTotal(m), 0);
-  const globalTotalSavings = globalTotalIncome - globalTotalSpent;
-  const globalNetBalance = globalTotalIncome - globalTotalSpent - globalActiveLoans;
+  const globalGrossSavings = globalTotalIncome - globalTotalSpent;
+  const globalTotalSavings = globalTotalIncome - globalTotalSpent - globalActiveLoans;
+  const globalNetBalance = globalTotalSavings;
   const globalSavingsRate = globalTotalIncome > 0 ? (globalTotalSavings / globalTotalIncome) * 100 : 0;
 
   // Expense Categories mapping & colors
@@ -275,6 +282,17 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     const mAddon = getAddonTotal(m);
     if (mAddon > mSalary) {
       recs.push('Outstanding: Side-gigs and addon revenue outperformed your primary base salary! 🚀');
+    }
+
+    const activeLoanAmt = getActiveLoansTotal(m);
+    const grossSav = getGrossSavings(m);
+    if (activeLoanAmt > 0) {
+      if (grossSav > 0) {
+        const pctLocked = Math.min(100, Math.round((activeLoanAmt / grossSav) * 100));
+        recs.push(`🔒 Active Loans Alert: ৳${activeLoanAmt.toLocaleString()} (${pctLocked}% of gross savings) is currently deducted from your savings until repaid.`);
+      } else {
+        recs.push(`🔒 Active Loans Alert: ৳${activeLoanAmt.toLocaleString()} is currently deducted from your savings balance.`);
+      }
     }
 
     return recs;
@@ -1422,14 +1440,14 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       <div style={{ fontSize: '0.72rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700 }}>Active Money Lent (ধারে দেওয়া)</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24', marginTop: '4px' }}>৳{getActiveLoansTotal(activeMonth).toLocaleString()}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Recovered: ৳{getReturnedLoansTotal(activeMonth).toLocaleString()}
+                        Deducted from Savings • Recovered: ৳{getReturnedLoansTotal(activeMonth).toLocaleString()}
                       </div>
                     </div>
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>Main Cash Balance (মেইন ব্যালেন্স)</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#818cf8', marginTop: '4px' }}>৳{getNetBalance(activeMonth).toLocaleString()}</div>
+                      <div style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>Net Liquid Savings & Balance</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#818cf8', marginTop: '4px' }}>৳{getSavings(activeMonth).toLocaleString()}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Net Savings: ৳{getSavings(activeMonth).toLocaleString()}
+                        Gross: ৳{getGrossSavings(activeMonth).toLocaleString()} • Rate: {getSavingsRate(activeMonth).toFixed(1)}%
                       </div>
                     </div>
                   </div>
