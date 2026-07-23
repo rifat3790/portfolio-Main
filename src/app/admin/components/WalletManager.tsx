@@ -2377,6 +2377,74 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   );
                 })()}
 
+                {/* 🔮 FUTURE WEALTH PLANNING & FIRE SIMULATOR HUB */}
+                {(() => {
+                  const avgMonthlyIncome = months.length > 0 ? globalTotalIncome / months.length : 0;
+                  const avgMonthlyExpense = months.length > 0 ? globalTotalSpent / months.length : 0;
+                  const avgMonthlySavings = months.length > 0 ? globalTotalSavings / months.length : 0;
+                  
+                  // Emergency Reserve Coverage (Months of survival with zero income)
+                  const emergencyReserveMonths = avgMonthlyExpense > 0 ? (globalTotalSavings / avgMonthlyExpense).toFixed(1) : '∞';
+
+                  // FIRE Target (25x annual expense)
+                  const annualExpense = avgMonthlyExpense * 12;
+                  const fireTarget = annualExpense * 25;
+                  const fireProgressPct = fireTarget > 0 ? Math.min(100, Math.round((globalTotalSavings / fireTarget) * 100)) : 0;
+
+                  return (
+                    <div style={{ marginTop: '24px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(129, 140, 248, 0.25)', borderRadius: '16px', padding: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                        <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <TrendingUp size={18} style={{ color: '#818cf8' }} /> Future Wealth Planning & Financial Independence (FIRE) Engine
+                        </h4>
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(129, 140, 248, 0.15)', color: '#818cf8', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '3px 10px', borderRadius: '20px', fontWeight: 700 }}>
+                          Avg Net Savings: ৳{Math.round(avgMonthlySavings).toLocaleString()}/mo
+                        </span>
+                      </div>
+
+                      {/* Future Growth Projections Grid */}
+                      <div className={styles.grid4} style={{ marginBottom: '20px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>1-Year Wealth Projection</div>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#10b981', marginTop: '4px' }}>৳{Math.round(avgMonthlySavings * 12).toLocaleString()}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Linear Accumulation</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>3-Year Wealth Projection</div>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#60a5fa', marginTop: '4px' }}>৳{Math.round(avgMonthlySavings * 36).toLocaleString()}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Compound Reserve</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>5-Year Wealth (8% ROI)</div>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fbbf24', marginTop: '4px' }}>৳{Math.round((avgMonthlySavings * 60) * 1.22).toLocaleString()}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>With 8% Investment Yield</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px' }}>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Emergency Reserve Longevity</div>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: Number(emergencyReserveMonths) >= 6 ? '#10b981' : '#f59e0b', marginTop: '4px' }}>
+                            {emergencyReserveMonths} Months
+                          </div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Zero-Income Survival Runway</div>
+                        </div>
+                      </div>
+
+                      {/* FIRE Goal Milestone Meter */}
+                      <div style={{ background: 'rgba(7, 8, 15, 0.3)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '14px 16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', marginBottom: '6px' }}>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Financial Independence (FIRE) Progress (Target: ৳{Math.round(fireTarget).toLocaleString()})</span>
+                          <span style={{ fontWeight: 800, color: '#818cf8' }}>{fireProgressPct}% Achieved</span>
+                        </div>
+                        <div style={{ height: '8px', width: '100%', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${fireProgressPct}%`, background: 'linear-gradient(90deg, #6366f1, #c084fc)', borderRadius: '4px', transition: 'width 0.6s ease' }} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
               </div>
             </div>
           )}
