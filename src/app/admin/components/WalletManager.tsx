@@ -352,86 +352,131 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
   // 📄 On-Demand Direct PDF Download Engine (Bypasses popup-blockers and downloads direct vector PDF files)
   const downloadPDFHelper = (htmlContent: string, filename: string) => {
-    const fallbackPrint = (html: string, title: string) => {
-      showToast('Opening print preview for PDF...', 'info');
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <title>${title}</title>
-              <style>
-                body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; color: #1e293b; background: #ffffff; }
-                @page { size: A4; margin: 12mm; }
-              </style>
-            </head>
-            <body>
-              ${html}
-              <script>
-                window.onload = function() {
-                  window.print();
-                };
-              </script>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-      } else {
-        showToast('Please allow popups to download or print PDF', 'error');
+    // 1. Native Iframe Vector PDF / Print Engine (100% Reliable, Zero Blank Space, Selectable Text)
+    const printWithIframe = (html: string, title: string) => {
+      showToast('Preparing PDF document...', 'info');
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentWindow?.document || iframe.contentDocument;
+      if (!iframeDoc) {
+        showToast('Failed to open PDF document', 'error');
+        return;
       }
+
+      iframeDoc.open();
+      iframeDoc.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8" />
+            <title>${title}</title>
+            <style>
+              @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+              * { box-sizing: border-box; margin: 0; padding: 0; }
+              body {
+                font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+                background: #ffffff !important;
+                color: #0f172a !important;
+                padding: 24px;
+                font-size: 12px;
+                line-height: 1.5;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              @page {
+                size: A4 portrait;
+                margin: 10mm;
+              }
+              table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+              th, td { padding: 8px 10px; text-align: left; }
+              tr { page-break-inside: avoid; }
+            </style>
+          </head>
+          <body>
+            ${html}
+          </body>
+        </html>
+      `);
+      iframeDoc.close();
+
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+          showToast('PDF document ready!', 'success');
+        } catch (err) {
+          console.error('Print iframe error:', err);
+        } finally {
+          setTimeout(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
+          }, 1000);
+        }
+      }, 350);
     };
 
-    // Render container with fixed A4 width in active viewport for crisp 100% non-blank PDF capture
-    const container = document.createElement('div');
-    container.style.position = 'fixed';
-    container.style.top = '0';
-    container.style.left = '0';
-    container.style.width = '794px';
-    container.style.zIndex = '999999';
-    container.style.background = '#ffffff';
-    container.style.color = '#0f172a';
-    container.style.opacity = '1';
-    container.style.pointerEvents = 'none';
-    container.innerHTML = htmlContent;
-    document.body.appendChild(container);
+    // 2. Direct File Download via html2pdf (with window.scrollTo(0,0) scroll fix)
+    const runDirectDownload = () => {
+      const origScrollY = window.scrollY;
+      window.scrollTo(0, 0);
 
-    const runDownload = () => {
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.width = '800px';
+      container.style.zIndex = '999999';
+      container.style.background = '#ffffff';
+      container.style.color = '#0f172a';
+      container.style.opacity = '1';
+      container.innerHTML = htmlContent;
+      document.body.appendChild(container);
+
       const opt = {
         margin:       [10, 10, 10, 10],
         filename:     filename,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, windowWidth: 800 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, x: 0, y: 0, windowWidth: 800 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
       if ((window as any).html2pdf) {
         (window as any).html2pdf().from(container).set(opt).save().then(() => {
           if (document.body.contains(container)) document.body.removeChild(container);
+          window.scrollTo(0, origScrollY);
           showToast('PDF downloaded successfully!', 'success');
         }).catch((err: any) => {
           console.error('html2pdf error:', err);
           if (document.body.contains(container)) document.body.removeChild(container);
-          fallbackPrint(htmlContent, filename);
+          window.scrollTo(0, origScrollY);
+          printWithIframe(htmlContent, filename);
         });
       } else {
         if (document.body.contains(container)) document.body.removeChild(container);
-        fallbackPrint(htmlContent, filename);
+        window.scrollTo(0, origScrollY);
+        printWithIframe(htmlContent, filename);
       }
     };
 
     if ((window as any).html2pdf) {
-      setTimeout(runDownload, 150);
+      setTimeout(runDirectDownload, 100);
     } else {
-      showToast('Initializing secure PDF engine...', 'info');
+      showToast('Initializing PDF engine...', 'info');
       const script = document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
       script.onload = () => {
-        setTimeout(runDownload, 250);
+        setTimeout(runDirectDownload, 200);
       };
       script.onerror = () => {
-        if (document.body.contains(container)) document.body.removeChild(container);
-        fallbackPrint(htmlContent, filename);
+        printWithIframe(htmlContent, filename);
       };
       document.body.appendChild(script);
     }
