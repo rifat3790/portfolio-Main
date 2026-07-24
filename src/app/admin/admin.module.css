@@ -1105,3 +1105,72 @@
   }
 }
 
+/* Wallet Responsive Card & Table System */
+.walletCard {
+  background: rgba(15, 23, 42, 0.3);
+  border: 1px solid var(--glass-border-light);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .walletCard {
+    padding: 14px 10px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .walletCard {
+    padding: 10px 8px;
+    border-radius: 10px;
+  }
+}
+
+.walletTableWrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: rgba(7, 8, 15, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.walletTableWrapper table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+}
+
+@media (max-width: 600px) {
+  .walletTableWrapper table {
+    min-width: 440px;
+  }
+  .walletTableWrapper th,
+  .walletTableWrapper td {
+    padding: 8px 6px !important;
+    font-size: 0.74rem !important;
+  }
+}
+
+@media (max-width: 540px) {
+  .grid4 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .grid3 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .grid2 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+

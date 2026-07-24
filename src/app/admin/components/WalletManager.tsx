@@ -1354,7 +1354,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   };
 
   return (
-    <div style={{ fontFamily: 'var(--font-sans)', color: '#ffffff', padding: '10px' }}>
+    <div style={{ fontFamily: 'var(--font-sans)', color: '#ffffff', padding: '10px 4px', width: '100%', maxWidth: '100%', overflowX: 'hidden', boxSizing: 'border-box' }}>
       
       {/* HEADER SECTION */}
       <div className={styles.walletHeader}>
@@ -1426,7 +1426,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
           </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%', maxWidth: '100%' }}>
           
           {/* Sub-navigation Tabs */}
           <div className={styles.walletTabs}>
@@ -1493,7 +1493,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             <div className={styles.grid260_1fr}>
               
               {/* Months Selector Sidebar */}
-              <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '16px' }}>
+              <div className={styles.walletCard} style={{ padding: '12px' }}>
                 <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '14px', paddingLeft: '8px' }}>Months Sheets</div>
                 <div className={styles.monthsListContainer}>
                   {months.map((m) => {
@@ -1534,7 +1534,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
               {/* Selected Month Sheet details ledger */}
               {activeMonth ? (
-                <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '24px' }}>
+                <div className={styles.walletCard}>
                   
                   {/* Upper toolbar actions */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '16px', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
@@ -1695,8 +1695,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   <div className={styles.grid2}>
                     
                     {/* Left Column: Incomes Ledger */}
-                    <div style={{ background: 'rgba(7, 8, 15, 0.15)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                    <div className={styles.walletCard} style={{ background: 'rgba(7, 8, 15, 0.15)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
                         <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <TrendingUp size={16} style={{ color: '#4caf50' }} /> Incomes Ledger
                         </h3>
@@ -1713,8 +1713,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           No individual incomes logged. (Primary Base Salary: ৳{activeMonth.salary.toLocaleString()})
                         </div>
                       ) : (
-                        <div style={{ overflowX: 'auto', background: 'rgba(7, 8, 15, 0.1)', border: '1px solid rgba(255, 255, 255, 0.02)', borderRadius: '8px' }}>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                        <div className={styles.walletTableWrapper}>
+                          <table>
                             <thead>
                               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
                                 <th style={{ padding: '8px' }}>Category</th>
@@ -1731,7 +1731,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                                       {inc.category}
                                     </span>
                                   </td>
-                                  <td style={{ padding: '8px', color: '#fff' }}>{inc.description}</td>
+                                  <td style={{ padding: '8px', color: '#fff', wordBreak: 'break-word' }}>{inc.description}</td>
                                   <td style={{ padding: '8px', textAlign: 'right', fontWeight: 700, color: '#4caf50' }}>৳{inc.amount.toLocaleString()}</td>
                                   <td style={{ padding: '8px', textAlign: 'right' }}>
                                     <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
@@ -1862,13 +1862,13 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   </div>
 
                   {/* Money Lent Ledger (ধারের হিসাব & পাওনা) */}
-                  <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '16px', padding: '20px', marginTop: '24px' }}>
+                  <div className={styles.walletCard} style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(245, 158, 11, 0.25)', marginTop: '24px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                      <div>
-                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
-                          <HandCoins size={20} style={{ color: '#fbbf24' }} /> Money Lent Ledger (ধারের হিসাব & পাওনা)
+                      <div style={{ flex: 1, minWidth: '200px' }}>
+                        <h3 style={{ fontSize: 'clamp(0.95rem, 3.5vw, 1.15rem)', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', flexWrap: 'wrap', wordBreak: 'break-word' }}>
+                          <HandCoins size={20} style={{ color: '#fbbf24', flexShrink: 0 }} /> Money Lent Ledger (ধারের হিসাব & পাওনা)
                         </h3>
-                        <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginTop: '4px' }}>
                           কাকে কত টাকা ধার দিয়েছেন তার হিসাব। ফেরত পাওয়া বাটনে ক্লিক করলে তা স্বয়ংক্রিয়ভাবে মেইন ব্যালেন্সে যুক্ত হয়ে যাবে।
                         </span>
                       </div>
@@ -1910,7 +1910,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                       return totalLent > 0 ? (
                         <div style={{ marginBottom: '16px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px 16px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', marginBottom: '6px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', marginBottom: '6px', flexWrap: 'wrap', gap: '4px' }}>
                             <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Debt Recovery Progress (ধার আদায়ের হার)</span>
                             <span style={{ fontWeight: 800, color: recoveryPct >= 80 ? '#10b981' : recoveryPct >= 50 ? '#fbbf24' : '#f87171' }}>
                               {recoveryPct}% Recovered (৳{totalReturned.toLocaleString()} / ৳{totalLent.toLocaleString()})
@@ -1924,8 +1924,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     })()}
 
                     {/* Filter & Search Bar */}
-                    <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', gap: '6px' }}>
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         {(['All', 'Pending', 'Returned'] as const).map((st) => (
                           <button
                             key={st}
@@ -1935,7 +1935,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                               border: '1px solid',
                               borderColor: loanFilterStatus === st ? '#f59e0b' : 'rgba(255,255,255,0.06)',
                               color: loanFilterStatus === st ? '#fbbf24' : 'var(--text-secondary)',
-                              padding: '4px 12px',
+                              padding: '4px 10px',
                               borderRadius: '6px',
                               fontSize: '0.75rem',
                               fontWeight: 600,
@@ -1943,14 +1943,14 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                               transition: 'all 0.2s'
                             }}
                           >
-                            {st === 'All' ? 'All Records' : st === 'Pending' ? '⌛ Pending (ধারে আছে)' : '✅ Returned (ফেরত পাওয়া)'}
+                            {st === 'All' ? 'All' : st === 'Pending' ? '⌛ Pending' : '✅ Returned'}
                           </button>
                         ))}
                       </div>
 
                       <input
                         type="text"
-                        placeholder="Search by person or note..."
+                        placeholder="Search..."
                         value={loanSearchQuery}
                         onChange={(e) => setLoanSearchQuery(e.target.value)}
                         style={{
@@ -1960,7 +1960,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           padding: '6px 12px',
                           fontSize: '0.78rem',
                           color: '#fff',
-                          width: '220px'
+                          width: '100%',
+                          maxWidth: '200px'
                         }}
                       />
                     </div>
@@ -1972,7 +1973,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         <p style={{ margin: 0, fontSize: '0.85rem' }}>No loans logged for this month. Click &quot;Log New Loan&quot; to record money given.</p>
                       </div>
                     ) : (
-                      <div style={{ overflowX: 'auto', background: 'rgba(7, 8, 15, 0.2)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '10px' }}>
+                      <div className={styles.walletTableWrapper}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
                           <thead>
                             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)', background: 'rgba(15, 23, 42, 0.5)' }}>
@@ -2145,7 +2146,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
           )}
 
           {walletSubTab === 'consolidated' && (
-            <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '24px' }}>
+            <div className={styles.walletCard}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
                 <div>
                   <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>Consolidated Financial Report</h2>
@@ -2171,8 +2172,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 </button>
               </div>
 
-              <div style={{ overflowX: 'auto', background: 'rgba(7, 8, 15, 0.15)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '10px' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+              <div className={styles.walletTableWrapper}>
+                <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
                       <th style={{ padding: '12px 16px' }}>Month Name</th>
@@ -2240,8 +2241,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
           {walletSubTab === 'global_summary' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {/* ─── GLOBAL VISUAL REPRESENTATION PANEL ─── */}
-              <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div className={styles.walletCard}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
                   <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <TrendingUp size={20} style={{ color: '#4caf50' }} /> Global Financial Portfolio Summary
                   </h2>
