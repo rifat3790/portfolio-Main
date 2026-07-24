@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   try {
     await dbConnect();
-    const skills = await Skill.find({}).sort({ order: 1, createdAt: -1 });
+    const skills = await Skill.find({}).sort({ order: 1, createdAt: -1 }).lean();
     return NextResponse.json(skills);
   } catch (error) {
     console.error('Skills GET API error:', error);

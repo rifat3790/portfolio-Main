@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   try {
     await dbConnect();
-    const projects = await Project.find({}).sort({ order: 1, createdAt: -1 });
+    const projects = await Project.find({}).sort({ order: 1, createdAt: -1 }).lean();
     return NextResponse.json(projects);
   } catch (error) {
     console.error('Projects GET API error:', error);

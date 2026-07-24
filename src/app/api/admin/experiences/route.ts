@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   try {
     await dbConnect();
-    const experiences = await Experience.find({}).sort({ order: 1, createdAt: -1 });
+    const experiences = await Experience.find({}).sort({ order: 1, createdAt: -1 }).lean();
     return NextResponse.json(experiences);
   } catch (error) {
     console.error('Experiences GET API error:', error);

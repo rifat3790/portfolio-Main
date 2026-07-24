@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
     await dbConnect();
     // Sort months chronologically by their name format (e.g., "2026-01" or "January 2026")
-    const months = await WalletMonth.find({}).sort({ monthName: 1 });
+    const months = await WalletMonth.find({}).sort({ monthName: 1 }).lean();
     return NextResponse.json(months);
   } catch (error) {
     console.error('Error fetching wallet months:', error);

@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     await dbConnect();
-    let settings = await Setting.findOne();
+    let settings = await Setting.findOne().lean();
     if (!settings) {
       // Create default settings if none exist
       settings = await Setting.create({});

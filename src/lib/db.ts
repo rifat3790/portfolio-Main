@@ -42,7 +42,7 @@ async function dbConnect() {
 
   // Optimized MongoDB Connection Options for high performance and low latency
   const opts = {
-    bufferCommands: false,
+    bufferCommands: true,
     maxPoolSize: 10,
     minPoolSize: 2,
     serverSelectionTimeoutMS: 5000,

@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     }
 
     await dbConnect();
-    const blogs = await Blog.find({}).sort({ order: 1, createdAt: -1 });
+    const blogs = await Blog.find({}).sort({ order: 1, createdAt: -1 }).lean();
     return NextResponse.json(blogs);
   } catch (error) {
     console.error('Error fetching blogs:', error);

@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   try {
     await dbConnect();
-    const testimonials = await Testimonial.find({}).sort({ order: 1, createdAt: -1 });
+    const testimonials = await Testimonial.find({}).sort({ order: 1, createdAt: -1 }).lean();
     return NextResponse.json(testimonials);
   } catch (error) {
     console.error('Testimonials GET API error:', error);
