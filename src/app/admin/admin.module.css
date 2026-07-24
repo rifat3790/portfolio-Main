@@ -217,12 +217,27 @@
 .mainContent {
   padding: 40px;
   overflow-y: auto;
+  overflow-x: hidden;
   max-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .mainContent {
-    padding: 24px 16px;
+    padding: 20px 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .mainContent {
+    padding: 12px 8px !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .mainContent {
+    padding: 8px 4px !important;
   }
 }
 
@@ -754,11 +769,17 @@
   .dashboardLayout {
     grid-template-columns: 1fr !important;
     padding-top: 0px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
   }
   
   .mainContent {
     height: calc(100vh - 60px) !important;
     max-height: calc(100vh - 60px) !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
   }
 }
 
