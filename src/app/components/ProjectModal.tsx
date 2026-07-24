@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ExternalLink, Code, Check, Briefcase, Calendar, Info, Globe, Key, Copy, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../home.module.css';
@@ -34,6 +34,13 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isCopied, setIsCopied] = useState(false);
   const [showToast, setShowToast] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const handleCopyPassword = () => {
     if (project.password) {
@@ -208,7 +215,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
           )}
 
           {/* Action Row */}
-          <div style={{ gridColumn: 'span 2', display: 'flex', gap: '16px', marginTop: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className={styles.projModalActionsRow}>
             {project.liveLink && (
               <a 
                 href={project.liveLink}

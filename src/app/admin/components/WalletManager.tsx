@@ -1357,7 +1357,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     <div style={{ fontFamily: 'var(--font-sans)', color: '#ffffff', padding: '10px' }}>
       
       {/* HEADER SECTION */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div className={styles.walletHeader}>
         <div>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Wallet size={28} style={{ color: 'var(--accent-gold)' }} /> Personal Wallet Ledger
@@ -1366,7 +1366,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             Monitor side gig revenues, base salaries, bonuses, and detail monthly expenses.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className={styles.walletHeaderBtns} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button
             onClick={exportAllDataJSON}
             style={{
@@ -1429,7 +1429,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
           {/* Sub-navigation Tabs */}
-          <div style={{ display: 'flex', gap: '12px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '12px', marginBottom: '18px' }}>
+          <div className={styles.walletTabs}>
             <button
               onClick={() => setWalletSubTab('single')}
               style={{
@@ -1495,7 +1495,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
               {/* Months Selector Sidebar */}
               <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '16px' }}>
                 <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '14px', paddingLeft: '8px' }}>Months Sheets</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div className={styles.monthsListContainer}>
                   {months.map((m) => {
                     const isSelected = m._id === selectedMonthId;
                     const monthTotalInc = getIncomeTotal(m);
@@ -1537,7 +1537,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '24px' }}>
                   
                   {/* Upper toolbar actions */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '16px', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '16px', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
                     <div>
                       <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {activeMonth.monthName} Sheet
@@ -1570,7 +1570,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       </h2>
                       <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Savings Rate: {getSavingsRate(activeMonth).toFixed(1)}%</span>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       <button
                         onClick={() => printMonthPDF(activeMonth)}
                         style={{ background: 'rgba(129,140,248,0.1)', border: '1px solid rgba(129,140,248,0.2)', color: '#818cf8', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 600 }}
@@ -1593,10 +1593,10 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   </div>
 
                   {/* PREMIUM HUD: Score Ring, Forecast, recommendations alerts */}
-                  <div className={styles.grid150_1fr_1fr} style={{ marginBottom: '24px', background: 'rgba(7, 8, 15, 0.3)', border: '1px solid rgba(255,255,255,0.02)', borderRadius: '14px', padding: '16px' }}>
+                  <div className={styles.walletHudContainer}>
                     
                     {/* Gauge 1: Health Score Circular Gauge */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div className={styles.walletHudCol1}>
                       <div style={{ position: 'relative', width: '80px', height: '80px' }}>
                         <svg width="80" height="80" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}>
                           <path
@@ -1626,7 +1626,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     </div>
 
                     {/* Smart Projections */}
-                    <div style={{ borderRight: '1px solid rgba(255,255,255,0.05)', paddingRight: '12px' }}>
+                    <div className={styles.walletHudCol2}>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>Future Net Worth Forecasts</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
@@ -1645,7 +1645,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     </div>
 
                     {/* Smart Automated Advice Alerts */}
-                    <div>
+                    <div className={styles.walletHudCol3}>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.04em' }}>Ledger Insight Advisor</div>
                       <div style={{ marginTop: '8px', fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         {getSmartRecommendations(activeMonth).map((rec, i) => (
@@ -2607,8 +2607,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
       {/* Modal 1: Create Month Sheet */}
       {isAddMonthOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Create Month Sheet</h3>
               <button onClick={() => setIsAddMonthOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
@@ -2638,8 +2638,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
       {/* Modal: Edit Month Settings & Name */}
       {isEditMonthOpen && activeMonth && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Edit Month Settings</h3>
               <button onClick={() => setIsEditMonthOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
@@ -2699,8 +2699,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
       {/* Modal 2: Log Income Item */}
       {isAddIncomeOpen && activeMonth && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Log Income record</h3>
               <button onClick={() => setIsAddIncomeOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
@@ -2781,8 +2781,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
       {/* Modal 3: Edit Income Item */}
       {isEditIncomeOpen && activeMonth && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Edit Income record</h3>
               <button onClick={() => { setIsEditIncomeOpen(false); setEditingIncomeId(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
@@ -2863,8 +2863,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
       {/* Modal 4: Log Expense */}
       {isAddExpenseOpen && activeMonth && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Log Expense record</h3>
               <button onClick={() => setIsAddExpenseOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
@@ -2942,8 +2942,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
       {/* Modal 5: Edit Expense */}
       {isEditExpenseOpen && activeMonth && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '400px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Edit Expense details</h3>
               <button onClick={() => { setIsEditExpenseOpen(false); setEditingExpenseId(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
@@ -3021,8 +3021,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
       {/* Modal 6: Log New Loan */}
       {isAddLoanOpen && activeMonth && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '420px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <HandCoins size={20} style={{ color: '#fbbf24' }} /> Log Money Lent (ধার দিন)
@@ -3113,8 +3113,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
       {/* Modal 7: Edit Loan */}
       {isEditLoanOpen && activeMonth && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ background: '#0e1017', border: '1px solid var(--glass-border)', width: '90%', maxWidth: '420px', borderRadius: '16px', padding: '24px', boxShadow: '0 20px 50px rgba(0,0,0,0.8)' }}>
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Edit Loan Record</h3>
               <button onClick={() => { setIsEditLoanOpen(false); setEditingLoanId(''); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>

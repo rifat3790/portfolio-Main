@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, BookOpen, ExternalLink, X, User, CheckCircle2 } from 'lucide-react';
 import styles from '../../home.module.css';
 import { ISetting, IBlog } from '../shared/types';
 import { TwitterIcon, LinkedinIcon, FacebookIcon } from '../shared/icons';
 import Image from 'next/image';
-
 
 interface BlogsProps {
   siteSettings: ISetting | null;
@@ -61,6 +60,17 @@ export default function Blogs({ siteSettings, initialBlogs }: BlogsProps) {
   const [selectedBlog, setSelectedBlog] = useState<IBlog | null>(null);
   const [activeTocId, setActiveTocId] = useState('');
   const [copiedToast, setCopiedToast] = useState(false);
+
+  useEffect(() => {
+    if (selectedBlog) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedBlog]);
 
   return (
     <>

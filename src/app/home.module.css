@@ -2045,7 +2045,7 @@
 .blogReaderOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(3, 4, 7, 0.75);
+  background: rgba(3, 4, 7, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   z-index: 1000;
@@ -2057,8 +2057,8 @@
 }
 
 .blogReaderBox {
-  background: rgba(10, 11, 16, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(10, 11, 16, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px;
   width: 100%;
   max-width: 1100px;
@@ -2066,9 +2066,10 @@
   max-height: 85vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
   display: flex;
   flex-direction: column;
+  -webkit-overflow-scrolling: touch;
 }
 
 .blogReaderBox::-webkit-scrollbar {
@@ -2080,36 +2081,36 @@
 }
 
 .blogReaderBox::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
 }
 
 .blogReaderHeader {
-  padding: 40px 48px 30px;
+  padding: 36px 40px 24px;
   position: relative;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .blogReaderClose {
   position: absolute;
-  top: 32px;
-  left: 32px;
+  top: 24px;
+  right: 24px;
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 10;
+  z-index: 20;
 }
 
 .blogReaderClose:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   color: var(--text-primary);
   transform: rotate(90deg);
 }
@@ -2123,7 +2124,8 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 16px;
-  padding-left: 50px; /* Offset to clear close button */
+  padding-right: 48px;
+  flex-wrap: wrap;
 }
 
 .blogReaderCategory {
@@ -2136,17 +2138,17 @@
   grid-template-columns: 1fr 1fr;
   gap: 40px;
   align-items: center;
-  padding-left: 50px; /* Offset to clear close button */
 }
 
 .blogReaderTitle {
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-size: clamp(1.6rem, 3vw, 2.5rem);
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.25;
   margin: 0 0 16px 0;
   letter-spacing: 0.01em;
+  word-break: break-word;
 }
 
 .blogReaderExcerpt {
@@ -2155,6 +2157,7 @@
   line-height: 1.6;
   margin: 0 0 28px 0;
   font-weight: 300;
+  word-break: break-word;
 }
 
 .blogReaderAuthorCard {
@@ -2165,6 +2168,7 @@
   border: 1px solid rgba(255, 255, 255, 0.04);
   padding: 16px 20px;
   border-radius: 16px;
+  gap: 16px;
 }
 
 .blogReaderAuthorAvatar {
@@ -2172,6 +2176,7 @@
   height: 44px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .blogReaderAuthorMeta {
@@ -2194,6 +2199,7 @@
 .blogReaderShareGroup {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .blogReaderShareBtn {
@@ -2237,6 +2243,10 @@
   gap: 40px;
   padding: 48px;
   background: rgba(3, 4, 7, 0.15);
+}
+
+.blogReaderContentCol {
+  min-width: 0;
 }
 
 /* Left Column: On This Page Index */
@@ -2371,37 +2381,37 @@
   line-height: 1.6;
 }
 
-/* Right Column: Sidebar metadata */
+/* Sidebar Info Card */
 .blogReaderSidebarCol {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
   position: sticky;
   top: 32px;
   align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .blogReaderSideCard {
   background: rgba(255, 255, 255, 0.015);
   border: 1px solid rgba(255, 255, 255, 0.04);
-  padding: 24px;
   border-radius: 18px;
+  padding: 20px;
 }
 
 .blogReaderSideCardTitle {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0 0 18px 0;
+  letter-spacing: 0.1em;
+  margin: 0 0 16px 0;
 }
 
 .blogReaderSideDetailList {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .blogReaderSideDetailItem {
@@ -2411,7 +2421,7 @@
 }
 
 .blogReaderSideDetailLabel {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -2420,33 +2430,31 @@
 .blogReaderSideDetailVal {
   font-size: 0.85rem;
   color: var(--text-primary);
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .blogReaderSideCategoryPill {
   display: inline-block;
-  background: rgba(96, 165, 250, 0.08);
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  background: rgba(96, 165, 250, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.2);
   color: #60a5fa;
-  padding: 4px 12px;
+  font-size: 0.75rem;
+  padding: 4px 10px;
   border-radius: 100px;
-  font-size: 0.76rem;
-  font-weight: 500;
   width: fit-content;
 }
 
 .blogReaderSideTagsGrid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .blogReaderSideTagBadge {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--text-secondary);
   font-size: 0.72rem;
-  padding: 3px 10px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px 8px;
   border-radius: 6px;
   font-weight: 300;
 }
@@ -2456,13 +2464,46 @@
   gap: 10px;
 }
 
-/* Responsiveness for Modal columns and Header */
+/* Responsiveness for Blog Modal columns and Header */
 @media (max-width: 1024px) {
   .blogReaderBodyGrid {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 32px;
+    padding: 32px;
   }
-  .blogReaderTocCol, .blogReaderSidebarCol {
+  .blogReaderTocCol {
+    position: static;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 16px 20px;
+  }
+  .blogReaderTocList {
+    border-left: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+  .blogReaderTocItem {
+    padding-left: 0;
+    margin-left: 0;
+  }
+  .blogReaderTocItemActive {
+    border-left: none;
+    padding-left: 0;
+  }
+  .blogReaderTocLink {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 0.78rem;
+  }
+  .blogReaderTocLinkActive {
+    background: rgba(96, 165, 250, 0.15);
+    border-color: rgba(96, 165, 250, 0.3);
+  }
+  .blogReaderSidebarCol {
     position: static;
   }
   .blogReaderHeaderContent {
@@ -2481,26 +2522,59 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .blogCardsGrid {
     grid-template-columns: 1fr;
   }
   .blogReaderOverlay {
-    padding: 12px;
+    padding: 16px 12px;
   }
   .blogReaderBox {
-    max-height: 95vh;
+    max-height: 94vh;
+    border-radius: 20px;
+  }
+  .blogReaderHeader {
+    padding: 24px 20px 20px;
+  }
+  .blogReaderClose {
+    top: 16px;
+    right: 16px;
+    width: 34px;
+    height: 34px;
+  }
+  .blogReaderMetaRow {
+    padding-right: 40px;
+    margin-bottom: 12px;
+  }
+  .blogReaderHeaderContent {
+    gap: 20px;
+  }
+  .blogReaderImageWrapper {
+    height: 200px;
+  }
+  .blogReaderAuthorCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .blogReaderBodyGrid {
+    padding: 20px 16px;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .blogReaderOverlay {
+    padding: 8px 6px;
+  }
+  .blogReaderBox {
+    max-height: 96vh;
     border-radius: 16px;
   }
   .blogReaderHeader {
-    padding: 32px 20px;
-  }
-  .blogReaderMetaRow, .blogReaderHeaderContent {
-    padding-left: 0;
-    margin-top: 48px;
+    padding: 20px 14px 16px;
   }
   .blogReaderBodyGrid {
-    padding: 24px;
+    padding: 16px 12px;
   }
 }
 
@@ -2854,7 +2928,7 @@
 .projModalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(3, 4, 7, 0.75);
+  background: rgba(3, 4, 7, 0.8);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   z-index: 1000;
@@ -2866,7 +2940,7 @@
 }
 
 .projModalBox {
-  background: rgba(10, 11, 16, 0.9);
+  background: rgba(10, 11, 16, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 28px;
   width: 100%;
@@ -2878,6 +2952,7 @@
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
   display: flex;
   flex-direction: column;
+  -webkit-overflow-scrolling: touch;
 }
 
 .projModalBox::-webkit-scrollbar {
@@ -2885,35 +2960,36 @@
 }
 
 .projModalBox::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 10px;
 }
 
 .projModalHeader {
-  padding: 40px 48px 24px;
+  padding: 36px 40px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
 }
 
 .projModalClose {
   position: absolute;
-  top: 36px;
-  left: 36px;
+  top: 24px;
+  right: 24px;
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 10;
+  z-index: 20;
 }
 
 .projModalClose:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   color: var(--text-primary);
   transform: rotate(90deg);
 }
@@ -2923,7 +2999,8 @@
   gap: 16px;
   align-items: center;
   margin-bottom: 16px;
-  padding-left: 44px;
+  padding-right: 48px;
+  flex-wrap: wrap;
 }
 
 .projModalFeaturedPill {
@@ -2936,6 +3013,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .projModalHeaderGrid {
@@ -2943,16 +3021,16 @@
   grid-template-columns: 1.1fr 0.9fr;
   gap: 40px;
   align-items: center;
-  padding-left: 44px;
 }
 
 .projModalTitle {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 3.5vw, 2.8rem);
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 16px 0;
   line-height: 1.15;
+  word-break: break-word;
 }
 
 .projModalMetaPills {
@@ -3014,6 +3092,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
 }
 
 .projModalDetailItem {
@@ -3022,6 +3101,7 @@
   gap: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   padding-bottom: 14px;
+  min-width: 0;
 }
 
 .projModalDetailItem:last-child {
@@ -3045,6 +3125,8 @@
 .projModalDetailContent {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .projModalDetailLabel {
@@ -3058,6 +3140,7 @@
   font-size: 0.88rem;
   color: var(--text-primary);
   font-weight: 500;
+  word-break: break-word;
 }
 
 .projModalFeaturesCard {
@@ -3065,6 +3148,7 @@
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 20px;
   padding: 28px;
+  min-width: 0;
 }
 
 .projModalFeaturesTitle {
@@ -3091,6 +3175,7 @@
   font-size: 0.88rem;
   color: var(--text-secondary);
   line-height: 1.5;
+  word-break: break-word;
 }
 
 .projModalFeatureCheck {
@@ -3103,6 +3188,7 @@
   grid-column: span 2;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
   padding-top: 32px;
+  min-width: 0;
 }
 
 .projModalOverviewTitle {
@@ -3118,12 +3204,23 @@
   line-height: 1.8;
   color: var(--text-secondary);
   font-weight: 300;
+  word-break: break-word;
+}
+
+.projModalOverviewText p {
+  margin-bottom: 12px;
+}
+
+.projModalOverviewText ul, .projModalOverviewText ol {
+  padding-left: 20px;
+  margin-bottom: 12px;
 }
 
 .projModalScreenshotsSection {
   grid-column: span 2;
   border-top: 1px solid rgba(255, 255, 255, 0.04);
   padding-top: 32px;
+  min-width: 0;
 }
 
 .projModalScreenshotsTitle {
@@ -3139,6 +3236,7 @@
   gap: 16px;
   overflow-x: auto;
   padding-bottom: 12px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .projModalCarousel::-webkit-scrollbar {
@@ -3172,6 +3270,36 @@
   object-fit: cover;
 }
 
+.projModalActionsRow {
+  grid-column: span 2;
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.projModalActionPassword {
+  background: rgba(167, 139, 250, 0.08);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  padding: 10px 18px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  word-break: break-all;
+}
+
+.projModalActionPassword:hover {
+  background: rgba(167, 139, 250, 0.16);
+  border-color: rgba(167, 139, 250, 0.4);
+  color: var(--text-primary);
+}
+
 @media (max-width: 1024px) {
   .projectHeaderGrid {
     grid-template-columns: 1fr;
@@ -3182,33 +3310,87 @@
   }
   .projModalHeaderGrid {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 28px;
   }
   .projModalBodyGrid {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 28px;
+    padding: 32px;
   }
-  .projModalOverviewSection, .projModalScreenshotsSection {
+  .projModalOverviewSection,
+  .projModalScreenshotsSection,
+  .projModalActionsRow {
     grid-column: span 1;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .projModalOverlay {
-    padding: 12px;
+    padding: 16px 12px;
   }
   .projModalBox {
-    max-height: 95vh;
+    max-height: 94vh;
+    border-radius: 20px;
   }
   .projModalHeader {
-    padding: 32px 20px;
+    padding: 24px 20px 20px;
   }
-  .projModalMetaRow, .projModalHeaderGrid {
-    padding-left: 0;
-    margin-top: 48px;
+  .projModalClose {
+    top: 16px;
+    right: 16px;
+    width: 34px;
+    height: 34px;
+  }
+  .projModalMetaRow {
+    padding-right: 40px;
+    margin-bottom: 12px;
   }
   .projModalBodyGrid {
-    padding: 24px;
+    padding: 20px 16px;
+    gap: 20px;
+  }
+  .projModalDetailsCard,
+  .projModalFeaturesCard {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+  .projModalOverviewSection,
+  .projModalScreenshotsSection {
+    padding-top: 20px;
+  }
+  .projModalThumbnailWrapper {
+    width: 130px;
+    height: 82px;
+  }
+  .projModalActionsRow {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+  .projModalActionsRow a {
+    width: 100%;
+    justify-content: center;
+  }
+  .projModalActionPassword {
+    width: 100%;
+    justify-content: center;
+    border-radius: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .projModalOverlay {
+    padding: 8px 6px;
+  }
+  .projModalBox {
+    max-height: 96vh;
+    border-radius: 16px;
+  }
+  .projModalHeader {
+    padding: 20px 14px 16px;
+  }
+  .projModalBodyGrid {
+    padding: 16px 12px;
   }
 }
 
