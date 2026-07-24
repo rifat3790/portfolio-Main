@@ -158,7 +158,7 @@ export default function ProjectModal({ project, onClose }: ProjectModalProps) {
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className={styles.projModalDetailValue}
-                    style={{ color: '#60a5fa', textDecoration: 'underline' }}
+                    style={{ color: '#60a5fa', textDecoration: 'underline', wordBreak: 'break-all' }}
                   >
                     {project.liveLink.replace(/^https?:\/\//, '')}
                   </a>

@@ -3345,7 +3345,12 @@
     padding-right: 40px;
     margin-bottom: 12px;
   }
+  .projModalHeaderGrid {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
   .projModalBodyGrid {
+    grid-template-columns: 1fr !important;
     padding: 20px 16px;
     gap: 20px;
   }
@@ -3357,12 +3362,14 @@
   .projModalOverviewSection,
   .projModalScreenshotsSection {
     padding-top: 20px;
+    grid-column: span 1 !important;
   }
   .projModalThumbnailWrapper {
     width: 130px;
     height: 82px;
   }
   .projModalActionsRow {
+    grid-column: span 1 !important;
     flex-direction: column;
     width: 100%;
     align-items: stretch;
@@ -3389,7 +3396,11 @@
   .projModalHeader {
     padding: 20px 14px 16px;
   }
+  .projModalHeaderGrid {
+    grid-template-columns: 1fr !important;
+  }
   .projModalBodyGrid {
+    grid-template-columns: 1fr !important;
     padding: 16px 12px;
   }
 }
