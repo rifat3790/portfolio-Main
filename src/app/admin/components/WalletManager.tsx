@@ -104,6 +104,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     { name: 'Mobile Data & Prepaid Package', amount: 500, category: 'Utility' },
   ]);
 
+  const [isVaultModalOpen, setIsVaultModalOpen] = useState(false);
+
   // Modal states
   const [isAddMonthOpen, setIsAddMonthOpen] = useState(false);
   const [isEditMonthOpen, setIsEditMonthOpen] = useState(false);
@@ -1950,7 +1952,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         </div>
                         
                         <button
-                          onClick={handleBulkLogRecurringBills}
+                          onClick={() => setIsVaultModalOpen(true)}
                           style={{
                             background: 'rgba(212, 175, 55, 0.15)',
                             border: '1px solid rgba(212, 175, 55, 0.35)',
@@ -1965,9 +1967,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                             gap: '6px',
                             transition: 'all 0.2s ease'
                           }}
-                          title="1-Click Auto-Log all fixed monthly overhead bills"
+                          title="View Monthly Fixed Overhead Bills Vault"
                         >
-                          <Zap size={13} style={{ color: 'var(--accent-gold)' }} /> 1-Click Auto-Log Fixed Bills
+                          <Lock size={13} style={{ color: 'var(--accent-gold)' }} /> Fixed Overhead Vault
                         </button>
                       </div>
                     </div>
@@ -4197,6 +4199,56 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 {editingGoalId ? 'Save Goal Changes' : 'Create Goal Jar'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 10: Fixed Overhead Bills Vault */}
+      {isVaultModalOpen && (
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox} style={{ maxWidth: '520px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Lock size={20} style={{ color: 'var(--accent-gold)' }} /> Fixed Monthly Overhead Vault
+              </h3>
+              <button onClick={() => setIsVaultModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+            
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '0 0 16px' }}>
+              Inspect your recurring overhead bills. Click &quot;Pre-fill Expense Form&quot; to review and log any item manually. (No automatic database insertion)
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+              {recurringBills.map((bill, index) => (
+                <div key={index} style={{ background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.85rem' }}>{bill.name}</div>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Category: {bill.category}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontWeight: 800, color: '#fca5a5', fontSize: '0.9rem' }}>{fmtVal(bill.amount)}</span>
+                    <button
+                      onClick={() => {
+                        setExpDesc(bill.name);
+                        setExpAmount(String(bill.amount));
+                        setExpCategory(categoriesList.includes(bill.category) ? bill.category : 'Other');
+                        setExpDate(new Date().toISOString().split('T')[0]);
+                        setIsVaultModalOpen(false);
+                        setIsAddExpenseOpen(true);
+                      }}
+                      style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#fef08a', padding: '4px 10px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Pre-fill Form
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Total Fixed Overheads: </span>
+              <strong style={{ color: '#fca5a5', fontSize: '0.95rem' }}>{fmtVal(recurringBills.reduce((acc, b) => acc + b.amount, 0))}/month</strong>
+            </div>
           </div>
         </div>
       )}
