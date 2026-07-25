@@ -1442,7 +1442,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     if (!activeMonth) return;
     if (!goalName || !goalTarget) return showToast('Goal name and target amount are required', 'error');
 
-    const currentGoals = activeSavingsGoals;
+    const currentGoals = activeMonth.savingsGoals || [];
     let updatedGoals: ISavingsGoal[] = [];
 
     if (editingGoalId) {
@@ -1494,7 +1494,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     if (!activeMonth) return;
     if (!confirm('Are you sure you want to remove this Savings Goal Jar?')) return;
 
-    const currentGoals = activeSavingsGoals;
+    const currentGoals = activeMonth.savingsGoals || [];
     const updatedGoals = currentGoals.filter(g => g._id !== goalId && g.id !== goalId);
 
     // ⚡ Optimistic UI Update
@@ -1692,22 +1692,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const activeHealthInfo = getHealthGrade(activeHealthScore);
   const activeMonthSavings = activeMonth ? getSavings(activeMonth) : 0;
 
-  const activeSavingsGoals: ISavingsGoal[] = (activeMonth?.savingsGoals && activeMonth.savingsGoals.length > 0)
-    ? activeMonth.savingsGoals
-    : [
-        { id: '1', name: '💻 High-End M3 Max MacBook Pro', target: 280000, current: 125000, category: 'Gadgets' },
-        { id: '2', name: '🛡️ 6-Month Emergency Safety Fund', target: 120000, current: 85000, category: 'Other' },
-        { id: '3', name: '✈️ Cox’s Bazar & Travel Fund', target: 35000, current: 20000, category: 'Entertainment' },
-      ];
-
-  const activeRecurringBills: IRecurringBill[] = (activeMonth?.recurringBills && activeMonth.recurringBills.length > 0)
-    ? activeMonth.recurringBills
-    : [
-        { name: 'Mess Rent & Food Deposit', amount: 5000, category: 'Rent' },
-        { name: 'Wi-Fi & High-Speed Internet', amount: 1000, category: 'Utility' },
-        { name: 'AWS & Vercel Production Server', amount: 1450, category: 'Server' },
-        { name: 'Mobile Data & Prepaid Package', amount: 500, category: 'Utility' },
-      ];
+  const activeSavingsGoals: ISavingsGoal[] = activeMonth?.savingsGoals || [];
+  const activeRecurringBills: IRecurringBill[] = activeMonth?.recurringBills || [];
 
   // 📦 1-Click JSON Data Backup Engine
   const exportAllDataJSON = () => {
@@ -2640,8 +2626,13 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       </button>
                     </div>
 
-                    <div className={styles.grid3} style={{ gap: '14px' }}>
-                      {activeSavingsGoals.map(goal => {
+                    {activeSavingsGoals.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '24px 12px', color: 'var(--text-muted)', fontSize: '0.8rem', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '10px', border: '1px dashed rgba(255,255,255,0.08)' }}>
+                        No active Savings Goal Jars. Click &quot;New Goal Jar&quot; to set target wealth goals.
+                      </div>
+                    ) : (
+                      <div className={styles.grid3} style={{ gap: '14px' }}>
+                        {activeSavingsGoals.map(goal => {
                         const goalKey = goal._id || goal.id || goal.name;
                         const pct = Math.min(100, Math.round((goal.current / (goal.target || 1)) * 100));
                         return (
@@ -2686,6 +2677,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         );
                       })}
                     </div>
+                    )}
                   </div>
 
                   {/* 🛡️ INTERACTIVE EMERGENCY SAFETY RESERVE SIMULATOR */}
