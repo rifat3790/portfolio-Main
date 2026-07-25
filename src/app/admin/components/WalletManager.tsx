@@ -3111,6 +3111,61 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 );
               })()}
 
+              {/* 🚀 DYNAMIC SEASONALITY & WEALTH MOMENTUM ALGORITHM RADAR */}
+              {months.length > 0 && (() => {
+                const sortedByDate = [...months].sort((a, b) => new Date(a.monthName).getTime() - new Date(b.monthName).getTime());
+                const last3 = sortedByDate.slice(-3);
+                const avg3MoSavings = last3.length > 0 ? Math.round(last3.reduce((acc, m) => acc + getSavings(m), 0) / last3.length) : 0;
+                
+                // Rolling Savings Volatility Algorithm (Standard Deviation)
+                const meanSavings = months.reduce((acc, m) => acc + getSavings(m), 0) / months.length;
+                const variance = months.reduce((acc, m) => acc + Math.pow(getSavings(m) - meanSavings, 2), 0) / months.length;
+                const stdDev = Math.sqrt(variance);
+                const volatilityLevel = stdDev < 5000 ? '🟢 Low Volatility (Stable)' : stdDev < 15000 ? '🟡 Moderate Volatility' : '🔴 High Cashflow Variation';
+
+                // Capital Retention Score
+                const lifetimeIncome = globalTotalIncome;
+                const retentionScore = lifetimeIncome > 0 ? Math.round((globalTotalSavings / lifetimeIncome) * 100) : 0;
+
+                return (
+                  <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.4) 0%, rgba(15, 23, 42, 0.7) 100%)', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                          <Gauge size={18} style={{ color: '#818cf8' }} /> Seasonality & Wealth Momentum Algorithm Radar
+                        </h3>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          Calculated via 3-month rolling average & capital volatility variance algorithm
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', background: 'rgba(129, 140, 248, 0.15)', color: '#818cf8', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '4px 12px', borderRadius: '20px', fontWeight: 700 }}>
+                        {volatilityLevel}
+                      </span>
+                    </div>
+
+                    <div className={styles.grid3} style={{ gap: '14px' }}>
+                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>3-Month Rolling Savings Pace</div>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#34d399', marginTop: '4px' }}>{fmtVal(avg3MoSavings)}/mo</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Short-Term Wealth Momentum</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Capital Retention Efficiency</div>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--accent-gold)', marginTop: '4px' }}>{retentionScore}% Retained</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Of total lifetime revenues saved</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '14px' }}>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Cashflow Standard Deviation</div>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#60a5fa', marginTop: '4px' }}>±{fmtVal(Math.round(stdDev))}</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Statistical Income Stability Index</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* 📊 MULTI-MONTH CASHFLOW VISUAL BAR MATRIX */}
               <div className={styles.walletCard} style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
