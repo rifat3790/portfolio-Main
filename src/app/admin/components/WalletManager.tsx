@@ -1446,6 +1446,50 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     showToast('Savings Goal Jar removed', 'info');
   };
 
+  // 📥 Master Multi-Month Financial Database CSV Exporter
+  const exportMasterCSV = () => {
+    if (months.length === 0) return showToast('No months available to export', 'error');
+
+    let csvContent = 'RIFAT PRIVATE FINANCE - MASTER PORTFOLIO DATABASE EXPORT\n';
+    csvContent += `Export Date,${new Date().toLocaleDateString()}\n\n`;
+    csvContent += 'MONTHLY CONSOLIDATED SUMMARY\n';
+    csvContent += 'Month Name,Salary,Add-on,Bonus,Total Earnings,Total Spent,Net Savings,Savings Rate (%)\n';
+
+    months.forEach(m => {
+      const inc = getIncomeTotal(m);
+      const exp = getExpenseTotal(m);
+      const sav = getSavings(m);
+      const rate = getSavingsRate(m).toFixed(1);
+      csvContent += `"${m.monthName}",${m.salary},${m.addon},${m.bonus},${inc},${exp},${sav},${rate}\n`;
+    });
+
+    csvContent += '\nALL EXPENSE RECORDS ACROSS HISTORY\n';
+    csvContent += 'Month,Date,Category,Description,Amount\n';
+    months.forEach(m => {
+      (m.expenses || []).forEach(e => {
+        csvContent += `"${m.monthName}","${new Date(e.date).toLocaleDateString()}","${e.category}","${e.description.replace(/"/g, '""')}",${e.amount}\n`;
+      });
+    });
+
+    csvContent += '\nALL MONEY LENT (DEBT) RECORDS\n';
+    csvContent += 'Month,Debtor Name,Amount,Date Given,Due Date,Status,Notes\n';
+    months.forEach(m => {
+      (m.loans || []).forEach(l => {
+        csvContent += `"${m.monthName}","${l.personName.replace(/"/g, '""')}",${l.amount},"${new Date(l.date).toLocaleDateString()}","${l.dueDate ? new Date(l.dueDate).toLocaleDateString() : 'N/A'}","${l.status}","${(l.notes || '').replace(/"/g, '""')}"\n`;
+      });
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Master_Financial_Portfolio_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Master Multi-Month Database CSV downloaded successfully!', 'success');
+  };
+
   // 📅 Date Formatting Helper
   const formatItemDate = (dateVal?: string | Date) => {
     if (!dateVal) return 'N/A';
@@ -2724,95 +2768,183 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
           )}
 
           {walletSubTab === 'consolidated' && (
-            <div className={styles.walletCard}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-                <div>
-                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>Consolidated Financial Report</h2>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Aggregated historical ledger overview</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              {/* 🏆 ALL-TIME FINANCIAL CHAMPIONS SPOTLIGHT WIDGET */}
+              {months.length > 0 && (() => {
+                const peakEarnMonth = [...months].sort((a, b) => getIncomeTotal(b) - getIncomeTotal(a))[0];
+                const frugalMonth = [...months].sort((a, b) => getExpenseTotal(a) - getExpenseTotal(b))[0];
+                const topSavingsRateMonth = [...months].sort((a, b) => getSavingsRate(b) - getSavingsRate(a))[0];
+
+                return (
+                  <div className={styles.grid3} style={{ gap: '16px' }}>
+                    <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '14px', padding: '18px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <Award size={20} style={{ color: '#10b981' }} />
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          🎯 Peak Earning Month
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>{peakEarnMonth?.monthName || 'N/A'}</div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#10b981', marginTop: '4px' }}>
+                        Gross Income: {fmtVal(getIncomeTotal(peakEarnMonth))}
+                      </div>
+                    </div>
+
+                    <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '14px', padding: '18px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <ShieldCheck size={20} style={{ color: '#fbbf24' }} />
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          🛡️ Most Frugal Month
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>{frugalMonth?.monthName || 'N/A'}</div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fbbf24', marginTop: '4px' }}>
+                        Total Spent: {fmtVal(getExpenseTotal(frugalMonth))}
+                      </div>
+                    </div>
+
+                    <div style={{ background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.15) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(129, 140, 248, 0.3)', borderRadius: '14px', padding: '18px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <TrendingUp size={20} style={{ color: '#818cf8' }} />
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          🔥 Highest Savings Rate
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#fff' }}>{topSavingsRateMonth?.monthName || 'N/A'}</div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#818cf8', marginTop: '4px' }}>
+                        Savings Rate: {getSavingsRate(topSavingsRateMonth).toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className={styles.walletCard}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+                  <div>
+                    <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>Consolidated Financial Portfolio Ledger</h2>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Aggregated historical ledger overview & quick sheet navigation</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={exportMasterCSV}
+                      style={{
+                        background: 'rgba(16, 185, 129, 0.12)',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        color: '#34d399',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.82rem'
+                      }}
+                      title="Export entire multi-month database to CSV"
+                    >
+                      <FileText size={15} /> Master CSV Export
+                    </button>
+                    <button
+                      onClick={printGlobalPDF}
+                      style={{
+                        background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '10px 18px',
+                        borderRadius: '8px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 12px rgba(129, 140, 248, 0.3)'
+                      }}
+                    >
+                      <Download size={16} /> Download Consolidated PDF
+                    </button>
+                  </div>
                 </div>
-                <button
-                  onClick={printGlobalPDF}
-                  style={{
-                    background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
-                    color: '#fff',
-                    border: 'none',
-                    padding: '10px 20px',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    boxShadow: '0 4px 12px rgba(129, 140, 248, 0.3)'
-                  }}
-                >
-                  <Download size={16} /> Download Consolidated PDF
-                </button>
+
+                <div className={styles.walletTableWrapper}>
+                  <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
+                        <th style={{ padding: '12px 16px' }}>Month Name</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Salary</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Add-on</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Bonus</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Total Income</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Total Spent</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Savings</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Savings Rate</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Health Score</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {months.map(m => {
+                        const totalInc = getIncomeTotal(m);
+                        const totalExp = getExpenseTotal(m);
+                        const netSav = getSavings(m);
+                        const rate = getSavingsRate(m).toFixed(0);
+                        const health = getHealthScore(m);
+                        const hInfo = getHealthGrade(health);
+                        return (
+                          <tr key={m._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                            <td style={{ padding: '12px 16px', fontWeight: 700, color: '#fff' }}>
+                              <button
+                                onClick={() => {
+                                  setSelectedMonthId(m._id);
+                                  setWalletSubTab('single');
+                                }}
+                                style={{ background: 'transparent', border: 'none', color: '#818cf8', cursor: 'pointer', fontWeight: 700, fontSize: '0.88rem', padding: 0, textDecoration: 'underline' }}
+                                title="Click to view detailed month sheet"
+                              >
+                                {m.monthName}
+                              </button>
+                            </td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>{fmtVal(getSalaryTotal(m))}</td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>{fmtVal(getAddonTotal(m))}</td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>{fmtVal(getBonusTotal(m))}</td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#4caf50' }}>{fmtVal(totalInc)}</td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right', color: '#f44336' }}>{fmtVal(totalExp)}</td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#2196f3' }}>{fmtVal(netSav)}</td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'var(--accent-gold)' }}>{totalInc > 0 ? rate : '0'}%</td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                              <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: `${hInfo.color}15`, color: hInfo.color, border: `1px solid ${hInfo.color}35`, fontSize: '0.75rem', fontWeight: 700 }}>
+                                {health} ({hInfo.grade})
+                              </span>
+                            </td>
+                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                                <button
+                                  onClick={() => {
+                                    setSelectedMonthId(m._id);
+                                    setWalletSubTab('single');
+                                  }}
+                                  style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#818cf8', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                                >
+                                  Open Sheet
+                                </button>
+                                <button
+                                  onClick={() => printMonthPDF(m)}
+                                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                  title="Download PDF Statement"
+                                >
+                                  <Download size={12} /> PDF
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
-              <div className={styles.walletTableWrapper}>
-                <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
-                      <th style={{ padding: '12px 16px' }}>Month Name</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Salary</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Add-on</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Bonus</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Total Income</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Total Spent</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Savings</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Savings Rate</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Health Score</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {months.map(m => {
-                      const totalInc = getIncomeTotal(m);
-                      const totalExp = getExpenseTotal(m);
-                      const netSav = getSavings(m);
-                      const rate = getSavingsRate(m).toFixed(0);
-                      const health = getHealthScore(m);
-                      const hInfo = getHealthGrade(health);
-                      return (
-                        <tr key={m._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                          <td style={{ padding: '12px 16px', fontWeight: 700, color: '#fff' }}>{m.monthName}</td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>৳{getSalaryTotal(m).toLocaleString()}</td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>৳{getAddonTotal(m).toLocaleString()}</td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>৳{getBonusTotal(m).toLocaleString()}</td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#4caf50' }}>৳{totalInc.toLocaleString()}</td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right', color: '#f44336' }}>৳{totalExp.toLocaleString()}</td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#2196f3' }}>৳{netSav.toLocaleString()}</td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'var(--accent-gold)' }}>{totalInc > 0 ? rate : '0'}%</td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                            <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: `${hInfo.color}15`, color: hInfo.color, border: `1px solid ${hInfo.color}35`, fontSize: '0.75rem', fontWeight: 700 }}>
-                              {health} ({hInfo.grade})
-                            </span>
-                          </td>
-                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                              <button
-                                onClick={() => printMonthPDF(m)}
-                                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                title="Download PDF Statement"
-                              >
-                                <Download size={12} /> PDF
-                              </button>
-                              <button
-                                onClick={() => exportMonthToCSV(m)}
-                                style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#10b981', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                title="Export CSV"
-                              >
-                                <FileText size={12} /> CSV
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
             </div>
           )}
 
@@ -2849,19 +2981,19 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       <div className={styles.grid3} style={{ gap: '14px' }}>
                         <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px 14px' }}>
                           <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Predicted Next Month Income</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#34d399', marginTop: '4px' }}>৳{mlPred.predictedIncome.toLocaleString()}</div>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#34d399', marginTop: '4px' }}>{fmtVal(mlPred.predictedIncome)}</div>
                           <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Linear Regression Slope: +{Math.round(mlPred.slopeInc)}/mo</div>
                         </div>
 
                         <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px 14px' }}>
                           <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Predicted Next Month Outlays</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f87171', marginTop: '4px' }}>৳{mlPred.predictedExpense.toLocaleString()}</div>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f87171', marginTop: '4px' }}>{fmtVal(mlPred.predictedExpense)}</div>
                           <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Expense Trajectory: +{Math.round(mlPred.slopeExp)}/mo</div>
                         </div>
 
                         <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '12px 14px' }}>
                           <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Predicted Net Liquid Savings</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#60a5fa', marginTop: '4px' }}>৳{mlPred.predictedSavings.toLocaleString()}</div>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#60a5fa', marginTop: '4px' }}>{fmtVal(mlPred.predictedSavings)}</div>
                           <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Net Surplus Runway</div>
                         </div>
                       </div>
@@ -2873,23 +3005,23 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 <div className={styles.grid4} style={{ marginBottom: '24px' }}>
                   <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Total Revenues</span>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#4caf50', marginTop: '6px' }}>৳{globalTotalIncome.toLocaleString()}</div>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#4caf50', marginTop: '6px' }}>{fmtVal(globalTotalIncome)}</div>
                     <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>Across {months.length} monthly sheets</div>
                   </div>
                   <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Total Spent</span>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f44336', marginTop: '6px' }}>৳{globalTotalSpent.toLocaleString()}</div>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f44336', marginTop: '6px' }}>{fmtVal(globalTotalSpent)}</div>
                     <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>Cumulative Outlays</div>
                   </div>
                   <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '12px', padding: '16px' }}>
                     <span style={{ fontSize: '0.72rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Active Loans (ধারে আছে)</span>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fbbf24', marginTop: '6px' }}>৳{globalActiveLoans.toLocaleString()}</div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>Recovered: ৳{globalReturnedLoans.toLocaleString()}</div>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fbbf24', marginTop: '6px' }}>{fmtVal(globalActiveLoans)}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>Recovered: {fmtVal(globalReturnedLoans)}</div>
                   </div>
                   <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: '12px', padding: '16px' }}>
                     <span style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Net Liquid Savings</span>
-                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#818cf8', marginTop: '6px' }}>৳{globalTotalSavings.toLocaleString()}</div>
-                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>Gross: ৳{globalGrossSavings.toLocaleString()} • Rate: {globalSavingsRate.toFixed(1)}%</div>
+                    <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#818cf8', marginTop: '6px' }}>{fmtVal(globalTotalSavings)}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>Gross: {fmtVal(globalGrossSavings)} • Rate: {globalSavingsRate.toFixed(1)}%</div>
                   </div>
                 </div>
 
@@ -2929,6 +3061,58 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${lockedPct}%`, background: 'linear-gradient(90deg, #818cf8, #ef4444)', borderRadius: '4px', transition: 'width 0.6s ease' }} />
                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 🔥 FIRE (FINANCIAL INDEPENDENCE) & WEALTH SURVIVAL RADAR */}
+                {(() => {
+                  const avgMonthlyExpense = months.length > 0 ? globalTotalSpent / Math.max(1, months.length) : 0;
+                  const fireTarget = avgMonthlyExpense * 12 * 25; // 25x Annualized Living Expenses (4% SWR Rule)
+                  const fireProgress = fireTarget > 0 ? Math.min(100, (globalTotalSavings / fireTarget) * 100) : 0;
+                  const runwayMonths = avgMonthlyExpense > 0 ? (globalTotalSavings / avgMonthlyExpense).toFixed(1) : '∞';
+
+                  return (
+                    <div style={{ background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                            <Flame size={20} style={{ color: 'var(--accent-gold)' }} /> FIRE (Financial Independence) & Lifetime Survival Radar
+                          </h3>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                            Calculated based on standard 4% Safe Withdrawal Rate (25x Annualized Outlays)
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(212, 175, 55, 0.15)', color: '#fef08a', border: '1px solid rgba(212, 175, 55, 0.3)', padding: '4px 12px', borderRadius: '20px', fontWeight: 700 }}>
+                          🛡️ Survival Runway: {runwayMonths} Months
+                        </span>
+                      </div>
+
+                      <div className={styles.grid2} style={{ gap: '16px', marginBottom: '14px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '14px' }}>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Average Monthly Outlay Pace</div>
+                          <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#f87171', marginTop: '4px' }}>{fmtVal(Math.round(avgMonthlyExpense))}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Based on {months.length} monthly ledger history</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '14px' }}>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Full FIRE Target Fund (25x Outlays)</div>
+                          <div style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--accent-gold)', marginTop: '4px' }}>{fmtVal(Math.round(fireTarget))}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Complete Sovereign Financial Independence Target</div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px' }}>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>FIRE Independence Progress</span>
+                          <span style={{ fontWeight: 800, color: fireProgress >= 100 ? '#10b981' : 'var(--accent-gold)' }}>
+                            {fireProgress.toFixed(2)}% Achieved ({fmtVal(globalTotalSavings)} / {fmtVal(Math.round(fireTarget))})
+                          </span>
+                        </div>
+                        <div style={{ height: '10px', background: 'rgba(255,255,255,0.06)', borderRadius: '5px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${fireProgress}%`, background: 'linear-gradient(90deg, #f59e0b, #34d399)', borderRadius: '5px', transition: 'width 0.8s ease' }} />
                         </div>
                       </div>
                     </div>
