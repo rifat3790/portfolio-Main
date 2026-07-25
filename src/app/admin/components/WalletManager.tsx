@@ -83,6 +83,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [emergencyMonthsTarget, setEmergencyMonthsTarget] = useState<number>(6);
   // 🔍 Expense Date Range Filter State
   const [expenseDateRange, setExpenseDateRange] = useState<'all' | '7days' | '30days'>('all');
+  // 🔀 Consolidated All-Month Table Filter & Sort State
+  const [consolidatedSearchQuery, setConsolidatedSearchQuery] = useState('');
+  const [consolidatedSortBy, setConsolidatedSortBy] = useState<'name' | 'income_desc' | 'savings_desc' | 'rate_desc'>('name');
 
   // 🎯 Savings Goals & Wealth Target Allocator State
   const [savingsGoals, setSavingsGoals] = useState<Array<{ id: string; name: string; target: number; current: number; category: string }>>([
@@ -2970,8 +2973,80 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 );
               })()}
 
+              {/* 📊 MULTI-MONTH CASHFLOW VISUAL BAR MATRIX */}
+              <div className={styles.walletCard} style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                      <Activity size={18} style={{ color: '#34d399' }} /> Multi-Month Cashflow Visual Bar Matrix
+                    </h3>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      Comparative visual breakdown of monthly income vs expenses across all recorded months.
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.grid3} style={{ gap: '14px' }}>
+                  {months.map(m => {
+                    const inc = getIncomeTotal(m);
+                    const exp = getExpenseTotal(m);
+                    const sav = getSavings(m);
+                    const maxVal = Math.max(1, inc, exp);
+                    const incPct = Math.min(100, Math.round((inc / maxVal) * 100));
+                    const expPct = Math.min(100, Math.round((exp / maxVal) * 100));
+                    const sRate = getSavingsRate(m).toFixed(0);
+
+                    return (
+                      <div key={m._id} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                          <span style={{ fontWeight: 800, color: '#fff', fontSize: '0.9rem' }}>{m.monthName}</span>
+                          <button
+                            onClick={() => {
+                              setSelectedMonthId(m._id);
+                              setWalletSubTab('single');
+                            }}
+                            style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#818cf8', padding: '3px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            View Sheet
+                          </button>
+                        </div>
+
+                        {/* Income Bar */}
+                        <div style={{ marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '3px' }}>
+                            <span>Earned: {fmtVal(inc)}</span>
+                          </div>
+                          <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${incPct}%`, background: '#10b981', borderRadius: '3px' }} />
+                          </div>
+                        </div>
+
+                        {/* Expense Bar */}
+                        <div style={{ marginBottom: '10px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: '3px' }}>
+                            <span>Spent: {fmtVal(exp)}</span>
+                          </div>
+                          <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${expPct}%`, background: '#ef4444', borderRadius: '3px' }} />
+                          </div>
+                        </div>
+
+                        {/* Footer Savings Pill */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.04)', fontSize: '0.75rem' }}>
+                          <span style={{ color: '#818cf8', fontWeight: 700 }}>Net: {fmtVal(sav)}</span>
+                          <span style={{ background: 'rgba(212, 175, 55, 0.12)', color: 'var(--accent-gold)', border: '1px solid rgba(212, 175, 55, 0.25)', padding: '1px 6px', borderRadius: '4px', fontWeight: 800, fontSize: '0.68rem' }}>
+                            {sRate}% Saved
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* TABLE CARD WITH SEARCH & SORT */}
               <div className={styles.walletCard}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '16px' }}>
                   <div>
                     <h2 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>Consolidated Financial Portfolio Ledger</h2>
                     <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Aggregated historical ledger overview & quick sheet navigation</span>
@@ -3017,6 +3092,43 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   </div>
                 </div>
 
+                {/* Search & Sort Controls */}
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                  <input
+                    type="text"
+                    placeholder="Search month name..."
+                    value={consolidatedSearchQuery}
+                    onChange={e => setConsolidatedSearchQuery(e.target.value)}
+                    style={{
+                      flex: 1,
+                      minWidth: '150px',
+                      padding: '8px 12px',
+                      background: 'rgba(7, 8, 15, 0.4)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      borderRadius: '6px',
+                      color: '#fff',
+                      fontSize: '0.78rem'
+                    }}
+                  />
+                  <select
+                    value={consolidatedSortBy}
+                    onChange={e => setConsolidatedSortBy(e.target.value as any)}
+                    style={{
+                      padding: '8px 12px',
+                      background: 'rgba(7, 8, 15, 0.4)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      borderRadius: '6px',
+                      color: '#fff',
+                      fontSize: '0.78rem'
+                    }}
+                  >
+                    <option value="name">Sort by Month Name</option>
+                    <option value="income_desc">Highest Income</option>
+                    <option value="savings_desc">Highest Savings</option>
+                    <option value="rate_desc">Highest Savings Rate</option>
+                  </select>
+                </div>
+
                 <div className={styles.walletTableWrapper}>
                   <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
                     <thead>
@@ -3034,62 +3146,70 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       </tr>
                     </thead>
                     <tbody>
-                      {months.map(m => {
-                        const totalInc = getIncomeTotal(m);
-                        const totalExp = getExpenseTotal(m);
-                        const netSav = getSavings(m);
-                        const rate = getSavingsRate(m).toFixed(0);
-                        const health = getHealthScore(m);
-                        const hInfo = getHealthGrade(health);
-                        return (
-                          <tr key={m._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                            <td style={{ padding: '12px 16px', fontWeight: 700, color: '#fff' }}>
-                              <button
-                                onClick={() => {
-                                  setSelectedMonthId(m._id);
-                                  setWalletSubTab('single');
-                                }}
-                                style={{ background: 'transparent', border: 'none', color: '#818cf8', cursor: 'pointer', fontWeight: 700, fontSize: '0.88rem', padding: 0, textDecoration: 'underline' }}
-                                title="Click to view detailed month sheet"
-                              >
-                                {m.monthName}
-                              </button>
-                            </td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>{fmtVal(getSalaryTotal(m))}</td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>{fmtVal(getAddonTotal(m))}</td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>{fmtVal(getBonusTotal(m))}</td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#4caf50' }}>{fmtVal(totalInc)}</td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right', color: '#f44336' }}>{fmtVal(totalExp)}</td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#2196f3' }}>{fmtVal(netSav)}</td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'var(--accent-gold)' }}>{totalInc > 0 ? rate : '0'}%</td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                              <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: `${hInfo.color}15`, color: hInfo.color, border: `1px solid ${hInfo.color}35`, fontSize: '0.75rem', fontWeight: 700 }}>
-                                {health} ({hInfo.grade})
-                              </span>
-                            </td>
-                            <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                      {months
+                        .filter(m => m.monthName.toLowerCase().includes(consolidatedSearchQuery.toLowerCase()))
+                        .sort((a, b) => {
+                          if (consolidatedSortBy === 'income_desc') return getIncomeTotal(b) - getIncomeTotal(a);
+                          if (consolidatedSortBy === 'savings_desc') return getSavings(b) - getSavings(a);
+                          if (consolidatedSortBy === 'rate_desc') return getSavingsRate(b) - getSavingsRate(a);
+                          return 0;
+                        })
+                        .map(m => {
+                          const totalInc = getIncomeTotal(m);
+                          const totalExp = getExpenseTotal(m);
+                          const netSav = getSavings(m);
+                          const rate = getSavingsRate(m).toFixed(0);
+                          const health = getHealthScore(m);
+                          const hInfo = getHealthGrade(health);
+                          return (
+                            <tr key={m._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                              <td style={{ padding: '12px 16px', fontWeight: 700, color: '#fff' }}>
                                 <button
                                   onClick={() => {
                                     setSelectedMonthId(m._id);
                                     setWalletSubTab('single');
                                   }}
-                                  style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#818cf8', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                                  style={{ background: 'transparent', border: 'none', color: '#818cf8', cursor: 'pointer', fontWeight: 700, fontSize: '0.88rem', padding: 0, textDecoration: 'underline' }}
+                                  title="Click to view detailed month sheet"
                                 >
-                                  Open Sheet
+                                  {m.monthName}
                                 </button>
-                                <button
-                                  onClick={() => printMonthPDF(m)}
-                                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                                  title="Download PDF Statement"
-                                >
-                                  <Download size={12} /> PDF
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                              </td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right' }}>{fmtVal(getSalaryTotal(m))}</td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right' }}>{fmtVal(getAddonTotal(m))}</td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right' }}>{fmtVal(getBonusTotal(m))}</td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#4caf50' }}>{fmtVal(totalInc)}</td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right', color: '#f44336' }}>{fmtVal(totalExp)}</td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#2196f3' }}>{fmtVal(netSav)}</td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'var(--accent-gold)' }}>{totalInc > 0 ? rate : '0'}%</td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                                <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: `${hInfo.color}15`, color: hInfo.color, border: `1px solid ${hInfo.color}35`, fontSize: '0.75rem', fontWeight: 700 }}>
+                                  {health} ({hInfo.grade})
+                                </span>
+                              </td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                                <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                                  <button
+                                    onClick={() => {
+                                      setSelectedMonthId(m._id);
+                                      setWalletSubTab('single');
+                                    }}
+                                    style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#818cf8', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                                  >
+                                    Open Sheet
+                                  </button>
+                                  <button
+                                    onClick={() => printMonthPDF(m)}
+                                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                    title="Download PDF Statement"
+                                  >
+                                    <Download size={12} /> PDF
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                     </tbody>
                   </table>
                 </div>
