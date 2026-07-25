@@ -5,7 +5,7 @@ import {
   Wallet, Plus, Layers, TrendingUp, Edit, Download, Trash2, FileText, X, PieChart,
   HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check,
   Target, Zap, ArrowUpDown, ShieldAlert, Sparkles, Eye, EyeOff, CreditCard, ShieldCheck, PiggyBank, Flame,
-  TrendingDown, Lock, Award
+  TrendingDown, Lock, Award, Tag, CopyCheck, Share2, Gauge, FilePlus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../admin.module.css';
@@ -1533,6 +1533,28 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     return totalExp > 0 ? Math.round(totalExp / Math.max(1, dayOfMonth)) : 0;
   };
 
+  // 📈 Month-over-Month Velocity Comparison Delta
+  const getVelocityComparison = (activeM: IWalletMonthData) => {
+    if (months.length <= 1) return null;
+    const sortedM = [...months].sort((a, b) => new Date(a.monthName).getTime() - new Date(b.monthName).getTime());
+    const currentIndex = sortedM.findIndex(m => m._id === activeM._id);
+    if (currentIndex <= 0) return null;
+    
+    const prevM = sortedM[currentIndex - 1];
+    const activeVel = getDailyVelocity(activeM);
+    const prevVel = getDailyVelocity(prevM);
+
+    if (prevVel === 0) return null;
+    const diffPct = Math.round(((activeVel - prevVel) / prevVel) * 100);
+    return {
+      activeVel,
+      prevVel,
+      diffPct,
+      isLower: activeVel < prevVel,
+      prevMonthName: prevM.monthName
+    };
+  };
+
   const getLargestExpense = (m: IWalletMonthData) => {
     if (!m.expenses || m.expenses.length === 0) return null;
     return [...m.expenses].sort((a, b) => b.amount - a.amount)[0];
@@ -1937,8 +1959,17 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                     {/* Card Footer Indicators */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '14px', marginTop: '16px', flexWrap: 'wrap', gap: '10px', fontSize: '0.75rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--text-secondary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
                         <span>⚡ Daily Pace: <strong style={{ color: '#fff' }}>{fmtVal(getDailyVelocity(activeMonth))}/day</strong></span>
+                        {(() => {
+                          const vComp = getVelocityComparison(activeMonth);
+                          if (!vComp) return null;
+                          return (
+                            <span style={{ color: vComp.isLower ? '#34d399' : '#f87171', fontWeight: 700, background: vComp.isLower ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)', padding: '2px 8px', borderRadius: '4px', border: `1px solid ${vComp.isLower ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}` }}>
+                              {vComp.isLower ? '📉 Pace Down' : '📈 Pace Up'} {Math.abs(vComp.diffPct)}% vs {vComp.prevMonthName}
+                            </span>
+                          );
+                        })()}
                         <span>🛡️ Zero-Income Runway: <strong style={{ color: '#10b981' }}>{getExpenseTotal(activeMonth) > 0 ? Math.round(getSavings(activeMonth) / (getDailyVelocity(activeMonth) || 1)) : '∞'} Days</strong></span>
                       </div>
                       <div style={{ color: 'var(--accent-gold)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -2631,7 +2662,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                                     </td>
 
                                     <td style={{ padding: '12px', fontWeight: 800, fontSize: '0.95rem', color: isPending ? '#fbbf24' : '#10b981' }}>
-                                      ৳{loan.amount.toLocaleString()}
+                                      {fmtVal(loan.amount)}
                                     </td>
 
                                     <td style={{ padding: '12px', color: 'var(--text-secondary)' }}>
@@ -2639,7 +2670,23 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                                     </td>
 
                                     <td style={{ padding: '12px', color: 'var(--text-secondary)' }}>
-                                      {loan.dueDate ? new Date(loan.dueDate).toLocaleDateString() : 'N/A'}
+                                      <div>{loan.dueDate ? new Date(loan.dueDate).toLocaleDateString() : 'N/A'}</div>
+                                      {(() => {
+                                        if (!loan.dueDate || !isPending) return null;
+                                        const due = new Date(loan.dueDate);
+                                        const now = new Date();
+                                        due.setHours(0,0,0,0);
+                                        now.setHours(0,0,0,0);
+                                        const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+                                        if (diffDays < 0) {
+                                          return <span style={{ color: '#ef4444', fontWeight: 800, fontSize: '0.68rem', background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.3)', display: 'inline-block', marginTop: '2px' }}>🔴 Overdue ({Math.abs(diffDays)}d)</span>;
+                                        }
+                                        if (diffDays === 0) {
+                                          return <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '0.68rem', background: 'rgba(245,158,11,0.15)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(245,158,11,0.3)', display: 'inline-block', marginTop: '2px' }}>⚠️ Due Today!</span>;
+                                        }
+                                        return <span style={{ color: '#818cf8', fontWeight: 700, fontSize: '0.68rem', background: 'rgba(129,140,248,0.12)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(129,140,248,0.2)', display: 'inline-block', marginTop: '2px' }}>⌛ {diffDays} days left</span>;
+                                      })()}
                                     </td>
 
                                     <td style={{ padding: '12px' }}>
