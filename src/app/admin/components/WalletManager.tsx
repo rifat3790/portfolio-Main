@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Wallet, Plus, Layers, TrendingUp, Edit, Download, Trash2, FileText, X, PieChart,
-  HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check
+  HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check,
+  Target, Zap, ArrowUpDown, ShieldAlert, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../admin.module.css';
@@ -56,6 +57,23 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
+  
+  // Date & Amount Sorting State
+  const [expSortBy, setExpSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
+  const [incSortBy, setIncSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
+
+  // Category Budget Limits & Over-spending Alert State
+  const [categoryBudgets, setCategoryBudgets] = useState<{ [cat: string]: number }>({
+    Food: 6000,
+    Rent: 5000,
+    Utility: 3000,
+    Gadgets: 5000,
+    Server: 2000,
+    Entertainment: 2000,
+    'Parents (Baba Ma)': 5000,
+    Other: 3000
+  });
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
 
   // Modal states
   const [isAddMonthOpen, setIsAddMonthOpen] = useState(false);
@@ -1321,6 +1339,68 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     showToast(`Opening WhatsApp for ${loan.personName}...`, 'info');
   };
 
+  // 📅 Date Formatting Helper
+  const formatItemDate = (dateVal?: string | Date) => {
+    if (!dateVal) return 'N/A';
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return 'N/A';
+    
+    const now = new Date();
+    const isSameYear = d.getFullYear() === now.getFullYear();
+    const isToday = d.toISOString().split('T')[0] === now.toISOString().split('T')[0];
+    
+    if (isToday) return 'Today';
+    
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      ...(isSameYear ? {} : { year: 'numeric' })
+    });
+  };
+
+  // ⚡ Quick Expense Presets
+  const quickExpensePresets = [
+    { name: 'Nasta / Snack', amount: 150, category: 'Food' },
+    { name: 'Travel / Transport', amount: 60, category: 'Utility' },
+    { name: 'Mess Deposit', amount: 500, category: 'Food' },
+    { name: 'Wi-Fi / Internet', amount: 1000, category: 'Utility' },
+    { name: 'Tea / Coffee', amount: 30, category: 'Food' },
+  ];
+
+  const handleQuickPresetClick = (preset: { name: string; amount: number; category: string }) => {
+    setExpDesc(preset.name);
+    setExpAmount(String(preset.amount));
+    setExpCategory(categoriesList.includes(preset.category) ? preset.category : 'Other');
+    setExpDate(new Date().toISOString().split('T')[0]);
+    setIsAddExpenseOpen(true);
+  };
+
+  // 📊 Daily Spending Velocity & Outlay Pace
+  const getDailyVelocity = (m: IWalletMonthData) => {
+    const totalExp = getExpenseTotal(m);
+    const dayOfMonth = new Date().getDate();
+    return totalExp > 0 ? Math.round(totalExp / Math.max(1, dayOfMonth)) : 0;
+  };
+
+  const getLargestExpense = (m: IWalletMonthData) => {
+    if (!m.expenses || m.expenses.length === 0) return null;
+    return [...m.expenses].sort((a, b) => b.amount - a.amount)[0];
+  };
+
+  // Over-budget Category Alerts
+  const getOverBudgetCategories = (m: IWalletMonthData) => {
+    if (!m.expenses) return [];
+    return categoriesList.filter(cat => {
+      const spent = m.expenses.filter(e => e.category === cat).reduce((acc, curr) => acc + curr.amount, 0);
+      const budget = categoryBudgets[cat] || 5000;
+      return spent > budget;
+    }).map(cat => {
+      const spent = m.expenses.filter(e => e.category === cat).reduce((acc, curr) => acc + curr.amount, 0);
+      const budget = categoryBudgets[cat] || 5000;
+      return { category: cat, spent, budget, excess: spent - budget };
+    });
+  };
+
   // Get active month's category percentages
   const activeMonthCategoryTotals = categoriesList.reduce((acc, cat) => {
     const total = (activeMonth?.expenses || [])
@@ -1335,6 +1415,22 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     const matchesSearch = e.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategoryFilter === 'All' || e.category === selectedCategoryFilter;
     return matchesSearch && matchesCategory;
+  });
+
+  const sortedExpenses = [...filteredExpenses].sort((a, b) => {
+    if (expSortBy === 'date_desc') return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime();
+    if (expSortBy === 'date_asc') return new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime();
+    if (expSortBy === 'amount_desc') return b.amount - a.amount;
+    if (expSortBy === 'amount_asc') return a.amount - b.amount;
+    return 0;
+  });
+
+  const sortedIncomes = [...(activeMonth?.incomes || [])].sort((a, b) => {
+    if (incSortBy === 'date_desc') return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime();
+    if (incSortBy === 'date_asc') return new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime();
+    if (incSortBy === 'amount_desc') return b.amount - a.amount;
+    if (incSortBy === 'amount_asc') return a.amount - b.amount;
+    return 0;
   });
 
   const activeHealthScore = activeMonth ? getHealthScore(activeMonth) : 0;
@@ -1659,6 +1755,25 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                   </div>
 
+                  {/* Over-spending Category Alert Banner */}
+                  {(() => {
+                    const overBudgets = getOverBudgetCategories(activeMonth);
+                    if (overBudgets.length === 0) return null;
+                    return (
+                      <div style={{ marginBottom: '20px', background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <ShieldAlert size={24} style={{ color: '#ef4444', flexShrink: 0 }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 800, color: '#fca5a5', fontSize: '0.88rem' }}>
+                            ⚠️ Over-Budget Limit Alert! ({overBudgets.length} Category Exceeded)
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: '#f87171', marginTop: '2px' }}>
+                            {overBudgets.map(b => `${b.category}: Spent ৳${b.spent.toLocaleString()} (Limit ৳${b.budget.toLocaleString()} • Over by ৳${b.excess.toLocaleString()})`).join(' | ')}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Sub-sheet metrics summary cards */}
                   <div className={styles.grid4} style={{ marginBottom: '24px' }}>
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
@@ -1668,13 +1783,18 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         Salary: ৳{getSalaryTotal(activeMonth).toLocaleString()} • Side: ৳{getAddonTotal(activeMonth).toLocaleString()}
                       </div>
                     </div>
+
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Spent</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Total Spent</span>
+                        <span style={{ color: '#ff6b6b', fontWeight: 700 }}>৳{getDailyVelocity(activeMonth)}/day</span>
+                      </div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f44336', marginTop: '4px' }}>৳{getExpenseTotal(activeMonth).toLocaleString()}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Across {(activeMonth.expenses || []).length} ledger items logged
+                        {(activeMonth.expenses || []).length} items logged • Daily Avg Pace
                       </div>
                     </div>
+
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ fontSize: '0.72rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700 }}>Active Money Lent (ধারে দেওয়া)</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24', marginTop: '4px' }}>৳{getActiveLoansTotal(activeMonth).toLocaleString()}</div>
@@ -1682,6 +1802,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         Deducted from Savings • Recovered: ৳{getReturnedLoansTotal(activeMonth).toLocaleString()}
                       </div>
                     </div>
+
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>Net Liquid Savings & Balance</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#818cf8', marginTop: '4px' }}>৳{getSavings(activeMonth).toLocaleString()}</div>
@@ -1700,12 +1821,38 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <TrendingUp size={16} style={{ color: '#4caf50' }} /> Incomes Ledger
                         </h3>
-                        <button
-                          onClick={() => setIsAddIncomeOpen(true)}
-                          style={{ background: 'rgba(76, 175, 80, 0.1)', border: '1px solid rgba(76, 175, 80, 0.2)', color: '#4caf50', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
-                        >
-                          <Plus size={12} /> Log Income
-                        </button>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <select
+                            value={incSortBy}
+                            onChange={e => setIncSortBy(e.target.value as any)}
+                            style={{
+                              padding: '4px 8px',
+                              background: 'rgba(7,8,15,0.4)',
+                              border: '1px solid rgba(255,255,255,0.06)',
+                              borderRadius: '6px',
+                              color: 'var(--text-secondary)',
+                              fontSize: '0.72rem'
+                            }}
+                          >
+                            <option value="date_desc">Date (Newest)</option>
+                            <option value="date_asc">Date (Oldest)</option>
+                            <option value="amount_desc">Amount (High-Low)</option>
+                            <option value="amount_asc">Amount (Low-High)</option>
+                          </select>
+                          <button
+                            onClick={() => {
+                              setIncDesc('');
+                              setIncAmount('');
+                              setIncCategory('Freelance');
+                              setCustomIncCategory('');
+                              setIncDate(new Date().toISOString().split('T')[0]);
+                              setIsAddIncomeOpen(true);
+                            }}
+                            style={{ background: 'rgba(76, 175, 80, 0.1)', border: '1px solid rgba(76, 175, 80, 0.2)', color: '#4caf50', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
+                          >
+                            <Plus size={12} /> Log Income
+                          </button>
+                        </div>
                       </div>
 
                       {(!activeMonth.incomes || activeMonth.incomes.length === 0) ? (
@@ -1717,6 +1864,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           <table>
                             <thead>
                               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
+                                <th style={{ padding: '8px' }}>Date</th>
                                 <th style={{ padding: '8px' }}>Category</th>
                                 <th style={{ padding: '8px' }}>Description</th>
                                 <th style={{ padding: '8px', textAlign: 'right' }}>Amount</th>
@@ -1724,8 +1872,14 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                               </tr>
                             </thead>
                             <tbody>
-                              {activeMonth.incomes.map((inc) => (
+                              {sortedIncomes.map((inc) => (
                                 <tr key={inc._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                  <td style={{ padding: '8px', color: 'var(--text-secondary)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(76, 175, 80, 0.08)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(76, 175, 80, 0.15)', color: '#4caf50' }}>
+                                      <Calendar size={11} style={{ opacity: 0.8 }} />
+                                      {formatItemDate(inc.date)}
+                                    </span>
+                                  </td>
                                   <td style={{ padding: '8px' }}>
                                     <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, background: 'rgba(76, 175, 80, 0.15)', color: '#4caf50' }}>
                                       {inc.category}
@@ -1761,27 +1915,72 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                     {/* Right Column: Expenses Ledger */}
                     <div style={{ background: 'rgba(7, 8, 15, 0.15)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
                         <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <PieChart size={16} style={{ color: '#ff6b6b' }} /> Expenses Ledger
                         </h3>
                         <button
-                          onClick={() => setIsAddExpenseOpen(true)}
+                          onClick={() => {
+                            setExpDesc('');
+                            setExpAmount('');
+                            setExpCategory('Food');
+                            setCustomCategory('');
+                            setExpDate(new Date().toISOString().split('T')[0]);
+                            setIsAddExpenseOpen(true);
+                          }}
                           style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ff6b6b', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
                         >
                           <Plus size={12} /> Log Expense
                         </button>
                       </div>
 
-                      {/* Filter & Instant Search Input */}
-                      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                      {/* ⚡ 1-Click Quick Expense Logger Chips */}
+                      <div style={{ marginBottom: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <Zap size={11} style={{ color: 'var(--accent-gold)' }} /> Quick Log:
+                        </span>
+                        {quickExpensePresets.map((preset, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => handleQuickPresetClick(preset)}
+                            style={{
+                              background: 'rgba(255,255,255,0.03)',
+                              border: '1px solid rgba(255,255,255,0.07)',
+                              color: '#cbd5e1',
+                              padding: '3px 8px',
+                              borderRadius: '12px',
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--accent-gold)';
+                              e.currentTarget.style.color = '#fff';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
+                              e.currentTarget.style.color = '#cbd5e1';
+                            }}
+                          >
+                            + {preset.name} (৳{preset.amount})
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Filter & Instant Search & Sorting */}
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
                         <input
                           type="text"
-                          placeholder="Search..."
+                          placeholder="Search expenses..."
                           value={searchQuery}
                           onChange={e => setSearchQuery(e.target.value)}
                           style={{
                             flex: 1,
+                            minWidth: '110px',
                             padding: '6px 10px',
                             background: 'rgba(7,8,15,0.4)',
                             border: '1px solid rgba(255,255,255,0.06)',
@@ -1805,10 +2004,27 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           <option value="All">All Categories</option>
                           {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
+                        <select
+                          value={expSortBy}
+                          onChange={e => setExpSortBy(e.target.value as any)}
+                          style={{
+                            padding: '6px 10px',
+                            background: 'rgba(7,8,15,0.4)',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                            borderRadius: '6px',
+                            color: '#fff',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          <option value="date_desc">Date (Newest)</option>
+                          <option value="date_asc">Date (Oldest)</option>
+                          <option value="amount_desc">Amount (High-Low)</option>
+                          <option value="amount_asc">Amount (Low-High)</option>
+                        </select>
                       </div>
 
                       {/* Expenses Table */}
-                      {filteredExpenses.length === 0 ? (
+                      {sortedExpenses.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '24px 10px', color: 'var(--text-secondary)', background: 'rgba(7, 8, 15, 0.1)', border: '1px dashed rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem' }}>
                           No expenses matching criteria.
                         </div>
@@ -1817,48 +2033,110 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
                             <thead>
                               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
-                                <th style={{ padding: '8px' }}>Category</th>
-                                <th style={{ padding: '8px' }}>Description</th>
-                                <th style={{ padding: '8px', textAlign: 'right' }}>Amount</th>
-                                <th style={{ padding: '8px', textAlign: 'right' }}>Actions</th>
+                                <th style={{ padding: '8px 10px' }}>Date</th>
+                                <th style={{ padding: '8px 10px' }}>Category</th>
+                                <th style={{ padding: '8px 10px' }}>Description</th>
+                                <th style={{ padding: '8px 10px', textAlign: 'right' }}>Amount</th>
+                                <th style={{ padding: '8px 10px', textAlign: 'right' }}>Actions</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {filteredExpenses.map((exp) => (
-                                <tr key={exp._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                                  <td style={{ padding: '8px' }}>
-                                    <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, background: `${categoryColors[exp.category] || '#607d8b'}20`, color: categoryColors[exp.category] || '#607d8b' }}>
-                                      {exp.category}
-                                    </span>
-                                  </td>
-                                  <td style={{ padding: '8px', color: '#fff' }}>{exp.description}</td>
-                                  <td style={{ padding: '8px', textAlign: 'right', fontWeight: 700, color: '#ff6b6b' }}>৳{exp.amount.toLocaleString()}</td>
-                                  <td style={{ padding: '8px', textAlign: 'right' }}>
-                                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
-                                      <button
-                                        type="button"
-                                        onClick={() => openEditExpenseModal(exp)}
-                                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
-                                      >
-                                        <Edit size={12} />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => exp._id && handleDeleteExpense(exp._id)}
-                                        style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
-                                      >
-                                        <Trash2 size={12} />
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
+                              {sortedExpenses.map((exp) => {
+                                const isToday = exp.date && new Date(exp.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
+                                return (
+                                  <tr key={exp._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                    <td style={{ padding: '8px 10px', color: 'var(--text-secondary)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: isToday ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.03)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)', color: isToday ? 'var(--accent-gold)' : 'var(--text-secondary)', fontWeight: isToday ? 700 : 400 }}>
+                                        <Calendar size={11} style={{ opacity: 0.8 }} />
+                                        {formatItemDate(exp.date)}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: '8px 10px' }}>
+                                      <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, background: `${categoryColors[exp.category] || '#607d8b'}20`, color: categoryColors[exp.category] || '#607d8b' }}>
+                                        {exp.category}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: '8px 10px', color: '#fff', wordBreak: 'break-word' }}>{exp.description}</td>
+                                    <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 700, color: '#ff6b6b' }}>৳{exp.amount.toLocaleString()}</td>
+                                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>
+                                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                                        <button
+                                          type="button"
+                                          onClick={() => openEditExpenseModal(exp)}
+                                          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
+                                        >
+                                          <Edit size={12} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => exp._id && handleDeleteExpense(exp._id)}
+                                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
+                                        >
+                                          <Trash2 size={12} />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
                             </tbody>
                           </table>
                         </div>
                       )}
                     </div>
 
+                  </div>
+
+                  {/* 🎯 Category Budget Target Caps & Over-spending Progress Widget */}
+                  <div className={styles.walletCard} style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.04)', marginTop: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                          <Target size={18} style={{ color: 'var(--accent-gold)' }} /> Category Budget Limits & Over-spending Tracker
+                        </h3>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          Track spending against target monthly caps per sector. Real-time visual status indicator.
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setIsBudgetModalOpen(true)}
+                        style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-secondary)', padding: '5px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 600 }}
+                      >
+                        <Edit size={12} /> Edit Budgets
+                      </button>
+                    </div>
+
+                    <div className={styles.grid4} style={{ gap: '12px' }}>
+                      {categoriesList.map((cat) => {
+                        const spent = (activeMonth.expenses || []).filter(e => e.category === cat).reduce((sum, e) => sum + e.amount, 0);
+                        const budget = categoryBudgets[cat] || 5000;
+                        const pct = Math.round((spent / budget) * 100);
+                        const isOver = spent > budget;
+                        const isWarning = pct >= 80 && !isOver;
+                        const statusColor = isOver ? '#ef4444' : isWarning ? '#f59e0b' : '#10b981';
+
+                        return (
+                          <div key={cat} style={{ background: 'rgba(15, 23, 42, 0.4)', border: `1px solid ${isOver ? 'rgba(239, 68, 68, 0.35)' : 'rgba(255,255,255,0.04)'}`, borderRadius: '10px', padding: '12px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', marginBottom: '6px' }}>
+                              <span style={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ width: 8, height: 8, background: categoryColors[cat] || '#607d8b', borderRadius: '50%' }} />
+                                {cat}
+                              </span>
+                              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: statusColor }}>
+                                {isOver ? '🔴 OVER' : `${pct}%`}
+                              </span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                              <span>Spent: ৳{spent.toLocaleString()}</span>
+                              <span>Limit: ৳{budget.toLocaleString()}</span>
+                            </div>
+                            <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${Math.min(100, pct)}%`, background: statusColor, borderRadius: '3px', transition: 'width 0.4s ease' }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Money Lent Ledger (ধারের হিসাব & পাওনা) */}
@@ -3189,6 +3467,48 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 Save Changes
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 8: Edit Category Budgets */}
+      {isBudgetModalOpen && (
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox} style={{ maxWidth: '540px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Target size={20} style={{ color: 'var(--accent-gold)' }} /> Category Monthly Budget Caps
+              </h3>
+              <button onClick={() => setIsBudgetModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
+              Set monthly spending caps for each expense sector to receive real-time warnings when nearing or exceeding limits.
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', maxHeight: '360px', overflowY: 'auto', paddingRight: '4px' }}>
+              {categoriesList.map(cat => (
+                <div key={cat}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>{cat} (৳)</label>
+                  <input
+                    type="number"
+                    value={categoryBudgets[cat] ?? 5000}
+                    onChange={e => {
+                      const val = Number(e.target.value) || 0;
+                      setCategoryBudgets(prev => ({ ...prev, [cat]: val }));
+                    }}
+                    style={{ width: '100%', padding: '8px 10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '0.85rem' }}
+                  />
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                showToast('Category budget targets saved!', 'success');
+                setIsBudgetModalOpen(false);
+              }}
+              style={{ width: '100%', background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', marginTop: '16px' }}
+            >
+              Done & Save Caps
+            </button>
           </div>
         </div>
       )}
