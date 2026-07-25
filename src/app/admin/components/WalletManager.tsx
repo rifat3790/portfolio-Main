@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Wallet, Plus, Layers, TrendingUp, Edit, Download, Trash2, FileText, X, PieChart,
   HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check,
-  Target, Zap, ArrowUpDown, ShieldAlert, Sparkles
+  Target, Zap, ArrowUpDown, ShieldAlert, Sparkles, Eye, EyeOff, CreditCard, ShieldCheck, PiggyBank, Flame,
+  TrendingDown, Lock, Award
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../admin.module.css';
@@ -74,6 +75,29 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     Other: 3000
   });
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+
+  // 👁️ Executive Stealth & Privacy Mode State
+  const [privacyMode, setPrivacyMode] = useState(false);
+
+  // 🎯 Savings Goals & Wealth Target Allocator State
+  const [savingsGoals, setSavingsGoals] = useState<Array<{ id: string; name: string; target: number; current: number; category: string }>>([
+    { id: '1', name: '💻 High-End M3 Max MacBook Pro', target: 280000, current: 125000, category: 'Gadgets' },
+    { id: '2', name: '🛡️ 6-Month Emergency Safety Fund', target: 120000, current: 85000, category: 'Other' },
+    { id: '3', name: '✈️ Cox’s Bazar & Travel Fund', target: 35000, current: 20000, category: 'Entertainment' },
+  ]);
+  const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+  const [editingGoalId, setEditingGoalId] = useState('');
+  const [goalName, setGoalName] = useState('');
+  const [goalTarget, setGoalTarget] = useState('');
+  const [goalCurrent, setGoalCurrent] = useState('');
+
+  // 🔒 Recurring Bills Overhead Vault State
+  const [recurringBills, setRecurringBills] = useState<Array<{ name: string; amount: number; category: string }>>([
+    { name: 'Mess Rent & Food Deposit', amount: 5000, category: 'Rent' },
+    { name: 'Wi-Fi & High-Speed Internet', amount: 1000, category: 'Utility' },
+    { name: 'AWS & Vercel Production Server', amount: 1450, category: 'Server' },
+    { name: 'Mobile Data & Prepaid Package', amount: 500, category: 'Utility' },
+  ]);
 
   // Modal states
   const [isAddMonthOpen, setIsAddMonthOpen] = useState(false);
@@ -1339,6 +1363,89 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     showToast(`Opening WhatsApp for ${loan.personName}...`, 'info');
   };
 
+  // 👁️ Formatting Helper with Privacy Mode Support
+  const fmtVal = (amount: number) => {
+    if (privacyMode) return '৳ ••••••';
+    return `৳${amount.toLocaleString()}`;
+  };
+
+  // 🔒 Bulk Log Recurring Bills for Selected Month
+  const handleBulkLogRecurringBills = async () => {
+    if (!activeMonth) return;
+    const existingDescs = (activeMonth.expenses || []).map(e => e.description.toLowerCase());
+    const unloggedBills = recurringBills.filter(b => !existingDescs.includes(b.name.toLowerCase()));
+
+    if (unloggedBills.length === 0) {
+      showToast('All fixed recurring bills have already been logged for this month!', 'info');
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const newExpenses: IWalletExpense[] = unloggedBills.map(b => ({
+      description: b.name,
+      amount: b.amount,
+      category: b.category,
+      date: todayStr
+    }));
+
+    const updatedExpenses = [...(activeMonth.expenses || []), ...newExpenses];
+
+    try {
+      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expenses: updatedExpenses })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(`🎉 Bulk logged ${unloggedBills.length} recurring bills for ${activeMonth.monthName}!`, 'success');
+        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+      } else {
+        showToast(data.error || 'Failed to bulk log bills', 'error');
+      }
+    } catch (err) {
+      showToast('Error bulk logging bills', 'error');
+    }
+  };
+
+  // 🎯 Add or Update Savings Goal Jar
+  const handleSaveGoal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!goalName || !goalTarget) return showToast('Goal name and target amount are required', 'error');
+
+    if (editingGoalId) {
+      setSavingsGoals(prev => prev.map(g => g.id === editingGoalId ? {
+        ...g,
+        name: goalName,
+        target: Number(goalTarget) || 0,
+        current: Number(goalCurrent) || 0
+      } : g));
+      showToast('Savings goal updated successfully', 'success');
+    } else {
+      const newGoal = {
+        id: String(Date.now()),
+        name: goalName,
+        target: Number(goalTarget) || 0,
+        current: Number(goalCurrent) || 0,
+        category: 'Gadgets'
+      };
+      setSavingsGoals(prev => [...prev, newGoal]);
+      showToast('New Savings Goal Jar created!', 'success');
+    }
+
+    setIsGoalModalOpen(false);
+    setGoalName('');
+    setGoalTarget('');
+    setGoalCurrent('');
+    setEditingGoalId('');
+  };
+
+  const handleDeleteGoal = (goalId: string) => {
+    if (!confirm('Are you sure you want to remove this Savings Goal Jar?')) return;
+    setSavingsGoals(prev => prev.filter(g => g.id !== goalId));
+    showToast('Savings Goal Jar removed', 'info');
+  };
+
   // 📅 Date Formatting Helper
   const formatItemDate = (dateVal?: string | Date) => {
     if (!dateVal) return 'N/A';
@@ -1462,7 +1569,32 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             Monitor side gig revenues, base salaries, bonuses, and detail monthly expenses.
           </p>
         </div>
-        <div className={styles.walletHeaderBtns} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div className={styles.walletHeaderBtns} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button
+            onClick={() => {
+              setPrivacyMode(!privacyMode);
+              showToast(privacyMode ? 'Privacy Stealth Mode Disabled' : 'Privacy Stealth Mode Activated (Balances Hidden)', 'info');
+            }}
+            style={{
+              background: privacyMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(15, 23, 42, 0.4)',
+              border: '1px solid',
+              borderColor: privacyMode ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)',
+              color: privacyMode ? 'var(--accent-gold)' : 'var(--text-secondary)',
+              padding: '10px 16px',
+              borderRadius: '8px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.82rem',
+              transition: 'all 0.3s ease'
+            }}
+            title="Toggle Hide/Show Balances Privacy Mode"
+          >
+            {privacyMode ? <EyeOff size={15} /> : <Eye size={15} />}
+            {privacyMode ? 'Stealth Mode On' : 'Privacy Mode'}
+          </button>
           <button
             onClick={exportAllDataJSON}
             style={{
@@ -1688,6 +1820,89 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     </div>
                   </div>
 
+                  {/* 💳 LUXURY 3D HOLOGRAPHIC EXECUTIVE ASSET CARD */}
+                  <div style={{
+                    background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.9) 50%, rgba(15, 23, 42, 0.98) 100%)',
+                    border: '1px solid rgba(212, 175, 55, 0.35)',
+                    borderRadius: '16px',
+                    padding: '24px',
+                    marginBottom: '24px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1)'
+                  }}>
+                    {/* Holographic glare glow */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '-50%',
+                      right: '-30%',
+                      width: '300px',
+                      height: '300px',
+                      background: 'radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(129, 140, 248, 0.08) 50%, transparent 80%)',
+                      pointerEvents: 'none',
+                      filter: 'blur(30px)'
+                    }} />
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', position: 'relative', zIndex: 2 }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                          <span style={{ background: 'linear-gradient(90deg, #d4af37, #f3e5ab)', color: '#0f172a', fontSize: '0.65rem', fontWeight: 900, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            👑 PRIVATE WEALTH • EXECUTIVE ASSET CARD
+                          </span>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>ID: **** 3790</span>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                          Available Net Cash Balance
+                        </div>
+                        <div style={{ fontSize: '2.2rem', fontWeight: 900, background: 'linear-gradient(135deg, #ffffff 0%, #d4af37 60%, #fef08a 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginTop: '4px' }}>
+                          {fmtVal(getSavings(activeMonth))}
+                        </div>
+                      </div>
+
+                      {/* Contactless & Action Pills */}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ width: '40px', height: '26px', background: 'linear-gradient(135deg, #fbbf24, #d97706)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <CreditCard size={16} style={{ color: '#0f172a' }} />
+                          </div>
+                          <Sparkles size={20} style={{ color: 'var(--accent-gold)' }} />
+                        </div>
+                        
+                        <button
+                          onClick={handleBulkLogRecurringBills}
+                          style={{
+                            background: 'rgba(212, 175, 55, 0.15)',
+                            border: '1px solid rgba(212, 175, 55, 0.35)',
+                            color: '#fef08a',
+                            padding: '6px 14px',
+                            borderRadius: '8px',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s ease'
+                          }}
+                          title="1-Click Auto-Log all fixed monthly overhead bills"
+                        >
+                          <Zap size={13} style={{ color: 'var(--accent-gold)' }} /> 1-Click Auto-Log Fixed Bills
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Card Footer Indicators */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '14px', marginTop: '16px', flexWrap: 'wrap', gap: '10px', fontSize: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--text-secondary)' }}>
+                        <span>⚡ Daily Pace: <strong style={{ color: '#fff' }}>{fmtVal(getDailyVelocity(activeMonth))}/day</strong></span>
+                        <span>🛡️ Zero-Income Runway: <strong style={{ color: '#10b981' }}>{getExpenseTotal(activeMonth) > 0 ? Math.round(getSavings(activeMonth) / (getDailyVelocity(activeMonth) || 1)) : '∞'} Days</strong></span>
+                      </div>
+                      <div style={{ color: 'var(--accent-gold)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <ShieldCheck size={14} /> Sovereign Wealth Vault Active
+                      </div>
+                    </div>
+                  </div>
+
                   {/* PREMIUM HUD: Score Ring, Forecast, recommendations alerts */}
                   <div className={styles.walletHudContainer}>
                     
@@ -1727,15 +1942,15 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>6-Month Proj:</span>
-                          <span style={{ fontWeight: 700, color: '#4caf50' }}>৳{(activeMonthSavings * 6).toLocaleString()}</span>
+                          <span style={{ fontWeight: 700, color: '#4caf50' }}>{fmtVal(activeMonthSavings * 6)}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>12-Month Proj:</span>
-                          <span style={{ fontWeight: 700, color: '#2196f3' }}>৳{(activeMonthSavings * 12).toLocaleString()}</span>
+                          <span style={{ fontWeight: 700, color: '#2196f3' }}>{fmtVal(activeMonthSavings * 12)}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>5-Year Proj:</span>
-                          <span style={{ fontWeight: 700, color: 'var(--accent-gold)' }}>৳{(activeMonthSavings * 60).toLocaleString()}</span>
+                          <span style={{ fontWeight: 700, color: 'var(--accent-gold)' }}>{fmtVal(activeMonthSavings * 60)}</span>
                         </div>
                       </div>
                     </div>
@@ -1767,7 +1982,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                             ⚠️ Over-Budget Limit Alert! ({overBudgets.length} Category Exceeded)
                           </div>
                           <div style={{ fontSize: '0.78rem', color: '#f87171', marginTop: '2px' }}>
-                            {overBudgets.map(b => `${b.category}: Spent ৳${b.spent.toLocaleString()} (Limit ৳${b.budget.toLocaleString()} • Over by ৳${b.excess.toLocaleString()})`).join(' | ')}
+                            {overBudgets.map(b => `${b.category}: Spent ${fmtVal(b.spent)} (Limit ${fmtVal(b.budget)} • Over by ${fmtVal(b.excess)})`).join(' | ')}
                           </div>
                         </div>
                       </div>
@@ -1778,18 +1993,18 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   <div className={styles.grid4} style={{ marginBottom: '24px' }}>
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Earned</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4caf50', marginTop: '4px' }}>৳{getIncomeTotal(activeMonth).toLocaleString()}</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4caf50', marginTop: '4px' }}>{fmtVal(getIncomeTotal(activeMonth))}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Salary: ৳{getSalaryTotal(activeMonth).toLocaleString()} • Side: ৳{getAddonTotal(activeMonth).toLocaleString()}
+                        Salary: {fmtVal(getSalaryTotal(activeMonth))} • Side: {fmtVal(getAddonTotal(activeMonth))}
                       </div>
                     </div>
 
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
                         <span>Total Spent</span>
-                        <span style={{ color: '#ff6b6b', fontWeight: 700 }}>৳{getDailyVelocity(activeMonth)}/day</span>
+                        <span style={{ color: '#ff6b6b', fontWeight: 700 }}>{fmtVal(getDailyVelocity(activeMonth))}/day</span>
                       </div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f44336', marginTop: '4px' }}>৳{getExpenseTotal(activeMonth).toLocaleString()}</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f44336', marginTop: '4px' }}>{fmtVal(getExpenseTotal(activeMonth))}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
                         {(activeMonth.expenses || []).length} items logged • Daily Avg Pace
                       </div>
@@ -1797,17 +2012,17 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ fontSize: '0.72rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700 }}>Active Money Lent (ধারে দেওয়া)</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24', marginTop: '4px' }}>৳{getActiveLoansTotal(activeMonth).toLocaleString()}</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24', marginTop: '4px' }}>{fmtVal(getActiveLoansTotal(activeMonth))}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Deducted from Savings • Recovered: ৳{getReturnedLoansTotal(activeMonth).toLocaleString()}
+                        Deducted from Savings • Recovered: {fmtVal(getReturnedLoansTotal(activeMonth))}
                       </div>
                     </div>
 
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>Net Liquid Savings & Balance</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#818cf8', marginTop: '4px' }}>৳{getSavings(activeMonth).toLocaleString()}</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#818cf8', marginTop: '4px' }}>{fmtVal(getSavings(activeMonth))}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Gross: ৳{getGrossSavings(activeMonth).toLocaleString()} • Rate: {getSavingsRate(activeMonth).toFixed(1)}%
+                        Gross: {fmtVal(getGrossSavings(activeMonth))} • Rate: {getSavingsRate(activeMonth).toFixed(1)}%
                       </div>
                     </div>
                   </div>
@@ -2132,6 +2347,91 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                             </div>
                             <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
                               <div style={{ height: '100%', width: `${Math.min(100, pct)}%`, background: statusColor, borderRadius: '3px', transition: 'width 0.4s ease' }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 🎯 SAVINGS JARS & WEALTH GOALS ALLOCATOR WIDGET */}
+                  <div className={styles.walletCard} style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(129, 140, 248, 0.25)', marginTop: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                          <PiggyBank size={18} style={{ color: '#818cf8' }} /> Savings Goal Jars & Target Allocator
+                        </h3>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          Allocate accumulated liquid savings toward specific hardware, emergency reserves, and luxury goals.
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setGoalName('');
+                          setGoalTarget('');
+                          setGoalCurrent('');
+                          setEditingGoalId('');
+                          setIsGoalModalOpen(true);
+                        }}
+                        style={{
+                          background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '6px 14px',
+                          borderRadius: '8px',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: '0 4px 12px rgba(129, 140, 248, 0.25)'
+                        }}
+                      >
+                        <Plus size={14} /> New Goal Jar
+                      </button>
+                    </div>
+
+                    <div className={styles.grid3} style={{ gap: '14px' }}>
+                      {savingsGoals.map(goal => {
+                        const pct = Math.min(100, Math.round((goal.current / (goal.target || 1)) * 100));
+                        return (
+                          <div key={goal.id} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', position: 'relative' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                              <div style={{ fontWeight: 800, color: '#fff', fontSize: '0.85rem' }}>{goal.name}</div>
+                              <div style={{ display: 'flex', gap: '4px' }}>
+                                <button
+                                  onClick={() => {
+                                    setEditingGoalId(goal.id);
+                                    setGoalName(goal.name);
+                                    setGoalTarget(String(goal.target));
+                                    setGoalCurrent(String(goal.current));
+                                    setIsGoalModalOpen(true);
+                                  }}
+                                  style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
+                                >
+                                  <Edit size={12} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteGoal(goal.id)}
+                                  style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '6px' }}>
+                              <span style={{ color: '#818cf8', fontWeight: 700 }}>Saved: {fmtVal(goal.current)}</span>
+                              <span style={{ color: 'var(--text-muted)' }}>Target: {fmtVal(goal.target)}</span>
+                            </div>
+
+                            <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden', marginBottom: '6px' }}>
+                              <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #818cf8, #34d399)', borderRadius: '4px', transition: 'width 0.5s ease' }} />
+                            </div>
+
+                            <div style={{ textAlign: 'right', fontSize: '0.7rem', fontWeight: 800, color: pct >= 100 ? '#10b981' : '#818cf8' }}>
+                              {pct >= 100 ? '🎉 GOAL ACHIEVED!' : `${pct}% Funded`}
                             </div>
                           </div>
                         );
@@ -3509,6 +3809,62 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             >
               Done & Save Caps
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 9: Create / Edit Savings Goal Jar */}
+      {isGoalModalOpen && (
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <PiggyBank size={20} style={{ color: '#818cf8' }} /> {editingGoalId ? 'Edit Savings Goal Jar' : 'Create New Savings Goal Jar'}
+              </h3>
+              <button onClick={() => setIsGoalModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleSaveGoal} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Goal Name / Target Item</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. M3 MacBook Pro / Tour Fund"
+                  value={goalName}
+                  onChange={e => setGoalName(e.target.value)}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Target Goal Amount (৳)</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="250000"
+                    value={goalTarget}
+                    onChange={e => setGoalTarget(e.target.value)}
+                    style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Currently Saved (৳)</label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={goalCurrent}
+                    onChange={e => setGoalCurrent(e.target.value)}
+                    style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                style={{ background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', marginTop: '8px' }}
+              >
+                {editingGoalId ? 'Save Goal Changes' : 'Create Goal Jar'}
+              </button>
+            </form>
           </div>
         </div>
       )}
