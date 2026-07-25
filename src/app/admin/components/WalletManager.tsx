@@ -37,6 +37,22 @@ export interface IWalletLoan {
   notes?: string;
 }
 
+export interface ISavingsGoal {
+  _id?: string;
+  id?: string;
+  name: string;
+  target: number;
+  current: number;
+  category: string;
+}
+
+export interface IRecurringBill {
+  _id?: string;
+  name: string;
+  amount: number;
+  category: string;
+}
+
 export interface IWalletMonthData {
   _id: string;
   monthName: string;
@@ -46,6 +62,8 @@ export interface IWalletMonthData {
   expenses: IWalletExpense[];
   incomes?: IWalletIncome[];
   loans?: IWalletLoan[];
+  savingsGoals?: ISavingsGoal[];
+  recurringBills?: IRecurringBill[];
   createdAt: string;
 }
 
@@ -1418,29 +1436,51 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     }
   };
 
-  // 🎯 Add or Update Savings Goal Jar
-  const handleSaveGoal = (e: React.FormEvent) => {
+  // 🎯 Add or Update Savings Goal Jar (Persisted in MongoDB)
+  const handleSaveGoal = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!activeMonth) return;
     if (!goalName || !goalTarget) return showToast('Goal name and target amount are required', 'error');
 
+    const currentGoals = activeSavingsGoals;
+    let updatedGoals: ISavingsGoal[] = [];
+
     if (editingGoalId) {
-      setSavingsGoals(prev => prev.map(g => g.id === editingGoalId ? {
+      updatedGoals = currentGoals.map(g => (g._id === editingGoalId || g.id === editingGoalId) ? {
         ...g,
         name: goalName,
         target: Number(goalTarget) || 0,
         current: Number(goalCurrent) || 0
-      } : g));
-      showToast('Savings goal updated successfully', 'success');
+      } : g);
     } else {
-      const newGoal = {
+      const newGoal: ISavingsGoal = {
         id: String(Date.now()),
         name: goalName,
         target: Number(goalTarget) || 0,
         current: Number(goalCurrent) || 0,
         category: 'Gadgets'
       };
-      setSavingsGoals(prev => [...prev, newGoal]);
-      showToast('New Savings Goal Jar created!', 'success');
+      updatedGoals = [...currentGoals, newGoal];
+    }
+
+    // ⚡ Optimistic UI Update
+    setMonths(prev => prev.map(m => m._id === activeMonth._id ? { ...m, savingsGoals: updatedGoals } : m));
+
+    try {
+      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ savingsGoals: updatedGoals })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        showToast(editingGoalId ? 'Savings goal updated & saved to Database!' : 'New Savings Goal Jar created & saved to Database!', 'success');
+      } else {
+        showToast(data.error || 'Failed to update goal jar', 'error');
+      }
+    } catch (err) {
+      showToast('Error saving goal jar to database', 'error');
     }
 
     setIsGoalModalOpen(false);
@@ -1450,10 +1490,32 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     setEditingGoalId('');
   };
 
-  const handleDeleteGoal = (goalId: string) => {
+  const handleDeleteGoal = async (goalId: string) => {
+    if (!activeMonth) return;
     if (!confirm('Are you sure you want to remove this Savings Goal Jar?')) return;
-    setSavingsGoals(prev => prev.filter(g => g.id !== goalId));
-    showToast('Savings Goal Jar removed', 'info');
+
+    const currentGoals = activeSavingsGoals;
+    const updatedGoals = currentGoals.filter(g => g._id !== goalId && g.id !== goalId);
+
+    // ⚡ Optimistic UI Update
+    setMonths(prev => prev.map(m => m._id === activeMonth._id ? { ...m, savingsGoals: updatedGoals } : m));
+
+    try {
+      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ savingsGoals: updatedGoals })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        showToast('Savings Goal Jar permanently removed from Database', 'info');
+      } else {
+        showToast(data.error || 'Failed to delete goal jar', 'error');
+      }
+    } catch (err) {
+      showToast('Error deleting goal jar from database', 'error');
+    }
   };
 
   // 📥 Master Multi-Month Financial Database CSV Exporter
@@ -1629,6 +1691,23 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const activeHealthScore = activeMonth ? getHealthScore(activeMonth) : 0;
   const activeHealthInfo = getHealthGrade(activeHealthScore);
   const activeMonthSavings = activeMonth ? getSavings(activeMonth) : 0;
+
+  const activeSavingsGoals: ISavingsGoal[] = (activeMonth?.savingsGoals && activeMonth.savingsGoals.length > 0)
+    ? activeMonth.savingsGoals
+    : [
+        { id: '1', name: '💻 High-End M3 Max MacBook Pro', target: 280000, current: 125000, category: 'Gadgets' },
+        { id: '2', name: '🛡️ 6-Month Emergency Safety Fund', target: 120000, current: 85000, category: 'Other' },
+        { id: '3', name: '✈️ Cox’s Bazar & Travel Fund', target: 35000, current: 20000, category: 'Entertainment' },
+      ];
+
+  const activeRecurringBills: IRecurringBill[] = (activeMonth?.recurringBills && activeMonth.recurringBills.length > 0)
+    ? activeMonth.recurringBills
+    : [
+        { name: 'Mess Rent & Food Deposit', amount: 5000, category: 'Rent' },
+        { name: 'Wi-Fi & High-Speed Internet', amount: 1000, category: 'Utility' },
+        { name: 'AWS & Vercel Production Server', amount: 1450, category: 'Server' },
+        { name: 'Mobile Data & Prepaid Package', amount: 500, category: 'Utility' },
+      ];
 
   // 📦 1-Click JSON Data Backup Engine
   const exportAllDataJSON = () => {
@@ -2070,7 +2149,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     const inc = getIncomeTotal(activeMonth);
                     if (inc === 0) return null;
 
-                    const fixedCost = recurringBills.reduce((acc, b) => acc + b.amount, 0);
+                    const fixedCost = activeRecurringBills.reduce((acc, b) => acc + b.amount, 0);
                     const totalExp = getExpenseTotal(activeMonth);
                     const varExp = Math.max(0, totalExp - fixedCost);
                     const loansG = getActiveLoansTotal(activeMonth);
@@ -2562,16 +2641,17 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     </div>
 
                     <div className={styles.grid3} style={{ gap: '14px' }}>
-                      {savingsGoals.map(goal => {
+                      {activeSavingsGoals.map(goal => {
+                        const goalKey = goal._id || goal.id || goal.name;
                         const pct = Math.min(100, Math.round((goal.current / (goal.target || 1)) * 100));
                         return (
-                          <div key={goal.id} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', position: 'relative' }}>
+                          <div key={goalKey} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', position: 'relative' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                               <div style={{ fontWeight: 800, color: '#fff', fontSize: '0.85rem' }}>{goal.name}</div>
                               <div style={{ display: 'flex', gap: '4px' }}>
                                 <button
                                   onClick={() => {
-                                    setEditingGoalId(goal.id);
+                                    setEditingGoalId(goal._id || goal.id || '');
                                     setGoalName(goal.name);
                                     setGoalTarget(String(goal.target));
                                     setGoalCurrent(String(goal.current));
@@ -2582,7 +2662,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                                   <Edit size={12} />
                                 </button>
                                 <button
-                                  onClick={() => handleDeleteGoal(goal.id)}
+                                  onClick={() => handleDeleteGoal(goal._id || goal.id || '')}
                                   style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
                                 >
                                   <Trash2 size={12} />
@@ -4455,7 +4535,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-              {recurringBills.map((bill, index) => (
+              {activeRecurringBills.map((bill, index) => (
                 <div key={index} style={{ background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
                     <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.85rem' }}>{bill.name}</div>
@@ -4483,7 +4563,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
             <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Total Fixed Overheads: </span>
-              <strong style={{ color: '#fca5a5', fontSize: '0.95rem' }}>{fmtVal(recurringBills.reduce((acc, b) => acc + b.amount, 0))}/month</strong>
+              <strong style={{ color: '#fca5a5', fontSize: '0.95rem' }}>{fmtVal(activeRecurringBills.reduce((acc, b) => acc + b.amount, 0))}/month</strong>
             </div>
           </div>
         </div>
