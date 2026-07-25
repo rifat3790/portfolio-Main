@@ -2065,6 +2065,64 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                   </div>
 
+                  {/* 📊 DYNAMIC CASHFLOW DISTRIBUTION WATERFALL BAR */}
+                  {(() => {
+                    const inc = getIncomeTotal(activeMonth);
+                    if (inc === 0) return null;
+
+                    const fixedCost = recurringBills.reduce((acc, b) => acc + b.amount, 0);
+                    const totalExp = getExpenseTotal(activeMonth);
+                    const varExp = Math.max(0, totalExp - fixedCost);
+                    const loansG = getActiveLoansTotal(activeMonth);
+                    const netSav = Math.max(0, getSavings(activeMonth));
+
+                    const fixedPct = Math.min(100, Math.round((fixedCost / inc) * 100));
+                    const varPct = Math.min(100, Math.round((varExp / inc) * 100));
+                    const loanPct = Math.min(100, Math.round((loansG / inc) * 100));
+                    const savPct = Math.min(100, Math.round((netSav / inc) * 100));
+
+                    return (
+                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px', marginBottom: '24px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Compass size={16} style={{ color: 'var(--accent-gold)' }} /> Active Cashflow Allocation Waterfall
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                            Gross Income Partition (100% = {fmtVal(inc)})
+                          </div>
+                        </div>
+
+                        {/* Waterfall Multi-Segment Bar */}
+                        <div style={{ height: '12px', background: 'rgba(255,255,255,0.06)', borderRadius: '6px', overflow: 'hidden', display: 'flex', marginBottom: '12px' }}>
+                          {fixedPct > 0 && <div style={{ width: `${fixedPct}%`, background: '#f87171' }} title={`Fixed Overhead: ${fixedPct}%`} />}
+                          {varPct > 0 && <div style={{ width: `${varPct}%`, background: '#fbbf24' }} title={`Variable Expenses: ${varPct}%`} />}
+                          {loanPct > 0 && <div style={{ width: `${loanPct}%`, background: '#60a5fa' }} title={`Money Lent: ${loanPct}%`} />}
+                          {savPct > 0 && <div style={{ width: `${savPct}%`, background: '#34d399' }} title={`Net Liquid Savings: ${savPct}%`} />}
+                        </div>
+
+                        {/* Legend Pills */}
+                        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ width: 8, height: 8, background: '#f87171', borderRadius: '50%' }} />
+                            Fixed Overhead: <strong style={{ color: '#fff' }}>{fixedPct}% ({fmtVal(fixedCost)})</strong>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ width: 8, height: 8, background: '#fbbf24', borderRadius: '50%' }} />
+                            Variable Spending: <strong style={{ color: '#fff' }}>{varPct}% ({fmtVal(varExp)})</strong>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ width: 8, height: 8, background: '#60a5fa', borderRadius: '50%' }} />
+                            Money Lent: <strong style={{ color: '#fff' }}>{loanPct}% ({fmtVal(loansG)})</strong>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ width: 8, height: 8, background: '#34d399', borderRadius: '50%' }} />
+                            Net Savings: <strong style={{ color: '#34d399' }}>{savPct}% ({fmtVal(netSav)})</strong>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Over-spending Category Alert Banner */}
                   {(() => {
                     const overBudgets = getOverBudgetCategories(activeMonth);
