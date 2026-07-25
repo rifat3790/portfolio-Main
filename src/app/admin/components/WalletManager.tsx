@@ -5,7 +5,7 @@ import {
   Wallet, Plus, Layers, TrendingUp, Edit, Download, Trash2, FileText, X, PieChart,
   HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check,
   Target, Zap, ArrowUpDown, ShieldAlert, Sparkles, Eye, EyeOff, CreditCard, ShieldCheck, PiggyBank, Flame,
-  TrendingDown, Lock, Award, Tag, CopyCheck, Share2, Gauge, FilePlus
+  TrendingDown, Lock, Award, Tag, CopyCheck, Share2, Gauge, FilePlus, Sliders, Activity, Compass, Filter
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../admin.module.css';
@@ -78,6 +78,11 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
   // 👁️ Executive Stealth & Privacy Mode State
   const [privacyMode, setPrivacyMode] = useState(false);
+
+  // 🛡️ Interactive Emergency Reserve Calculator State
+  const [emergencyMonthsTarget, setEmergencyMonthsTarget] = useState<number>(6);
+  // 🔍 Expense Date Range Filter State
+  const [expenseDateRange, setExpenseDateRange] = useState<'all' | '7days' | '30days'>('all');
 
   // 🎯 Savings Goals & Wealth Target Allocator State
   const [savingsGoals, setSavingsGoals] = useState<Array<{ id: string; name: string; target: number; current: number; category: string }>>([
@@ -1583,11 +1588,21 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     return acc;
   }, {} as { [key: string]: number });
 
-  // Filter Ledger client-side (instantaneous loading search)
+  // Filter Ledger client-side (instantaneous loading search & date range)
   const filteredExpenses = (activeMonth?.expenses || []).filter(e => {
     const matchesSearch = e.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategoryFilter === 'All' || e.category === selectedCategoryFilter;
-    return matchesSearch && matchesCategory;
+    
+    let matchesRange = true;
+    if (expenseDateRange !== 'all' && e.date) {
+      const itemTime = new Date(e.date).getTime();
+      const nowTime = new Date().getTime();
+      const diffDays = (nowTime - itemTime) / (1000 * 60 * 60 * 24);
+      if (expenseDateRange === '7days') matchesRange = diffDays <= 7 && diffDays >= 0;
+      if (expenseDateRange === '30days') matchesRange = diffDays <= 30 && diffDays >= 0;
+    }
+
+    return matchesSearch && matchesCategory && matchesRange;
   });
 
   const sortedExpenses = [...filteredExpenses].sort((a, b) => {
@@ -2280,6 +2295,22 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           }}
                         />
                         <select
+                          value={expenseDateRange}
+                          onChange={e => setExpenseDateRange(e.target.value as any)}
+                          style={{
+                            padding: '6px 10px',
+                            background: 'rgba(7,8,15,0.4)',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                            borderRadius: '6px',
+                            color: '#fff',
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          <option value="all">All Dates</option>
+                          <option value="7days">Last 7 Days</option>
+                          <option value="30days">Last 30 Days</option>
+                        </select>
+                        <select
                           value={selectedCategoryFilter}
                           onChange={e => setSelectedCategoryFilter(e.target.value)}
                           style={{
@@ -2512,6 +2543,76 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         );
                       })}
                     </div>
+                  </div>
+
+                  {/* 🛡️ INTERACTIVE EMERGENCY SAFETY RESERVE SIMULATOR */}
+                  <div className={styles.walletCard} style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(16, 185, 129, 0.25)', marginTop: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                          <ShieldCheck size={18} style={{ color: '#34d399' }} /> Emergency Safety Reserve Simulator (জরুরি তহবিল সিমুলেটর)
+                        </h3>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          Adjust target reserve duration to simulate living expenses buffer based on current monthly burn rate. (Calculated live in browser)
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Sliders size={14} style={{ color: '#34d399' }} />
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#34d399' }}>Target: {emergencyMonthsTarget} Months Buffer</span>
+                      </div>
+                    </div>
+
+                    {/* Slider Control */}
+                    <div style={{ marginBottom: '16px', background: 'rgba(15, 23, 42, 0.4)', padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+                        <span>3 Months (Basic)</span>
+                        <span>6 Months (Recommended)</span>
+                        <span>12 Months (Sovereign)</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="12"
+                        step="1"
+                        value={emergencyMonthsTarget}
+                        onChange={e => setEmergencyMonthsTarget(Number(e.target.value))}
+                        style={{ width: '100%', accentColor: '#10b981', cursor: 'pointer' }}
+                      />
+                    </div>
+
+                    {(() => {
+                      const monthlyBurn = getExpenseTotal(activeMonth);
+                      const requiredReserve = monthlyBurn * emergencyMonthsTarget;
+                      const currentSavings = getSavings(activeMonth);
+                      const gap = requiredReserve - currentSavings;
+                      const pctAchieved = requiredReserve > 0 ? Math.min(100, Math.round((currentSavings / requiredReserve) * 100)) : 100;
+
+                      return (
+                        <div className={styles.grid3} style={{ gap: '14px' }}>
+                          <div style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px' }}>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Required Reserve ({emergencyMonthsTarget} Mo)</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#34d399', marginTop: '4px' }}>{fmtVal(requiredReserve)}</div>
+                            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>At {fmtVal(monthlyBurn)}/mo outlay pace</div>
+                          </div>
+
+                          <div style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px' }}>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Current Reserve Level</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#818cf8', marginTop: '4px' }}>{fmtVal(currentSavings)}</div>
+                            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>{pctAchieved}% of {emergencyMonthsTarget}-month buffer funded</div>
+                          </div>
+
+                          <div style={{ background: 'rgba(15, 23, 42, 0.4)', border: `1px solid ${gap <= 0 ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`, borderRadius: '10px', padding: '12px' }}>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>{gap <= 0 ? 'Fund Status' : 'Reserve Gap'}</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: gap <= 0 ? '#10b981' : '#fbbf24', marginTop: '4px' }}>
+                              {gap <= 0 ? '🛡️ FULLY PROTECTED' : fmtVal(gap)}
+                            </div>
+                            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                              {gap <= 0 ? 'You meet your target safety buffer!' : `Save ${fmtVal(Math.round(gap / 3))}/mo over 3 months`}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Money Lent Ledger (ধারের হিসাব & পাওনা) */}
