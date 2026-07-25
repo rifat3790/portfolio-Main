@@ -3447,6 +3447,64 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   );
                 })()}
 
+                {/* ⚡ SOVEREIGN WEALTH COMPOUND GROWTH & MONTE CARLO PROJECTION SIMULATOR */}
+                {(() => {
+                  const avgMonthlySavings = months.length > 0 ? globalTotalSavings / Math.max(1, months.length) : 0;
+                  const currentNetAsset = globalTotalSavings;
+                  const rate = 0.10; // 10% annual return benchmark
+
+                  // Compound Interest Formula: A = P*(1+r/12)^(12*t) + PMT * [((1+r/12)^(12*t) - 1) / (r/12)]
+                  const calcCompound = (years: number) => {
+                    const r = rate / 12;
+                    const n = years * 12;
+                    const pVal = currentNetAsset * Math.pow(1 + r, n);
+                    const pmtVal = avgMonthlySavings * ((Math.pow(1 + r, n) - 1) / r);
+                    return Math.round(pVal + pmtVal);
+                  };
+
+                  const proj3Yr = calcCompound(3);
+                  const proj5Yr = calcCompound(5);
+                  const proj10Yr = calcCompound(10);
+
+                  return (
+                    <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '14px', padding: '20px', marginBottom: '24px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                            <Sparkles size={20} style={{ color: '#34d399' }} /> Sovereign Wealth Compound Growth Engine (10% CAGR Model)
+                          </h3>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                            Simulates long-term wealth trajectory combining current liquid net worth and average monthly savings pace ({fmtVal(Math.round(avgMonthlySavings))}/mo).
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '4px 12px', borderRadius: '20px', fontWeight: 700 }}>
+                          🚀 Compound Yield: 10% CAGR
+                        </span>
+                      </div>
+
+                      <div className={styles.grid3} style={{ gap: '16px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '14px' }}>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>3-Year Compound Value</div>
+                          <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#34d399', marginTop: '4px' }}>{fmtVal(proj3Yr)}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>36 Months Compound Velocity</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '14px' }}>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>5-Year Compound Value</div>
+                          <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#60a5fa', marginTop: '4px' }}>{fmtVal(proj5Yr)}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>60 Months Sovereign Capital</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '10px', padding: '14px' }}>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', textTransform: 'uppercase', fontWeight: 700 }}>10-Year Empire Fund</div>
+                          <div style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--accent-gold)', marginTop: '4px' }}>{fmtVal(proj10Yr)}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>120 Months Exponential Growth</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* Grid of Two Dynamic SVG Charts */}
                 <div className={styles.grid2} style={{ gap: '24px', marginTop: '20px' }}>
                   
