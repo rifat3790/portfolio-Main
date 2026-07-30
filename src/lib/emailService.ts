@@ -23,7 +23,7 @@ const TARGET_WHATSAPP_PHONE = '8801952321390';
 
 const createTransporter = (customUser?: string, customPass?: string) => {
   const user = customUser || process.env.SMTP_USER || process.env.GMAIL_USER || 'rifayet.cse@gmail.com';
-  const pass = customPass || process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || 'flovlnotljzuizfw';
+  const pass = customPass || process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || '';
 
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
