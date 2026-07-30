@@ -22,11 +22,11 @@ export async function POST(req: NextRequest) {
       read: false
     });
 
-    // 📩 Trigger Real-Time Notification to Admin & Professional Auto-Responder to Visitor
-    Promise.allSettled([
+    // 📩 Await Real-Time Notification to Admin & Professional Auto-Responder to Visitor for Vercel serverless lambda execution
+    await Promise.allSettled([
       sendContactFormNotificationEmail({ name, email, subject, message }),
       sendContactFormAutoResponderEmail({ name, email, subject })
-    ]).catch(err => console.error('Error triggering contact emails:', err));
+    ]);
 
     return NextResponse.json({ success: true, message: 'Message sent successfully.' }, { status: 201 });
   } catch (error) {

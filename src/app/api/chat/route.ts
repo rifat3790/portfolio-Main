@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
       updateObj.userEmail = userEmail;
     }
 
-    // If user sent it, increment admin's unreadCount and trigger real-time email notification
+    // If user sent it, increment admin's unreadCount and await real-time email & whatsapp notification for Vercel
     if (sender === 'user') {
       await ChatSession.findOneAndUpdate(
         { sessionId },
@@ -91,8 +91,8 @@ export async function POST(req: NextRequest) {
         { upsert: true, new: true }
       );
 
-      // Trigger instant email notification to admin
-      sendLiveChatNotificationEmail({
+      // Await instant email and whatsapp notification before returning response
+      await sendLiveChatNotificationEmail({
         sessionId,
         senderName: userName || 'Website Visitor',
         senderEmail: userEmail || 'Not provided',
