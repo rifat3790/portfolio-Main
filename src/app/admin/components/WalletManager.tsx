@@ -91,6 +91,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   // Daily Pace & Email State
   const [targetDailyCap, setTargetDailyCap] = useState<number>(2000);
   const [sendingEmailReport, setSendingEmailReport] = useState<boolean>(false);
+  const [customAppPassword, setCustomAppPassword] = useState<string>('');
+  const [isSmtpModalOpen, setIsSmtpModalOpen] = useState<boolean>(false);
   
   // Date & Amount Sorting State
   const [expSortBy, setExpSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
@@ -1550,21 +1552,29 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     showToast('Wallet backup exported to JSON successfully!', 'success');
   };
 
-  // ✉️ Send Test Email Report to Inbox (mdrifayethossen@gmail.com)
+  // ✉️ Send Test Email Report to Inbox (mdrifayethossen@gmail.com & rifayet.cse@gmail.com)
   const handleSendTestEmailReport = async () => {
     setSendingEmailReport(true);
-    showToast('🚀 Generating & sending Test Email Report to mdrifayethossen@gmail.com...', 'info');
+    showToast('🚀 Sending Test Email Digest to mdrifayethossen@gmail.com & rifayet.cse@gmail.com...', 'info');
     try {
       const res = await fetch('/api/admin/wallet/email-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'mdrifayethossen@gmail.com' }),
+        body: JSON.stringify({
+          emails: ['mdrifayethossen@gmail.com', 'rifayet.cse@gmail.com'],
+          appPassword: customAppPassword
+        }),
       });
       const data = await res.json();
-      if (res.ok) {
-        showToast('✉️ Test Email Digest successfully delivered to mdrifayethossen@gmail.com (Inbox)!', 'success');
+      if (res.ok && data.success) {
+        showToast('✉️ Test Email Digest successfully delivered to Inbox (mdrifayethossen@gmail.com & rifayet.cse@gmail.com)!', 'success');
       } else {
-        showToast(data.error || 'Failed to send email report', 'error');
+        if (data.error && (data.error.includes('Authentication') || data.error.includes('App Password') || data.error.includes('535'))) {
+          showToast('⚠️ Gmail SMTP App Password required to send live emails. Opening SMTP Setup...', 'error');
+          setIsSmtpModalOpen(true);
+        } else {
+          showToast(data.error || 'Failed to send email report', 'error');
+        }
       }
     } catch (err) {
       showToast('Error sending email report', 'error');
@@ -5502,6 +5512,51 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', marginTop: '8px' }}
               >
                 {editingAssetId ? 'Save Asset Changes' : 'Add Asset to Vault'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 12: Configure Gmail App Password for Live Email Reports */}
+      {isSmtpModalOpen && (
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox} style={{ maxWidth: '500px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Send size={20} style={{ color: '#10b981' }} /> Gmail SMTP App Password Setup
+              </h3>
+              <button onClick={() => setIsSmtpModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '16px', lineHeight: 1.5 }}>
+              To deliver live daily reports directly to Inbox (<strong>mdrifayethossen@gmail.com</strong> & <strong>rifayet.cse@gmail.com</strong>), enter your 16-character Gmail App Password below or add <code style={{ color: 'var(--accent-gold)' }}>GMAIL_APP_PASSWORD</code> in <code style={{ color: 'var(--accent-gold)' }}>.env.local</code>.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Gmail App Password (16 Characters)</label>
+                <input
+                  type="password"
+                  placeholder="xxxx xxxx xxxx xxxx"
+                  value={customAppPassword}
+                  onChange={e => setCustomAppPassword(e.target.value)}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '0.95rem' }}
+                />
+              </div>
+
+              <div style={{ background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.2)', borderRadius: '8px', padding: '12px', fontSize: '0.75rem', color: '#c7d2fe' }}>
+                💡 <strong>How to get Gmail App Password:</strong> Google Account ➔ Security ➔ 2-Step Verification ➔ App Passwords ➔ Create App Password for Mail.
+              </div>
+
+              <button
+                onClick={() => {
+                  setIsSmtpModalOpen(false);
+                  handleSendTestEmailReport();
+                }}
+                style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', marginTop: '4px' }}
+              >
+                Save & Trigger Test Email Now
               </button>
             </div>
           </div>

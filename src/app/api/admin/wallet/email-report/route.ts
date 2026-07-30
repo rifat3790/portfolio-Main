@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
 
     await dbConnect();
     const body = await req.json().catch(() => ({}));
-    const recipientEmail = body.email || 'mdrifayethossen@gmail.com';
+    const recipients = body.emails || ['mdrifayethossen@gmail.com', 'rifayet.cse@gmail.com'];
+    const smtpPass = body.appPassword || process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || '';
 
     // Fetch latest active month or current month
     const months = await WalletMonth.find({}).sort({ monthName: -1 }).lean();
@@ -71,7 +72,8 @@ export async function POST(req: NextRequest) {
     if (dailyAverage <= recommendedDailyCap) healthScore += 20;
 
     const result = await sendWalletDailyEmailReport({
-      recipientEmail,
+      recipientEmail: recipients,
+      smtpPass,
       monthName: latestMonth.monthName,
       totalIncome,
       totalExpense,
@@ -84,14 +86,22 @@ export async function POST(req: NextRequest) {
       savingsRatePct
     });
 
+    if (!result.success) {
+      return NextResponse.json({
+        success: false,
+        error: result.error || result.message || 'SMTP Authentication failed. Please configure GMAIL_APP_PASSWORD.',
+        recipients: result.recipients
+      }, { status: 400 });
+    }
+
     return NextResponse.json({
       success: true,
-      message: `Test email report successfully generated and sent to ${recipientEmail}!`,
-      scheduledTime: 'Daily at 8:00 PM BST (Bangladesh Time)',
+      message: `Test email report successfully delivered directly to Inbox (${recipients.join(', ')})!`,
+      scheduledTime: 'Everyday at 8:00 PM BST (Bangladesh Time)',
       details: result
     });
   } catch (error: any) {
     console.error('Error generating wallet email report:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
