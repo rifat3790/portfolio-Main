@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { sendWhatsAppNotification } from './whatsappService';
 
 export interface IEmailReportData {
   recipientEmail?: string | string[];
@@ -18,6 +19,7 @@ export interface IEmailReportData {
 }
 
 const DEFAULT_ADMIN_RECIPIENTS = ['mdrifayethossen@gmail.com', 'rifayet.cse@gmail.com'];
+const TARGET_WHATSAPP_PHONE = '8801952321390';
 
 const createTransporter = (customUser?: string, customPass?: string) => {
   const user = customUser || process.env.SMTP_USER || process.env.GMAIL_USER || 'rifayet.cse@gmail.com';
@@ -32,7 +34,7 @@ const createTransporter = (customUser?: string, customPass?: string) => {
   });
 };
 
-// 1. Executive Daily Wallet Report
+// 1. Executive Daily Wallet Report (Email + WhatsApp)
 export const sendWalletDailyEmailReport = async (data: IEmailReportData) => {
   const recipients = data.recipientEmail
     ? (Array.isArray(data.recipientEmail) ? data.recipientEmail : [data.recipientEmail])
@@ -136,7 +138,7 @@ export const sendWalletDailyEmailReport = async (data: IEmailReportData) => {
                 Financial Health Score: <span style="color:#10b981; font-weight:900;">${healthScore}/100</span> | Status: Active
               </div>
               <div style="font-size:11px; color:#64748b; margin-top:8px;">
-                Delivered to <strong>${recipients.join(', ')}</strong> | Daily Schedule: 8:00 PM BST
+                Delivered to <strong>${recipients.join(', ')}</strong> & WhatsApp <strong>+${TARGET_WHATSAPP_PHONE}</strong>
               </div>
             </td>
           </tr>
@@ -147,6 +149,12 @@ export const sendWalletDailyEmailReport = async (data: IEmailReportData) => {
 </body>
 </html>
   `;
+
+  // Trigger WhatsApp Summary Message simultaneously
+  sendWhatsAppNotification({
+    phone: TARGET_WHATSAPP_PHONE,
+    message: `📊 *Personal Wallet Executive Digest*\nPeriod: ${monthName}\n💰 Total Revenues: ${fmt(totalIncome)}\n💸 Total Spending: ${fmt(totalExpense)}\n🏦 Net Balance: ${fmt(netSavings)}\n⚡ Daily Average: ${fmt(dailyAverage)}/day\n🎯 Recommended Cap: ${fmt(recommendedDailyCap)}/day\n🔥 Peak Spending Date: ${highestSpendingDay.date} (${fmt(highestSpendingDay.amount)})\n📊 Peak Weekday: ${peakWeekday.day}\n🛡️ Health Rating: ${healthScore}/100`
+  }).catch(err => console.error('WhatsApp daily digest error:', err));
 
   try {
     const transporter = createTransporter(smtpUser, smtpPass);
@@ -163,7 +171,7 @@ export const sendWalletDailyEmailReport = async (data: IEmailReportData) => {
   }
 };
 
-// 2. Real-Time Alert for New Expense or New Loan
+// 2. Real-Time Alert for New Expense or New Loan (Email + WhatsApp)
 export const sendWalletTransactionAlert = async (data: {
   type: 'expense' | 'loan';
   description: string;
@@ -190,10 +198,16 @@ export const sendWalletTransactionAlert = async (data: {
             <tr><td style="padding:4px 0; color:#94a3b8;">Date & Period:</td><td style="font-weight:600; text-align:right;">${date} (${monthName})</td></tr>
           </table>
         </div>
-        <div style="font-size:11px; color:#64748b; text-align:center;">This is an automated instant alert from Rifayet Portfolio Personal Wallet.</div>
+        <div style="font-size:11px; color:#64748b; text-align:center;">Delivered via Email & WhatsApp (+8801952321390).</div>
       </div>
     </div>
   `;
+
+  // Trigger WhatsApp Alert simultaneously
+  sendWhatsAppNotification({
+    phone: TARGET_WHATSAPP_PHONE,
+    message: `${isExp ? '💸' : '🤝'} *Wallet Real-Time Alert*\n*${title}*\n• Description: ${description}\n• Amount: ৳${amount.toLocaleString()}\n• Category: ${category}\n• Date: ${date} (${monthName})`
+  }).catch(err => console.error('WhatsApp transaction alert error:', err));
 
   try {
     const transporter = createTransporter();
@@ -210,7 +224,7 @@ export const sendWalletTransactionAlert = async (data: {
   }
 };
 
-// 3. Real-Time Alert for Live Chat Message from Visitor
+// 3. Real-Time Alert for Live Chat Message from Visitor (Email + WhatsApp)
 export const sendLiveChatNotificationEmail = async (data: {
   sessionId: string;
   senderName?: string;
@@ -232,10 +246,16 @@ export const sendLiveChatNotificationEmail = async (data: {
             "${messageText}"
           </div>
         </div>
-        <div style="font-size:11px; color:#64748b; text-align:center;">Log into Admin Panel to reply directly to this visitor in real-time.</div>
+        <div style="font-size:11px; color:#64748b; text-align:center;">Delivered via Email & WhatsApp (+8801952321390).</div>
       </div>
     </div>
   `;
+
+  // Trigger WhatsApp Live Chat Alert simultaneously
+  sendWhatsAppNotification({
+    phone: TARGET_WHATSAPP_PHONE,
+    message: `💬 *Portfolio Live Chat Alert*\nNew message from *${senderName}* (${senderEmail})\n\n"${messageText}"\n\nSession: ${sessionId}`
+  }).catch(err => console.error('WhatsApp chat error:', err));
 
   try {
     const transporter = createTransporter();
@@ -252,7 +272,7 @@ export const sendLiveChatNotificationEmail = async (data: {
   }
 };
 
-// 4. Real-Time Alert for Contact Form Submission
+// 4. Real-Time Alert for Contact Form Submission (Email + WhatsApp)
 export const sendContactFormNotificationEmail = async (data: {
   name: string;
   email: string;
@@ -274,10 +294,16 @@ export const sendContactFormNotificationEmail = async (data: {
             ${message}
           </div>
         </div>
-        <div style="font-size:11px; color:#64748b; text-align:center;">An automated thank-you response has been sent to ${email}.</div>
+        <div style="font-size:11px; color:#64748b; text-align:center;">Delivered via Email & WhatsApp (+8801952321390).</div>
       </div>
     </div>
   `;
+
+  // Trigger WhatsApp Contact Form Alert simultaneously
+  sendWhatsAppNotification({
+    phone: TARGET_WHATSAPP_PHONE,
+    message: `📬 *New Portfolio Contact Inquiry*\n• Sender: *${name}*\n• Email: ${email}\n• Subject: ${subject}\n\n"${message}"`
+  }).catch(err => console.error('WhatsApp contact form error:', err));
 
   try {
     const transporter = createTransporter();
@@ -345,7 +371,7 @@ export const sendContactFormAutoResponderEmail = async (data: {
                 <div style="font-size:14px; font-weight:800; color:#ffffff;">Best Regards,</div>
                 <div style="font-size:15px; font-weight:900; color:#38bdf8; margin-top:4px;">Md. Rifayet Hossen</div>
                 <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Full-Stack Engineer & AI Applications Specialist</div>
-                <div style="font-size:12px; color:#64748b; margin-top:2px;">📧 rifayet.cse@gmail.com | 🌐 <a href="https://rifayethossen.com" style="color:#818cf8; text-decoration:none;">rifayethossen.com</a></div>
+                <div style="font-size:12px; color:#64748b; margin-top:2px;">📧 rifayet.cse@gmail.com | 📱 WhatsApp: +8801952321390 | 🌐 <a href="https://rifayethossen.com" style="color:#818cf8; text-decoration:none;">rifayethossen.com</a></div>
               </div>
             </td>
           </tr>
