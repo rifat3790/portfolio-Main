@@ -28,6 +28,8 @@ export async function PUT(req: NextRequest, segmentData: { params: Params }) {
     if (data.salary !== undefined) existing.salary = Number(data.salary);
     if (data.addon !== undefined) existing.addon = Number(data.addon);
     if (data.bonus !== undefined) existing.bonus = Number(data.bonus);
+    if (data.targetDailyCap !== undefined) existing.targetDailyCap = Number(data.targetDailyCap);
+    if (data.categoryBudgets !== undefined) existing.categoryBudgets = data.categoryBudgets;
     if (data.expenses !== undefined) existing.expenses = data.expenses;
     if (data.incomes !== undefined) existing.incomes = data.incomes;
     if (data.loans !== undefined) existing.loans = data.loans;

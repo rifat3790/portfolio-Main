@@ -69,6 +69,8 @@ export interface IWalletMonthData {
   salary: number;
   addon: number;
   bonus: number;
+  targetDailyCap?: number;
+  categoryBudgets?: Record<string, number>;
   expenses: IWalletExpense[];
   incomes?: IWalletIncome[];
   loans?: IWalletLoan[];
@@ -238,6 +240,13 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   }, []);
 
   const activeMonth = months.find(m => m._id === selectedMonthId) || null;
+
+  useEffect(() => {
+    if (activeMonth) {
+      if (activeMonth.targetDailyCap) setTargetDailyCap(activeMonth.targetDailyCap);
+      if (activeMonth.categoryBudgets) setCategoryBudgets(activeMonth.categoryBudgets);
+    }
+  }, [selectedMonthId, months]);
 
   // Helper calculation formulas
   const getSalaryTotal = (m: IWalletMonthData) => {
@@ -1608,6 +1617,34 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       showToast('Error sending Telegram push notification', 'error');
     } finally {
       setSendingTelegramPush(false);
+    }
+  };
+
+  const handleSaveDailyIntelSettings = async (newCap?: number, newBudgets?: Record<string, number>) => {
+    if (!activeMonth) {
+      showToast('No active month sheet selected', 'error');
+      return;
+    }
+    const capToSave = newCap !== undefined ? newCap : targetDailyCap;
+    const budgetsToSave = newBudgets !== undefined ? newBudgets : categoryBudgets;
+    try {
+      const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetDailyCap: capToSave,
+          categoryBudgets: budgetsToSave
+        }),
+      });
+      if (res.ok) {
+        showToast('Daily Pace & Guidance settings saved to MongoDB database!', 'success');
+        fetchMonths();
+      } else {
+        showToast('Failed to save settings to database', 'error');
+      }
+    } catch (err) {
+      console.error('Error saving daily intel settings:', err);
+      showToast('Error connecting to database', 'error');
     }
   };
 

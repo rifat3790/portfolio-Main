@@ -57,6 +57,8 @@ export interface IWalletMonth extends Document {
   salary: number;
   addon: number;
   bonus: number;
+  targetDailyCap?: number;
+  categoryBudgets?: Record<string, number>;
   expenses: IExpense[];
   incomes: IIncome[];
   loans: ILoan[];
@@ -119,6 +121,8 @@ const WalletMonthSchema: Schema = new Schema(
     salary: { type: Number, required: true, default: 0 },
     addon: { type: Number, required: true, default: 0 },
     bonus: { type: Number, required: true, default: 0 },
+    targetDailyCap: { type: Number, default: 2000 },
+    categoryBudgets: { type: Schema.Types.Mixed, default: {} },
     expenses: { type: [ExpenseSchema], default: [] },
     incomes: { type: [IncomeSchema], default: [] },
     loans: { type: [LoanSchema], default: [] },
