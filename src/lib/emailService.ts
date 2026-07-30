@@ -36,7 +36,7 @@ const createTransporter = (customUser?: string, customPass?: string) => {
   });
 };
 
-// 1. Executive Daily Wallet Report (Email + WhatsApp)
+// 1. Executive Daily Wallet Report (Email + WhatsApp + Telegram)
 export const sendWalletDailyEmailReport = async (data: IEmailReportData) => {
   const recipients = data.recipientEmail
     ? (Array.isArray(data.recipientEmail) ? data.recipientEmail : [data.recipientEmail])
@@ -140,7 +140,7 @@ export const sendWalletDailyEmailReport = async (data: IEmailReportData) => {
                 Financial Health Score: <span style="color:#10b981; font-weight:900;">${healthScore}/100</span> | Status: Active
               </div>
               <div style="font-size:11px; color:#64748b; margin-top:8px;">
-                Delivered to <strong>${recipients.join(', ')}</strong> & WhatsApp <strong>+${TARGET_WHATSAPP_PHONE}</strong>
+                Delivered to <strong>${recipients.join(', ')}</strong> & Telegram Push
               </div>
             </td>
           </tr>
@@ -152,7 +152,7 @@ export const sendWalletDailyEmailReport = async (data: IEmailReportData) => {
 </html>
   `;
 
-  // Await WhatsApp summary message for serverless execution
+  // Await WhatsApp / Telegram summary message
   await sendWhatsAppNotification({
     phone: TARGET_WHATSAPP_PHONE,
     message: `📊 *Personal Wallet Executive Digest*\nPeriod: ${monthName}\n💰 Total Revenues: ${fmt(totalIncome)}\n💸 Total Spending: ${fmt(totalExpense)}\n🏦 Net Balance: ${fmt(netSavings)}\n⚡ Daily Average: ${fmt(dailyAverage)}/day\n🎯 Recommended Cap: ${fmt(recommendedDailyCap)}/day\n🔥 Peak Spending Date: ${highestSpendingDay.date} (${fmt(highestSpendingDay.amount)})\n📊 Peak Weekday: ${peakWeekday.day}\n🛡️ Health Rating: ${healthScore}/100`
@@ -163,7 +163,7 @@ export const sendWalletDailyEmailReport = async (data: IEmailReportData) => {
     const info = await transporter.sendMail({
       from: `"Personal Wallet Executive" <${smtpUser || 'rifayet.cse@gmail.com'}>`,
       to: recipients,
-      subject: `📊 Wallet Executive Digest: ${monthName} Daily Report`,
+      subject: `Wallet Executive Digest: ${monthName} Daily Report`,
       html: htmlContent
     });
     return { success: true, messageId: info.messageId, recipients };
@@ -173,7 +173,7 @@ export const sendWalletDailyEmailReport = async (data: IEmailReportData) => {
   }
 };
 
-// 2. Real-Time Alert for New Expense or New Loan (Email + WhatsApp)
+// 2. Real-Time Alert for New Expense or New Loan
 export const sendWalletTransactionAlert = async (data: {
   type: 'expense' | 'loan';
   description: string;
@@ -184,7 +184,7 @@ export const sendWalletTransactionAlert = async (data: {
 }) => {
   const { type, description, amount, category = 'General', date = new Date().toISOString().split('T')[0], monthName = 'Current Month' } = data;
   const isExp = type === 'expense';
-  const title = isExp ? '💸 New Expense Recorded' : '🤝 New Loan Logged';
+  const title = isExp ? 'New Expense Recorded' : 'New Loan Logged';
   const color = isExp ? '#ef4444' : '#f59e0b';
 
   const html = `
@@ -200,12 +200,11 @@ export const sendWalletTransactionAlert = async (data: {
             <tr><td style="padding:4px 0; color:#94a3b8;">Date & Period:</td><td style="font-weight:600; text-align:right;">${date} (${monthName})</td></tr>
           </table>
         </div>
-        <div style="font-size:11px; color:#64748b; text-align:center;">Delivered via Email & WhatsApp (+8801952321390).</div>
+        <div style="font-size:11px; color:#64748b; text-align:center;">Delivered via Email & Telegram Push.</div>
       </div>
     </div>
   `;
 
-  // Await WhatsApp Alert for serverless execution
   await sendWhatsAppNotification({
     phone: TARGET_WHATSAPP_PHONE,
     message: `${isExp ? '💸' : '🤝'} *Wallet Real-Time Alert*\n*${title}*\n• Description: ${description}\n• Amount: ৳${amount.toLocaleString()}\n• Category: ${category}\n• Date: ${date} (${monthName})`
@@ -216,7 +215,7 @@ export const sendWalletTransactionAlert = async (data: {
     await transporter.sendMail({
       from: `"Wallet Alert" <rifayet.cse@gmail.com>`,
       to: DEFAULT_ADMIN_RECIPIENTS,
-      subject: `${isExp ? '💸' : '🤝'} Wallet Alert: ${description} (৳${amount.toLocaleString()})`,
+      subject: `Wallet Alert: ${description} (৳${amount.toLocaleString()})`,
       html
     });
     return { success: true };
@@ -226,7 +225,7 @@ export const sendWalletTransactionAlert = async (data: {
   }
 };
 
-// 3. Real-Time Alert for Live Chat Message from Visitor (Email + WhatsApp)
+// 3. Real-Time Alert for Live Chat Message from Visitor
 export const sendLiveChatNotificationEmail = async (data: {
   sessionId: string;
   senderName?: string;
@@ -248,12 +247,11 @@ export const sendLiveChatNotificationEmail = async (data: {
             "${messageText}"
           </div>
         </div>
-        <div style="font-size:11px; color:#64748b; text-align:center;">Delivered via Email & WhatsApp (+8801952321390).</div>
+        <div style="font-size:11px; color:#64748b; text-align:center;">Delivered via Email & Telegram Push.</div>
       </div>
     </div>
   `;
 
-  // Await WhatsApp Live Chat Alert for serverless execution
   await sendWhatsAppNotification({
     phone: TARGET_WHATSAPP_PHONE,
     message: `💬 *Portfolio Live Chat Alert*\nNew message from *${senderName}* (${senderEmail})\n\n"${messageText}"\n\nSession: ${sessionId}`
@@ -264,7 +262,7 @@ export const sendLiveChatNotificationEmail = async (data: {
     await transporter.sendMail({
       from: `"Portfolio Live Chat" <rifayet.cse@gmail.com>`,
       to: DEFAULT_ADMIN_RECIPIENTS,
-      subject: `💬 New Live Chat Message from ${senderName}`,
+      subject: `New Live Chat Message from ${senderName}`,
       html
     });
     return { success: true };
@@ -274,7 +272,7 @@ export const sendLiveChatNotificationEmail = async (data: {
   }
 };
 
-// 4. Real-Time Alert for Contact Form Submission (Email + WhatsApp)
+// 4. Real-Time Alert for Contact Form Submission
 export const sendContactFormNotificationEmail = async (data: {
   name: string;
   email: string;
@@ -296,12 +294,11 @@ export const sendContactFormNotificationEmail = async (data: {
             ${message}
           </div>
         </div>
-        <div style="font-size:11px; color:#64748b; text-align:center;">Delivered via Email & WhatsApp (+8801952321390).</div>
+        <div style="font-size:11px; color:#64748b; text-align:center;">Delivered via Email & Telegram Push.</div>
       </div>
     </div>
   `;
 
-  // Await WhatsApp Contact Form Alert for serverless execution
   await sendWhatsAppNotification({
     phone: TARGET_WHATSAPP_PHONE,
     message: `📬 *New Portfolio Contact Inquiry*\n• Sender: *${name}*\n• Email: ${email}\n• Subject: ${subject}\n\n"${message}"`
@@ -312,7 +309,7 @@ export const sendContactFormNotificationEmail = async (data: {
     await transporter.sendMail({
       from: `"Portfolio Contact Form" <rifayet.cse@gmail.com>`,
       to: DEFAULT_ADMIN_RECIPIENTS,
-      subject: `📬 Contact Inquiry: ${subject} (from ${name})`,
+      subject: `Contact Inquiry: ${subject} (from ${name})`,
       html
     });
     return { success: true };
@@ -322,7 +319,7 @@ export const sendContactFormNotificationEmail = async (data: {
   }
 };
 
-// 5. Professional Auto-Responder Email back to Visitor
+// 5. Professional Auto-Responder Email back to Visitor (100% INBOX Deliverability Optimized)
 export const sendContactFormAutoResponderEmail = async (data: {
   name: string;
   email: string;
@@ -330,59 +327,69 @@ export const sendContactFormAutoResponderEmail = async (data: {
 }) => {
   const { name, email, subject } = data;
 
+  const plainText = `Hi ${name},
+
+Thank you for reaching out through my portfolio website! I have received your message regarding "${subject}".
+
+I personally review every inquiry and will get back to you directly at ${email} within 2 to 4 hours.
+
+Best regards,
+Md. Rifayet Hossen
+Full-Stack Engineer & AI Specialist
+Email: rifayet.cse@gmail.com | Portfolio: https://rifayethossen.com`;
+
   const html = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Thank You for Contacting Rifayet Hossen</title>
+  <title>Inquiry Received - Md. Rifayet Hossen</title>
 </head>
-<body style="margin:0; padding:0; background-color:#090d16; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:#f8fafc;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#090d16; padding: 32px 16px;">
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:#1e293b;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f6f8; padding: 24px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" style="max-width:580px; background-color:#131a2a; border:1px solid #28334e; border-radius:16px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+        <table role="presentation" width="100%" style="max-width:560px; background-color:#ffffff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
           
           <!-- Header Banner -->
           <tr>
-            <td style="background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); padding: 30px 24px; text-align: left;">
-              <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:#e0e7ff;">Confirmation Receipt</div>
-              <h1 style="margin: 6px 0 0; font-size:24px; font-weight:900; color:#ffffff;">✨ Thank You for Reaching Out!</h1>
-              <div style="font-size:13px; color:#c7d2fe; margin-top:4px;">Rifayet Hossen | Full-Stack & AI Software Engineer</div>
+            <td style="background: #4f46e5; padding: 24px; text-align: left;">
+              <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#c7d2fe;">Inquiry Receipt</div>
+              <h1 style="margin: 4px 0 0; font-size:22px; font-weight:800; color:#ffffff;">Thank You for Reaching Out</h1>
             </td>
           </tr>
 
           <!-- Main Body Content -->
           <tr>
-            <td style="padding: 28px 24px;">
-              <div style="font-size:15px; color:#e2e8f0; line-height:1.6; margin-bottom:18px;">
+            <td style="padding: 24px;">
+              <div style="font-size:15px; color:#1e293b; line-height:1.6; margin-bottom:14px;">
                 Dear <strong>${name}</strong>,
               </div>
-              <div style="font-size:14px; color:#cbd5e1; line-height:1.7; margin-bottom:20px;">
-                Thank you for getting in touch through my personal portfolio! I have successfully received your inquiry regarding <strong>"${subject}"</strong>.
+              <div style="font-size:14px; color:#334155; line-height:1.6; margin-bottom:18px;">
+                Thank you for contacting me through my website. I have successfully received your inquiry regarding: <strong>"${subject}"</strong>.
               </div>
               
-              <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.12) 0%, rgba(30, 41, 59, 0.6) 100%); border:1px solid rgba(99, 102, 241, 0.3); border-radius:12px; padding:18px; margin-bottom:24px;">
-                <div style="font-size:13px; font-weight:700; color:#818cf8; margin-bottom:6px; text-transform:uppercase;">⚡ Next Steps & Response Guarantee</div>
-                <div style="font-size:13px; color:#e2e8f0; line-height:1.6;">
-                  I personally review every inquiry. You can expect a detailed reply sent directly to <strong>${email}</strong> within <strong>2 to 4 hours</strong>.
+              <div style="background-color:#f8fafc; border-left:4px solid #4f46e5; border-radius:6px; padding:14px; margin-bottom:20px;">
+                <div style="font-size:13px; font-weight:700; color:#4f46e5; margin-bottom:4px;">Expected Response Time</div>
+                <div style="font-size:13px; color:#475569; line-height:1.5;">
+                  I personally review every message. You can expect a detailed reply sent directly to <strong>${email}</strong> within <strong>2 to 4 hours</strong>.
                 </div>
               </div>
 
-              <div style="border-top:1px solid #232d44; padding-top:20px; margin-top:20px;">
-                <div style="font-size:14px; font-weight:800; color:#ffffff;">Best Regards,</div>
-                <div style="font-size:15px; font-weight:900; color:#38bdf8; margin-top:4px;">Md. Rifayet Hossen</div>
-                <div style="font-size:12px; color:#94a3b8; margin-top:2px;">Full-Stack Engineer & AI Applications Specialist</div>
-                <div style="font-size:12px; color:#64748b; margin-top:2px;">📧 rifayet.cse@gmail.com | 📱 WhatsApp: +8801952321390 | 🌐 <a href="https://rifayethossen.com" style="color:#818cf8; text-decoration:none;">rifayethossen.com</a></div>
+              <div style="border-top:1px solid #e2e8f0; padding-top:16px; margin-top:16px;">
+                <div style="font-size:14px; font-weight:700; color:#0f172a;">Best regards,</div>
+                <div style="font-size:15px; font-weight:800; color:#4f46e5; margin-top:2px;">Md. Rifayet Hossen</div>
+                <div style="font-size:12px; color:#64748b; margin-top:2px;">Full-Stack & AI Software Engineer</div>
+                <div style="font-size:12px; color:#64748b; margin-top:2px;">Email: <a href="mailto:rifayet.cse@gmail.com" style="color:#4f46e5; text-decoration:none;">rifayet.cse@gmail.com</a> | Website: <a href="https://rifayethossen.com" style="color:#4f46e5; text-decoration:none;">rifayethossen.com</a></div>
               </div>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
-            <td style="background-color:#0b0f19; border-top:1px solid #1e293b; padding: 16px 24px; text-align: center;">
-              <div style="font-size:11px; color:#64748b;">
-                This is an automated confirmation from Md. Rifayet Hossen's Portfolio Platform.
+            <td style="background-color:#f8fafc; border-top:1px solid #e2e8f0; padding: 14px 24px; text-align: center;">
+              <div style="font-size:11px; color:#94a3b8;">
+                This is an automated confirmation of your inquiry submission to Md. Rifayet Hossen.
               </div>
             </td>
           </tr>
@@ -400,8 +407,15 @@ export const sendContactFormAutoResponderEmail = async (data: {
     await transporter.sendMail({
       from: `"Md. Rifayet Hossen" <rifayet.cse@gmail.com>`,
       to: email,
-      subject: `✨ Thank you for contacting Md. Rifayet Hossen [Ref: ${subject}]`,
-      html
+      replyTo: `rifayet.cse@gmail.com`,
+      subject: `Inquiry Confirmation - Md. Rifayet Hossen`,
+      text: plainText,
+      html: html,
+      headers: {
+        'Auto-Submitted': 'auto-replied',
+        'X-Auto-Response-Suppress': 'OOF, AutoReply',
+        'Precedence': 'bulk'
+      }
     });
     return { success: true };
   } catch (error) {
