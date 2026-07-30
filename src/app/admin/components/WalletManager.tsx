@@ -6,7 +6,7 @@ import {
   HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check,
   Target, Zap, ArrowUpDown, ShieldAlert, Sparkles, Eye, EyeOff, CreditCard, ShieldCheck, PiggyBank, Flame,
   TrendingDown, Lock, Award, Tag, CopyCheck, Share2, Gauge, FilePlus, Sliders, Activity, Compass, Filter,
-  BarChart3, Coins, Globe, Building2, Laptop, DollarSign, Briefcase, ArrowRightLeft
+  BarChart3, Coins, Globe, Building2, Laptop, DollarSign, Briefcase, ArrowRightLeft, Save
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../admin.module.css';
@@ -4638,6 +4638,44 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                     <button
+                      onClick={() => fetchMonths()}
+                      style={{
+                        background: 'rgba(99, 102, 241, 0.15)',
+                        color: '#a5b4fc',
+                        border: '1px solid rgba(129, 140, 248, 0.3)',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.82rem'
+                      }}
+                    >
+                      <RefreshCw size={15} /> Sync & Reload DB
+                    </button>
+
+                    <button
+                      onClick={() => handleSaveDailyIntelSettings()}
+                      style={{
+                        background: 'rgba(16, 185, 129, 0.15)',
+                        color: '#34d399',
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.82rem'
+                      }}
+                    >
+                      <Save size={15} /> Save Settings to DB
+                    </button>
+
+                    <button
                       onClick={handleSendTelegramPacePush}
                       disabled={sendingTelegramPush}
                       style={{
@@ -4750,7 +4788,241 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 })()}
               </div>
 
-              {/* ⚡ NEW FEATURE 1: Interactive Daily Budget Simulator & End-of-Month Projection Engine */}
+              {/* 📈 SECTION 1: Dynamic Interactive Day-by-Day Expenditure Bar Chart (1st to 31st) */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 41, 59, 0.4) 100%)', border: '1px solid rgba(99, 102, 241, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BarChart3 size={20} style={{ color: '#818cf8' }} /> Day-by-Day Daily Expenditure Timeline (তারিখ অনুযায়ী খরচ)
+                  </h3>
+                  <span style={{ fontSize: '0.75rem', color: '#a5b4fc', background: 'rgba(129, 140, 248, 0.15)', padding: '3px 8px', borderRadius: '6px', fontWeight: 700 }}>
+                    1st to 31st Live Ledger Breakdown
+                  </span>
+                </div>
+
+                {(() => {
+                  const now = new Date();
+                  const currentMonthData = activeMonth || months[0];
+                  const daysInMonth = currentMonthData ? new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() : 31;
+                  
+                  const dailyTotals: { [day: number]: { total: number; items: string[] } } = {};
+                  for (let d = 1; d <= daysInMonth; d++) {
+                    dailyTotals[d] = { total: 0, items: [] };
+                  }
+
+                  if (currentMonthData && currentMonthData.expenses) {
+                    currentMonthData.expenses.forEach(e => {
+                      if (e.date) {
+                        const d = new Date(e.date).getDate();
+                        if (dailyTotals[d]) {
+                          dailyTotals[d].total += e.amount;
+                          dailyTotals[d].items.push(`${e.description} (${fmtVal(e.amount)})`);
+                        }
+                      }
+                    });
+                  }
+
+                  const maxDailySpend = Math.max(1, ...Object.values(dailyTotals).map(v => v.total));
+
+                  return (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '140px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', overflowX: 'auto' }}>
+                        {Object.entries(dailyTotals).map(([dayNum, data]) => {
+                          const heightPct = (data.total / maxDailySpend) * 100;
+                          const isZero = data.total === 0;
+                          const barBg = isZero 
+                            ? 'rgba(251, 191, 36, 0.3)' 
+                            : data.total > 2000 
+                              ? 'linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)' 
+                              : 'linear-gradient(180deg, #6366f1 0%, #3b82f6 100%)';
+
+                          return (
+                            <div 
+                              key={dayNum} 
+                              title={`Day ${dayNum}: ${fmtVal(data.total)}${data.items.length ? '\n' + data.items.join('\n') : '\nNo Spend Day'}`}
+                              style={{ flex: 1, minWidth: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', cursor: 'pointer' }}
+                            >
+                              <div 
+                                style={{ 
+                                  width: '100%', 
+                                  height: `${Math.max(isZero ? 6 : 10, heightPct)}%`, 
+                                  background: barBg, 
+                                  borderRadius: '4px 4px 0 0',
+                                  transition: 'all 0.3s ease' 
+                                }} 
+                              />
+                              <span style={{ fontSize: '0.62rem', color: isZero ? '#fbbf24' : 'var(--text-secondary)', marginTop: '4px', fontWeight: isZero ? 800 : 400 }}>
+                                {dayNum}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        <div style={{ display: 'flex', gap: '14px' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ width: '10px', height: '10px', background: '#6366f1', borderRadius: '2px' }} /> Normal Spend
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ width: '10px', height: '10px', background: '#ef4444', borderRadius: '2px' }} /> Peak Day (&gt; ৳2,000)
+                          </span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ width: '10px', height: '10px', background: '#fbbf24', borderRadius: '2px' }} /> No-Spend Day
+                          </span>
+                        </div>
+                        <span>Hover bars to see exact date items</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* 🔮 SECTION 2: AI Expense Anomaly & Impulse Purchase Radar */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldAlert size={20} style={{ color: '#ef4444' }} /> AI Impulse Purchase & Expense Anomaly Radar
+                  </h3>
+                  <span style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '3px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 800 }}>
+                    HIGH-SPIKE SPIRE RADAR
+                  </span>
+                </div>
+
+                {(() => {
+                  const currentMonthData = activeMonth || months[0];
+                  const expenses = currentMonthData?.expenses || [];
+                  if (expenses.length === 0) {
+                    return <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No expense records available for anomaly detection.</div>;
+                  }
+
+                  const avgExp = getExpenseTotal(currentMonthData) / Math.max(1, expenses.length);
+                  const spikes = expenses.filter(e => e.amount >= 600 || e.amount > avgExp * 2.5);
+                  const spikeTotal = spikes.reduce((acc, s) => acc + s.amount, 0);
+                  const disciplineScore = Math.max(50, 100 - spikes.length * 8);
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Financial Discipline Score</span>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: disciplineScore >= 80 ? '#34d399' : '#fbbf24', marginTop: '4px' }}>
+                            {disciplineScore}/100 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>{disciplineScore >= 80 ? '🌟 High Control' : '⚡ Moderate Control'}</span>
+                          </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 700 }}>High-Spike Outlay Total</span>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#ef4444', marginTop: '4px' }}>
+                            {fmtVal(spikeTotal)}
+                          </div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{spikes.length} High-value transactions flagged</span>
+                        </div>
+                      </div>
+
+                      {/* Flagged Spikes Breakdown */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e2e8f0' }}>Flagged Expense Outliers:</span>
+                        {spikes.slice(0, 4).map(s => (
+                          <div key={s._id || s.description} style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff' }}>{s.description}</span>
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                Category: {s.category} | Date: {s.date ? new Date(s.date).toISOString().split('T')[0] : 'N/A'}
+                              </div>
+                            </div>
+                            <span style={{ fontSize: '1rem', fontWeight: 900, color: '#f87171' }}>{fmtVal(s.amount)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* 📅 SECTION 3: Dynamic 31-Day Heat-Calendar Matrix */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Calendar size={20} style={{ color: '#34d399' }} /> 31-Day Expense Heat-Calendar Matrix
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    MONTHLY INTENSITY MAP
+                  </span>
+                </div>
+
+                {(() => {
+                  const now = new Date();
+                  const currentMonthData = activeMonth || months[0];
+                  const daysInMonth = currentMonthData ? new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() : 31;
+                  
+                  const dailyMap: { [day: number]: number } = {};
+                  if (currentMonthData && currentMonthData.expenses) {
+                    currentMonthData.expenses.forEach(e => {
+                      if (e.date) {
+                        const d = new Date(e.date).getDate();
+                        dailyMap[d] = (dailyMap[d] || 0) + e.amount;
+                      }
+                    });
+                  }
+
+                  const gridCells = [];
+                  for (let d = 1; d <= daysInMonth; d++) {
+                    const amt = dailyMap[d] || 0;
+                    let bg = 'rgba(16, 185, 129, 0.25)';
+                    let borderColor = 'rgba(16, 185, 129, 0.4)';
+                    let labelColor = '#34d399';
+
+                    if (amt === 0) {
+                      bg = 'rgba(16, 185, 129, 0.15)';
+                      borderColor = 'rgba(16, 185, 129, 0.3)';
+                      labelColor = '#6ee7b7';
+                    } else if (amt > 2000) {
+                      bg = 'rgba(239, 68, 68, 0.25)';
+                      borderColor = 'rgba(239, 68, 68, 0.5)';
+                      labelColor = '#fca5a5';
+                    } else if (amt > 1000) {
+                      bg = 'rgba(245, 158, 11, 0.2)';
+                      borderColor = 'rgba(245, 158, 11, 0.4)';
+                      labelColor = '#fbbf24';
+                    } else {
+                      bg = 'rgba(99, 102, 241, 0.2)';
+                      borderColor = 'rgba(99, 102, 241, 0.4)';
+                      labelColor = '#a5b4fc';
+                    }
+
+                    gridCells.push(
+                      <div 
+                        key={d} 
+                        title={`Date: ${d} | Spent: ${fmtVal(amt)}`}
+                        style={{ 
+                          background: bg, 
+                          border: `1px solid ${borderColor}`, 
+                          borderRadius: '8px', 
+                          padding: '10px 4px', 
+                          textAlign: 'center',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: labelColor }}>Day {d}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>
+                          {amt === 0 ? '৳0 🌟' : fmtVal(amt)}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(75px, 1fr))', gap: '8px' }}>
+                      {gridCells}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* 🎛️ SECTION 4: Interactive Daily Budget Simulator & End-of-Month Projection Engine */}
               {(() => {
                 const now = new Date();
                 const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -4774,9 +5046,12 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Sliders size={20} style={{ color: '#00e5ff' }} /> Interactive Daily Budget Simulator & Projection Engine
                       </h3>
-                      <span style={{ background: 'rgba(0, 229, 255, 0.12)', color: '#00e5ff', border: '1px solid rgba(0, 229, 255, 0.25)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 800 }}>
-                        REAL-TIME SIMULATION
-                      </span>
+                      <button
+                        onClick={() => handleSaveDailyIntelSettings(targetDailyCap)}
+                        style={{ background: 'rgba(0, 229, 255, 0.15)', color: '#00e5ff', border: '1px solid rgba(0, 229, 255, 0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        <Save size={14} /> Save Daily Cap to Database
+                      </button>
                     </div>
 
                     <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 16px' }}>
@@ -4796,7 +5071,10 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         max={5000}
                         step={100}
                         value={targetDailyCap}
-                        onChange={(e) => setTargetDailyCap(Number(e.target.value))}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setTargetDailyCap(val);
+                        }}
                         style={{ width: '100%', height: '8px', borderRadius: '4px', cursor: 'pointer', accentColor: '#00e5ff', marginBottom: '14px' }}
                       />
 
@@ -4809,7 +5087,10 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         ].map((preset) => (
                           <button
                             key={preset.val}
-                            onClick={() => setTargetDailyCap(preset.val)}
+                            onClick={() => {
+                              setTargetDailyCap(preset.val);
+                              handleSaveDailyIntelSettings(preset.val);
+                            }}
                             style={{
                               background: targetDailyCap === preset.val ? 'rgba(0, 229, 255, 0.2)' : 'rgba(255,255,255,0.04)',
                               color: targetDailyCap === preset.val ? '#00e5ff' : 'var(--text-secondary)',
@@ -4857,7 +5138,117 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 );
               })()}
 
-              {/* Peak Spending Days & Weekday Heatmap */}
+              {/* 🧠 SECTION 5: AI Category Daily Pace Breakdown & Advisory Matrix */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Sparkles size={20} style={{ color: '#f59e0b' }} /> AI Category Daily Pace Breakdown & Advisory
+                  </h3>
+                  <button
+                    onClick={() => handleSaveDailyIntelSettings()}
+                    style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Save size={14} /> Sync Budgets to Database
+                  </button>
+                </div>
+
+                {(() => {
+                  const now = new Date();
+                  const daysElapsed = Math.max(1, now.getDate());
+                  const currentMonthData = activeMonth || months[0];
+                  
+                  if (!currentMonthData || !currentMonthData.expenses || currentMonthData.expenses.length === 0) {
+                    return <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No expense data logged for category pace analysis.</div>;
+                  }
+
+                  const catTotals: { [cat: string]: number } = {};
+                  let totalExp = 0;
+                  currentMonthData.expenses.forEach(e => {
+                    const cat = e.category || 'Other';
+                    catTotals[cat] = (catTotals[cat] || 0) + e.amount;
+                    totalExp += e.amount;
+                  });
+
+                  const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+                  const topCategory = sortedCats[0];
+                  const topCatPct = totalExp > 0 && topCategory ? (topCategory[1] / totalExp) * 100 : 0;
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                        {sortedCats.map(([cat, amt]) => {
+                          const dailyCategoryPace = amt / daysElapsed;
+                          const budgetCap = categoryBudgets[cat] || 5000;
+                          const isOver = amt > budgetCap;
+
+                          return (
+                            <div key={cat} style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '12px', borderRadius: '10px', border: isOver ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(255,255,255,0.06)' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff' }}>{cat}</span>
+                                {isOver && <span style={{ fontSize: '0.65rem', background: 'rgba(239,68,68,0.2)', color: '#fca5a5', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>EXCEEDED</span>}
+                              </div>
+                              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: isOver ? '#ef4444' : '#fbbf24' }}>
+                                {fmtVal(dailyCategoryPace)} <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>/ day</span>
+                              </div>
+                              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Total: {fmtVal(amt)} (Cap: {fmtVal(budgetCap)})</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Smart Advisory Banner */}
+                      <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderLeft: '4px solid #f59e0b', padding: '14px 16px', borderRadius: '8px', fontSize: '0.82rem', color: '#e2e8f0', lineHeight: 1.6 }}>
+                        💡 <strong>Smart Advisory:</strong> {topCategory ? `${topCategory[0]} খরচে আপনার বাজেটের ${topCatPct.toFixed(0)}% খরচ হয়েছে। দৈনিক খরচের হার নিয়ন্ত্রণ করলে মাসে অতিরিক্ত সেভিংস নিশ্চিত থাকবে।` : 'দৈনিক বাজেটের সীমার মধ্যে খরচ বজায় রাখুন।'}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* 🛡️ SECTION 6: AI Living Runway & Emergency Financial Readiness Meter */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(192, 132, 252, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Activity size={20} style={{ color: '#c084fc' }} /> AI Living Runway & Emergency Buffer Meter
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', background: 'rgba(192, 132, 252, 0.15)', color: '#c084fc', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    LIVING RUNWAY AUDIT
+                  </span>
+                </div>
+
+                {(() => {
+                  const currentMonthData = activeMonth || months[0];
+                  const expenses = currentMonthData?.expenses || [];
+                  const coreOverhead = expenses.filter(e => e.category === 'Rent' || e.category === 'Food' || e.category === 'Utility').reduce((acc, e) => acc + e.amount, 0) || 12000;
+                  const totalNetSavings = months.reduce((acc, m) => acc + (getIncomeTotal(m) - getExpenseTotal(m)), 0);
+                  const totalAssetsVal = assets.reduce((acc, a) => acc + a.value, 0);
+                  const totalLiquidBuffer = Math.max(0, totalNetSavings + totalAssetsVal);
+                  const runwayMonths = coreOverhead > 0 ? totalLiquidBuffer / coreOverhead : 0;
+                  const isHealthyBuffer = runwayMonths >= 3;
+
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Core Essential Monthly Overhead</span>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#a5b4fc', marginTop: '4px' }}>
+                          {fmtVal(coreOverhead)} <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>/ month</span>
+                        </div>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Rent + Food + Utility essential baseline</span>
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(192, 132, 252, 0.3)' }}>
+                        <span style={{ fontSize: '0.7rem', color: '#c084fc', textTransform: 'uppercase', fontWeight: 700 }}>Living Emergency Runway</span>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: isHealthyBuffer ? '#34d399' : '#fbbf24', marginTop: '4px' }}>
+                          {runwayMonths.toFixed(1)} Months <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e9d5ff' }}>Buffer 🛡️</span>
+                        </div>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{isHealthyBuffer ? 'Sufficient liquid runway buffer' : 'Consider building emergency reserves'}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* 🔥 SECTION 7: Peak Spending Days & Weekday Heatmap */}
               <div className={styles.toolsGrid}>
                 
                 {/* Top Highest Spending Days */}
@@ -4957,254 +5348,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
               </div>
 
-              {/* ⚡ NEW FEATURE 2: AI Category Daily Pace & Anomaly Advisory */}
-              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
-                <h3 style={{ margin: '0 0 14px', fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Sparkles size={20} style={{ color: '#f59e0b' }} /> AI Category Daily Pace Breakdown & Advisory
-                </h3>
-
-                {(() => {
-                  const now = new Date();
-                  const daysElapsed = Math.max(1, now.getDate());
-                  const currentMonthData = activeMonth || months[0];
-                  
-                  if (!currentMonthData || !currentMonthData.expenses || currentMonthData.expenses.length === 0) {
-                    return <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No expense data logged for category pace analysis.</div>;
-                  }
-
-                  const catTotals: { [cat: string]: number } = {};
-                  let totalExp = 0;
-                  currentMonthData.expenses.forEach(e => {
-                    const cat = e.category || 'Other';
-                    catTotals[cat] = (catTotals[cat] || 0) + e.amount;
-                    totalExp += e.amount;
-                  });
-
-                  const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-                  const topCategory = sortedCats[0];
-                  const topCatPct = totalExp > 0 && topCategory ? (topCategory[1] / totalExp) * 100 : 0;
-
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
-                        {sortedCats.map(([cat, amt]) => {
-                          const dailyCategoryPace = amt / daysElapsed;
-                          const budgetCap = categoryBudgets[cat] || 5000;
-                          const isOver = amt > budgetCap;
-
-                          return (
-                            <div key={cat} style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '12px', borderRadius: '10px', border: isOver ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(255,255,255,0.06)' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff' }}>{cat}</span>
-                                {isOver && <span style={{ fontSize: '0.65rem', background: 'rgba(239,68,68,0.2)', color: '#fca5a5', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>EXCEEDED</span>}
-                              </div>
-                              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: isOver ? '#ef4444' : '#fbbf24' }}>
-                                {fmtVal(dailyCategoryPace)} <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>/ day</span>
-                              </div>
-                              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Total: {fmtVal(amt)} (Cap: {fmtVal(budgetCap)})</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Smart Advisory Banner */}
-                      <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderLeft: '4px solid #f59e0b', padding: '14px 16px', borderRadius: '8px', fontSize: '0.82rem', color: '#e2e8f0', lineHeight: 1.6 }}>
-                        💡 <strong>Smart Advisory:</strong> {topCategory ? `${topCategory[0]} খরচে আপনার বাজেটের ${topCatPct.toFixed(0)}% খরচ হয়েছে। দৈনিক খরচের হার নিয়ন্ত্রণ করলে মাসে অতিরিক্ত সেভিংস নিশ্চিত থাকবে।` : 'দৈনিক বাজেটের সীমার মধ্যে খরচ বজায় রাখুন।'}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* ⚡ NEW SECTION 1: AI Expense Anomaly & Impulse Purchase Radar */}
-              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <ShieldAlert size={20} style={{ color: '#ef4444' }} /> AI Impulse Purchase & Expense Anomaly Radar
-                  </h3>
-                  <span style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '3px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 800 }}>
-                    HIGH-SPIKE SPIRE RADAR
-                  </span>
-                </div>
-
-                {(() => {
-                  const currentMonthData = activeMonth || months[0];
-                  const expenses = currentMonthData?.expenses || [];
-                  if (expenses.length === 0) {
-                    return <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No expense records available for anomaly detection.</div>;
-                  }
-
-                  const avgExp = getExpenseTotal(currentMonthData) / Math.max(1, expenses.length);
-                  const spikes = expenses.filter(e => e.amount >= 600 || e.amount > avgExp * 2.5);
-                  const spikeTotal = spikes.reduce((acc, s) => acc + s.amount, 0);
-                  const disciplineScore = Math.max(50, 100 - spikes.length * 8);
-
-                  return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Financial Discipline Score</span>
-                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: disciplineScore >= 80 ? '#34d399' : '#fbbf24', marginTop: '4px' }}>
-                            {disciplineScore}/100 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>{disciplineScore >= 80 ? '🌟 High Control' : '⚡ Moderate Control'}</span>
-                          </div>
-                        </div>
-
-                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
-                          <span style={{ fontSize: '0.7rem', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 700 }}>High-Spike Outlay Total</span>
-                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#ef4444', marginTop: '4px' }}>
-                            {fmtVal(spikeTotal)}
-                          </div>
-                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{spikes.length} High-value transactions flagged</span>
-                        </div>
-                      </div>
-
-                      {/* Flagged Spikes Breakdown */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e2e8f0' }}>Flagged Expense Outliers:</span>
-                        {spikes.slice(0, 4).map(s => (
-                          <div key={s._id || s.description} style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#fff' }}>{s.description}</span>
-                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                                Category: {s.category} | Date: {s.date ? new Date(s.date).toISOString().split('T')[0] : 'N/A'}
-                              </div>
-                            </div>
-                            <span style={{ fontSize: '1rem', fontWeight: 900, color: '#f87171' }}>{fmtVal(s.amount)}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* ⚡ NEW SECTION 2: Dynamic 31-Day Heat-Calendar Matrix */}
-              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Calendar size={20} style={{ color: '#34d399' }} /> 31-Day Expense Heat-Calendar Matrix
-                  </h3>
-                  <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
-                    MONTHLY INTENSITY MAP
-                  </span>
-                </div>
-
-                {(() => {
-                  const now = new Date();
-                  const currentMonthData = activeMonth || months[0];
-                  const daysInMonth = currentMonthData ? new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() : 31;
-                  
-                  const dailyMap: { [day: number]: number } = {};
-                  if (currentMonthData && currentMonthData.expenses) {
-                    currentMonthData.expenses.forEach(e => {
-                      if (e.date) {
-                        const d = new Date(e.date).getDate();
-                        dailyMap[d] = (dailyMap[d] || 0) + e.amount;
-                      }
-                    });
-                  }
-
-                  const gridCells = [];
-                  for (let d = 1; d <= daysInMonth; d++) {
-                    const amt = dailyMap[d] || 0;
-                    let bg = 'rgba(16, 185, 129, 0.25)';
-                    let borderColor = 'rgba(16, 185, 129, 0.4)';
-                    let labelColor = '#34d399';
-
-                    if (amt === 0) {
-                      bg = 'rgba(16, 185, 129, 0.15)';
-                      borderColor = 'rgba(16, 185, 129, 0.3)';
-                      labelColor = '#6ee7b7';
-                    } else if (amt > 2000) {
-                      bg = 'rgba(239, 68, 68, 0.25)';
-                      borderColor = 'rgba(239, 68, 68, 0.5)';
-                      labelColor = '#fca5a5';
-                    } else if (amt > 1000) {
-                      bg = 'rgba(245, 158, 11, 0.2)';
-                      borderColor = 'rgba(245, 158, 11, 0.4)';
-                      labelColor = '#fbbf24';
-                    } else {
-                      bg = 'rgba(99, 102, 241, 0.2)';
-                      borderColor = 'rgba(99, 102, 241, 0.4)';
-                      labelColor = '#a5b4fc';
-                    }
-
-                    gridCells.push(
-                      <div 
-                        key={d} 
-                        title={`Date: ${d} | Spent: ${fmtVal(amt)}`}
-                        style={{ 
-                          background: bg, 
-                          border: `1px solid ${borderColor}`, 
-                          borderRadius: '8px', 
-                          padding: '10px 4px', 
-                          textAlign: 'center',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: labelColor }}>Day {d}</span>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>
-                          {amt === 0 ? '৳0 🌟' : fmtVal(amt)}
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(75px, 1fr))', gap: '8px' }}>
-                      {gridCells}
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* ⚡ NEW SECTION 3: AI Living Runway & Emergency Financial Readiness Meter */}
-              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(192, 132, 252, 0.25)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Activity size={20} style={{ color: '#c084fc' }} /> AI Living Runway & Emergency Buffer Meter
-                  </h3>
-                  <span style={{ fontSize: '0.72rem', background: 'rgba(192, 132, 252, 0.15)', color: '#c084fc', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
-                    LIVING RUNWAY AUDIT
-                  </span>
-                </div>
-
-                {(() => {
-                  const currentMonthData = activeMonth || months[0];
-                  const expenses = currentMonthData?.expenses || [];
-                  const coreOverhead = expenses.filter(e => e.category === 'Rent' || e.category === 'Food' || e.category === 'Utility').reduce((acc, e) => acc + e.amount, 0) || 12000;
-                  const totalNetSavings = months.reduce((acc, m) => acc + (getIncomeTotal(m) - getExpenseTotal(m)), 0);
-                  const totalAssetsVal = assets.reduce((acc, a) => acc + a.value, 0);
-                  const totalLiquidBuffer = Math.max(0, totalNetSavings + totalAssetsVal);
-                  const runwayMonths = coreOverhead > 0 ? totalLiquidBuffer / coreOverhead : 0;
-                  const isHealthyBuffer = runwayMonths >= 3;
-
-                  return (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
-                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Core Essential Monthly Overhead</span>
-                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#a5b4fc', marginTop: '4px' }}>
-                          {fmtVal(coreOverhead)} <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>/ month</span>
-                        </div>
-                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Rent + Food + Utility essential baseline</span>
-                      </div>
-
-                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(192, 132, 252, 0.3)' }}>
-                        <span style={{ fontSize: '0.7rem', color: '#c084fc', textTransform: 'uppercase', fontWeight: 700 }}>Living Emergency Runway</span>
-                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: isHealthyBuffer ? '#34d399' : '#fbbf24', marginTop: '4px' }}>
-                          {runwayMonths.toFixed(1)} Months <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#e9d5ff' }}>Buffer 🛡️</span>
-                        </div>
-                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{isHealthyBuffer ? 'Sufficient liquid runway buffer' : 'Consider building emergency reserves'}</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-
-              {/* Scheduled Daily 8:00 PM Email Report Card */}
+              {/* SECTION 8: Scheduled Daily 8:00 PM Email Report Card */}
               <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
