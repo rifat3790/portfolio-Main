@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/auth';
 import { checkAndNotifyNewIssues } from '@/lib/issueNotifier';
 
 function parseCSVLine(line: string): string[] {
@@ -29,10 +28,6 @@ function parseCSVLine(line: string): string[] {
 
 export async function GET(req: NextRequest) {
   try {
-    if (!isAuthenticated(req)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/1ic9UMVX0FFsAyz0TZ-_lGKj_D9NornoGhq38KTRtM54/export?format=csv&gid=1412843338';
     
     const response = await fetch(sheetUrl, {
@@ -47,7 +42,7 @@ export async function GET(req: NextRequest) {
     const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
     
     if (lines.length === 0) {
-      return NextResponse.json({ records: [] });
+      return NextResponse.json({ success: true, newCount: 0 });
     }
 
     const parsedRows = lines.map(line => parseCSVLine(line));
@@ -88,14 +83,11 @@ export async function GET(req: NextRequest) {
       );
     });
 
-    // Check for new issue entries and trigger bot notifications
-    checkAndNotifyNewIssues(records).catch(err => {
-      console.error('Background issue notification check error:', err);
-    });
+    const result = await checkAndNotifyNewIssues(records);
 
-    return NextResponse.json({ records });
+    return NextResponse.json({ success: true, newCount: result.newCount });
   } catch (error) {
-    console.error('Error fetching/parsing project issues data:', error);
+    console.error('Error in cron check-issues:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
