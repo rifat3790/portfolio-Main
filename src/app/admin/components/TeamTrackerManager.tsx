@@ -8,13 +8,14 @@ import styles from '../admin.module.css';
 
 export default function TeamTrackerManager({ showToast }: { showToast: (msg: string, type?: 'success' | 'error' | 'info') => void }) {
   const [records, setRecords] = useState<any[]>([]);
+  const [issueRecords, setIssueRecords] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
   // Main Tab selection: 'orders_tracker' | 'project_issues' | 'workload_metrics'
   const [mainTab, setMainTab] = useState<'orders_tracker' | 'project_issues' | 'workload_metrics'>('orders_tracker');
   
-  // Secondary toggle filter for NRA, Delivery, Cancel status tabs
+  // Secondary toggle filter for NRA, Delivery, Cancel status tabs (for Orders Tracker)
   const [trackerFilter, setTrackerFilter] = useState<'all' | 'nra' | 'delivery' | 'cancel'>('all');
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,7 +30,7 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
   // Active open dropdown panel name
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  // Custom visible columns
+  // Custom visible columns for Orders Tracker
   const [visibleColumns, setVisibleColumns] = useState<string[]>([
     'Profile Name', 'Amount', 'Client name', 'Order ID', 'Assign Team', 'Status', 'Value', 'Deadline'
   ]);
@@ -50,14 +51,23 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/admin/team-data');
-      if (res.ok) {
-        const data = await res.json();
+      const [teamRes, issueRes] = await Promise.all([
+        fetch('/api/admin/team-data'),
+        fetch('/api/admin/project-issues')
+      ]);
+
+      if (teamRes.ok) {
+        const data = await teamRes.json();
         setRecords(data.records || []);
       } else {
-        const errData = await res.json();
+        const errData = await teamRes.json();
         setError(errData.error || 'Failed to fetch team data');
         showToast(errData.error || 'Failed to load team data', 'error');
+      }
+
+      if (issueRes.ok) {
+        const issueData = await issueRes.json();
+        setIssueRecords(issueData.records || []);
       }
     } catch (err) {
       console.error(err);
@@ -117,7 +127,6 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
     const names: string[] = [];
     
     tokens.forEach(token => {
-      // If token is all uppercase and 2-4 chars, assume it's a team code (like CC, CW, CM, CS, AA, WC, etc.)
       if (token === token.toUpperCase() && token.length >= 2 && token.length <= 4) {
         teams.push(token);
       } else {
@@ -127,20 +136,41 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
     return { teams, names };
   };
 
+  // Current active dataset depending on mainTab
+  const currentDataset = useMemo(() => {
+    return mainTab === 'project_issues' ? issueRecords : records;
+  }, [mainTab, issueRecords, records]);
+
   // Dynamic filter values parsed from raw data records
   const uniqueServiceLines = useMemo(() => {
+    if (mainTab === 'project_issues') {
+      return Array.from(new Set(issueRecords.map(r => r['Team']).filter(Boolean))).sort();
+    }
     return Array.from(new Set(records.map(r => r['Service Line']).filter(Boolean))).sort();
-  }, [records]);
+  }, [mainTab, issueRecords, records]);
 
   const uniqueStatuses = useMemo(() => {
-    return Array.from(new Set(records.map(r => r['Status']).filter(Boolean))).sort();
-  }, [records]);
+    return Array.from(new Set(currentDataset.map(r => r['Status']).filter(Boolean))).sort();
+  }, [currentDataset]);
 
-  // Compute active team hierarchy (Teams -> Member Names) based on selected Service Line
+  // Compute active team hierarchy (Teams -> Member Names)
   const teamHierarchy = useMemo(() => {
+    if (mainTab === 'project_issues') {
+      const map: Record<string, Set<string>> = {};
+      issueRecords.forEach(r => {
+        const team = r['Team'] || 'Shopify Team';
+        if (!map[team]) map[team] = new Set();
+        if (r['Profile Name']) map[team].add(r['Profile Name']);
+        if (r['Note for Operation']) map[team].add(r['Note for Operation']);
+      });
+      return Object.entries(map).map(([teamCode, namesSet]) => ({
+        teamCode,
+        names: Array.from(namesSet).sort()
+      })).sort((a, b) => a.teamCode.localeCompare(b.teamCode));
+    }
+
     const map: Record<string, Set<string>> = {};
     records.forEach(r => {
-      // Filter by selected service lines if checked
       if (selectedServiceLines.length > 0 && !selectedServiceLines.includes(r['Service Line'])) {
         return;
       }
@@ -149,7 +179,6 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
         if (!map[t]) map[t] = new Set();
         names.forEach(n => map[t].add(n));
       });
-      // Fallback for assignments without team codes
       if (teams.length === 0 && names.length > 0) {
         if (!map['UNASSIGNED']) map['UNASSIGNED'] = new Set();
         names.forEach(n => map['UNASSIGNED'].add(n));
@@ -160,9 +189,9 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
       teamCode,
       names: Array.from(namesSet).sort()
     })).sort((a, b) => a.teamCode.localeCompare(b.teamCode));
-  }, [records, selectedServiceLines]);
+  }, [mainTab, issueRecords, records, selectedServiceLines]);
 
-  // Flat list of unique names corresponding to selected service line
+  // Flat list of unique names corresponding to active hierarchy
   const uniqueNames = useMemo(() => {
     const set = new Set<string>();
     teamHierarchy.forEach(t => t.names.forEach(n => set.add(n)));
@@ -171,20 +200,43 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
 
   // Filtering records logic
   const filteredRecords = useMemo(() => {
-    let list = records;
-
-    // Filter by Main tab rules
     if (mainTab === 'project_issues') {
-      // Filter by orders with issues/hold/cancellation remarks
-      list = list.filter(r => 
-        r['Status']?.toUpperCase() === 'CANCELLED' || 
-        r['Remarks']?.toLowerCase()?.includes('hold') || 
-        r['Remarks']?.toLowerCase()?.includes('cancel') ||
-        r['Remarks']?.toLowerCase()?.includes('issue')
-      );
+      let list = issueRecords;
+
+      if (selectedServiceLines.length > 0) {
+        list = list.filter(r => selectedServiceLines.includes(r['Team']));
+      }
+      if (selectedStatuses.length > 0) {
+        list = list.filter(r => selectedStatuses.includes(r['Status']));
+      }
+      if (selectedTeams.length > 0) {
+        list = list.filter(r => selectedTeams.includes(r['Team']));
+      }
+      if (selectedNames.length > 0) {
+        list = list.filter(r => 
+          selectedNames.includes(r['Profile Name']) || 
+          selectedNames.includes(r['Note for Operation'])
+        );
+      }
+      if (searchQuery.trim() !== '') {
+        const q = searchQuery.toLowerCase();
+        list = list.filter(r => 
+          r['Date']?.toLowerCase()?.includes(q) ||
+          r['Profile Name']?.toLowerCase()?.includes(q) ||
+          r["Client's Name"]?.toLowerCase()?.includes(q) ||
+          r['Conversation Page URL']?.toLowerCase()?.includes(q) ||
+          r['Team']?.toLowerCase()?.includes(q) ||
+          r['Special Notes']?.toLowerCase()?.includes(q) ||
+          r['Status']?.toLowerCase()?.includes(q) ||
+          r['Note for Operation']?.toLowerCase()?.includes(q)
+        );
+      }
+      return list;
     }
 
-    // Filter by secondary toggle (NRA, Delivery, Cancel status tabs)
+    let list = records;
+
+    // Filter by secondary toggle (NRA, Delivery, Cancel status tabs) inside Orders Tracker
     if (mainTab === 'orders_tracker') {
       if (trackerFilter === 'nra') {
         list = list.filter(r => 
@@ -257,9 +309,9 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
     }
 
     return list;
-  }, [records, mainTab, trackerFilter, selectedServiceLines, selectedStatuses, selectedTeams, selectedNames, searchQuery, deliDateSort]);
+  }, [records, issueRecords, mainTab, trackerFilter, selectedServiceLines, selectedStatuses, selectedTeams, selectedNames, searchQuery, deliDateSort]);
 
-  // Overall database count statistics
+  // Statistics
   const totalFiltered = filteredRecords.length;
   const activeWip = records.filter(r => r.Status?.toUpperCase() === 'WIP').length;
   const totalWipValue = records
@@ -312,17 +364,56 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
   };
 
   const printTeamPDF = (title: string, list: any[]) => {
-    const rowsHtml = list.map(r =>
-      '<tr style="border-bottom: 1px solid #e2e8f0;">' +
-        '<td style="padding: 8px;">' + (r['Order ID'] || '') + '</td>' +
-        '<td style="padding: 8px;">' + (r['Profile Name'] || '') + '</td>' +
-        '<td style="padding: 8px;">' + (r['Client name'] || '') + '</td>' +
-        '<td style="padding: 8px;">' + (r['Assign Team'] || '') + '</td>' +
-        '<td style="padding: 8px;">' + (r['Service Line'] || '') + '</td>' +
-        '<td style="padding: 8px; text-align: right; font-weight: 600;">' + (r['Value'] || r['Amount'] || '') + '</td>' +
-        '<td style="padding: 8px; text-align: center;">' + (r['Status'] || '') + '</td>' +
+    const isIssues = mainTab === 'project_issues';
+
+    const rowsHtml = list.map(r => {
+      if (isIssues) {
+        return (
+          '<tr style="border-bottom: 1px solid #e2e8f0;">' +
+            '<td style="padding: 8px;">' + (r['Date'] || '') + '</td>' +
+            '<td style="padding: 8px; font-weight: 600; color: #4f46e5;">' + (r['Profile Name'] || '') + '</td>' +
+            '<td style="padding: 8px;">' + (r["Client's Name"] || '') + '</td>' +
+            '<td style="padding: 8px;">' + (r['Team'] || '') + '</td>' +
+            '<td style="padding: 8px; color: #d97706; font-weight: 600;">' + (r['Special Notes'] || '') + '</td>' +
+            '<td style="padding: 8px; text-align: center; font-weight: 700; color: #dc2626;">' + (r['Status'] || '') + '</td>' +
+            '<td style="padding: 8px;">' + (r['Note for Operation'] || '') + '</td>' +
+          '</tr>'
+        );
+      }
+      return (
+        '<tr style="border-bottom: 1px solid #e2e8f0;">' +
+          '<td style="padding: 8px;">' + (r['Order ID'] || '') + '</td>' +
+          '<td style="padding: 8px;">' + (r['Profile Name'] || '') + '</td>' +
+          '<td style="padding: 8px;">' + (r['Client name'] || '') + '</td>' +
+          '<td style="padding: 8px;">' + (r['Assign Team'] || '') + '</td>' +
+          '<td style="padding: 8px;">' + (r['Service Line'] || '') + '</td>' +
+          '<td style="padding: 8px; text-align: right; font-weight: 600;">' + (r['Value'] || r['Amount'] || '') + '</td>' +
+          '<td style="padding: 8px; text-align: center;">' + (r['Status'] || '') + '</td>' +
+        '</tr>'
+      );
+    }).join('');
+
+    const headersHtml = isIssues ? (
+      '<tr style="background: #f1f5f9; border-bottom: 2px solid #e2e8f0;">' +
+        '<th style="padding: 8px; text-align: left;">Date</th>' +
+        '<th style="padding: 8px; text-align: left;">Profile</th>' +
+        '<th style="padding: 8px; text-align: left;">Client</th>' +
+        '<th style="padding: 8px; text-align: left;">Team</th>' +
+        '<th style="padding: 8px; text-align: left;">Special Notes</th>' +
+        '<th style="padding: 8px; text-align: center;">Status</th>' +
+        '<th style="padding: 8px; text-align: left;">Operation Note</th>' +
       '</tr>'
-    ).join('');
+    ) : (
+      '<tr style="background: #f1f5f9; border-bottom: 2px solid #e2e8f0;">' +
+        '<th style="padding: 8px; text-align: left;">Order ID</th>' +
+        '<th style="padding: 8px; text-align: left;">Profile</th>' +
+        '<th style="padding: 8px; text-align: left;">Client</th>' +
+        '<th style="padding: 8px; text-align: left;">Assign Team</th>' +
+        '<th style="padding: 8px; text-align: left;">Service</th>' +
+        '<th style="padding: 8px; text-align: right;">Value</th>' +
+        '<th style="padding: 8px; text-align: center;">Status</th>' +
+      '</tr>'
+    );
 
     const htmlContent =
       '<div style="font-family: sans-serif; color: #1e293b; background: #fff; padding: 24px; line-height: 1.5;">' +
@@ -337,17 +428,7 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
           '</div>' +
         '</div>' +
         '<table style="width: 100%; border-collapse: collapse; font-size: 10px;">' +
-          '<thead>' +
-            '<tr style="background: #f1f5f9; border-bottom: 2px solid #e2e8f0;">' +
-              '<th style="padding: 8px; text-align: left;">Order ID</th>' +
-              '<th style="padding: 8px; text-align: left;">Profile</th>' +
-              '<th style="padding: 8px; text-align: left;">Client</th>' +
-              '<th style="padding: 8px; text-align: left;">Assign Team</th>' +
-              '<th style="padding: 8px; text-align: left;">Service</th>' +
-              '<th style="padding: 8px; text-align: right;">Value</th>' +
-              '<th style="padding: 8px; text-align: center;">Status</th>' +
-            '</tr>' +
-          '</thead>' +
+          '<thead>' + headersHtml + '</thead>' +
           '<tbody>' + rowsHtml + '</tbody>' +
         '</table>' +
       '</div>';
@@ -461,37 +542,77 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
 
       {/* ─── DYNAMIC STATISTICS HUD MATRIX ─── */}
       <div className={styles.grid3} style={{ zIndex: 1 }}>
-        <div style={{ background: 'rgba(7, 8, 15, 0.45)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', backdropFilter: 'blur(10px)' }}>
-          <div style={{ background: 'rgba(129, 140, 248, 0.1)', color: '#818cf8', borderRadius: '10px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FileText size={24} />
-          </div>
-          <div>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Filtered Records</span>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>{totalFiltered}</div>
-          </div>
-        </div>
-
-        <div style={{ background: 'rgba(7, 8, 15, 0.45)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', backdropFilter: 'blur(10px)' }}>
-          <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '10px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <CheckCircle size={24} />
-          </div>
-          <div>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Active (WIP)</span>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981', marginTop: '4px' }}>{activeWip}</div>
-          </div>
-        </div>
-
-        <div style={{ background: 'rgba(7, 8, 15, 0.45)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', backdropFilter: 'blur(10px)' }}>
-          <div style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', borderRadius: '10px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <DollarSign size={24} />
-          </div>
-          <div>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Total Value (WIP)</span>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#eab308', marginTop: '4px' }}>
-              ${totalWipValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+        {mainTab === 'project_issues' ? (
+          <>
+            <div style={{ background: 'rgba(7, 8, 15, 0.45)', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', backdropFilter: 'blur(10px)' }}>
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '10px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Shopify Issues</span>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#ff6b6b', marginTop: '4px' }}>{totalFiltered}</div>
+              </div>
             </div>
-          </div>
-        </div>
+
+            <div style={{ background: 'rgba(7, 8, 15, 0.45)', border: '1px solid rgba(234, 179, 8, 0.2)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', backdropFilter: 'blur(10px)' }}>
+              <div style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', borderRadius: '10px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Clock size={24} />
+              </div>
+              <div>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Open / Action Required</span>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#eab308', marginTop: '4px' }}>
+                  {issueRecords.filter(r => r['Status']?.toUpperCase() !== 'RESOLVED' && r['Status']?.toUpperCase() !== 'CLOSED').length}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(7, 8, 15, 0.45)', border: '1px solid rgba(168, 85, 247, 0.2)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', backdropFilter: 'blur(10px)' }}>
+              <div style={{ background: 'rgba(168, 85, 247, 0.1)', color: '#a855f7', borderRadius: '10px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FileText size={24} />
+              </div>
+              <div>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Affected Profiles</span>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#c084fc', marginTop: '4px' }}>
+                  {new Set(issueRecords.map(r => r['Profile Name']).filter(Boolean)).size}
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div style={{ background: 'rgba(7, 8, 15, 0.45)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', backdropFilter: 'blur(10px)' }}>
+              <div style={{ background: 'rgba(129, 140, 248, 0.1)', color: '#818cf8', borderRadius: '10px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FileText size={24} />
+              </div>
+              <div>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Filtered Records</span>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', marginTop: '4px' }}>{totalFiltered}</div>
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(7, 8, 15, 0.45)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', backdropFilter: 'blur(10px)' }}>
+              <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', borderRadius: '10px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CheckCircle size={24} />
+              </div>
+              <div>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Active (WIP)</span>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981', marginTop: '4px' }}>{activeWip}</div>
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(7, 8, 15, 0.45)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px', backdropFilter: 'blur(10px)' }}>
+              <div style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', borderRadius: '10px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <DollarSign size={24} />
+              </div>
+              <div>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Total Value (WIP)</span>
+                <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#eab308', marginTop: '4px' }}>
+                  ${totalWipValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {loading ? (
@@ -553,7 +674,7 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                       onClick={() => setActiveDropdown(activeDropdown === 'service_line' ? null : 'service_line')}
                       style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
                     >
-                      Service Line {selectedServiceLines.length > 0 && <span style={{ background: '#818cf8', borderRadius: '50%', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>{selectedServiceLines.length}</span>} <ExternalLink size={12} style={{ opacity: 0.5 }} />
+                      {mainTab === 'project_issues' ? 'Team' : 'Service Line'} {selectedServiceLines.length > 0 && <span style={{ background: '#818cf8', borderRadius: '50%', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>{selectedServiceLines.length}</span>} <ExternalLink size={12} style={{ opacity: 0.5 }} />
                     </button>
                     {activeDropdown === 'service_line' && (
                       <div style={{ position: 'absolute', left: 0, top: '38px', background: '#0e1017', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px', width: '220px', zIndex: 100, boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
@@ -579,7 +700,6 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                                     } else {
                                       setSelectedServiceLines(prev => [...prev, sl]);
                                     }
-                                    // Reset team / name selections when service line shifts to keep hierarchy logical
                                     setSelectedTeams([]);
                                     setSelectedNames([]);
                                   }}
@@ -659,7 +779,6 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                             All Teams & Names
                           </label>
 
-                          {/* Dynamic Hierarchical Tree Structure: Teams -> Underneath Names */}
                           {teamHierarchy.map(teamNode => {
                             const isTeamChecked = selectedTeams.includes(teamNode.teamCode);
                             return (
@@ -671,11 +790,9 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                                     onChange={() => {
                                       if (isTeamChecked) {
                                         setSelectedTeams(prev => prev.filter(x => x !== teamNode.teamCode));
-                                        // Also clear child selected names
                                         setSelectedNames(prev => prev.filter(x => !teamNode.names.includes(x)));
                                       } else {
                                         setSelectedTeams(prev => [...prev, teamNode.teamCode]);
-                                        // Check all child names as well
                                         setSelectedNames(prev => Array.from(new Set([...prev, ...teamNode.names])));
                                       }
                                     }}
@@ -694,12 +811,10 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                                           onChange={() => {
                                             if (isNameChecked) {
                                               setSelectedNames(prev => prev.filter(x => x !== name));
-                                              // Uncheck parent team checkbox if a single name is unchecked
                                               setSelectedTeams(prev => prev.filter(x => x !== teamNode.teamCode));
                                             } else {
                                               const updatedNames = [...selectedNames, name];
                                               setSelectedNames(updatedNames);
-                                              // Check if all sibling names are checked to auto-check parent
                                               const allSiblingsChecked = teamNode.names.every(n => updatedNames.includes(n));
                                               if (allSiblingsChecked) {
                                                 setSelectedTeams(prev => Array.from(new Set([...prev, teamNode.teamCode])));
@@ -720,75 +835,43 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                     )}
                   </div>
 
-                  {/* Delivery Date Sorting Option */}
-                  <div style={{ position: 'relative' }}>
-                    <button
-                      onClick={() => setActiveDropdown(activeDropdown === 'deli_date' ? null : 'deli_date')}
-                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                    >
-                      Deli_Date {deliDateSort !== 'none' && <span style={{ background: '#818cf8', borderRadius: '4px', padding: '0 4px', fontSize: '0.65rem' }}>Active</span>} <ExternalLink size={12} style={{ opacity: 0.5 }} />
-                    </button>
-                    {activeDropdown === 'deli_date' && (
-                      <div style={{ position: 'absolute', left: 0, top: '38px', background: '#0e1017', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px', width: '180px', zIndex: 100, boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <button
-                            onClick={() => { setDeliDateSort('none'); setActiveDropdown(null); }}
-                            style={{ background: deliDateSort === 'none' ? 'rgba(255,255,255,0.08)' : 'transparent', color: '#fff', border: 'none', padding: '6px 8px', borderRadius: '4px', textAlign: 'left', fontSize: '0.8rem', cursor: 'pointer' }}
-                          >
-                            No Sorting
-                          </button>
-                          <button
-                            onClick={() => { setDeliDateSort('newest'); setActiveDropdown(null); }}
-                            style={{ background: deliDateSort === 'newest' ? 'rgba(255,255,255,0.08)' : 'transparent', color: '#fff', border: 'none', padding: '6px 8px', borderRadius: '4px', textAlign: 'left', fontSize: '0.8rem', cursor: 'pointer' }}
-                          >
-                            Newest First
-                          </button>
-                          <button
-                            onClick={() => { setDeliDateSort('oldest'); setActiveDropdown(null); }}
-                            style={{ background: deliDateSort === 'oldest' ? 'rgba(255,255,255,0.08)' : 'transparent', color: '#fff', border: 'none', padding: '6px 8px', borderRadius: '4px', textAlign: 'left', fontSize: '0.8rem', cursor: 'pointer' }}
-                          >
-                            Oldest First
-                          </button>
+                  {/* Columns Filter Selector Dropdown (for Orders Tracker) */}
+                  {mainTab === 'orders_tracker' && (
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        onClick={() => setActiveDropdown(activeDropdown === 'columns' ? null : 'columns')}
+                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                      >
+                        Columns <span style={{ background: '#818cf8', borderRadius: '50%', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>{visibleColumns.length}</span> <ExternalLink size={12} style={{ opacity: 0.5 }} />
+                      </button>
+                      {activeDropdown === 'columns' && (
+                        <div style={{ position: 'absolute', left: 0, top: '38px', background: '#0e1017', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px', width: '220px', zIndex: 100, maxHeight: '250px', overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.6)' }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Toggle Visible Columns</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {allAvailableColumns.map(col => {
+                              const isChecked = visibleColumns.includes(col);
+                              return (
+                                <label key={col} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => {
+                                      if (isChecked) {
+                                        setVisibleColumns(prev => prev.filter(c => c !== col));
+                                      } else {
+                                        setVisibleColumns(prev => [...prev, col]);
+                                      }
+                                    }}
+                                  />
+                                  {col}
+                                </label>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Columns Filter Selector Dropdown */}
-                  <div style={{ position: 'relative' }}>
-                    <button
-                      onClick={() => setActiveDropdown(activeDropdown === 'columns' ? null : 'columns')}
-                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                    >
-                      Columns <span style={{ background: '#818cf8', borderRadius: '50%', width: '18px', height: '18px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>{visibleColumns.length}</span> <ExternalLink size={12} style={{ opacity: 0.5 }} />
-                    </button>
-                    {activeDropdown === 'columns' && (
-                      <div style={{ position: 'absolute', left: 0, top: '38px', background: '#0e1017', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px', width: '220px', zIndex: 100, maxHeight: '250px', overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.6)' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Toggle Visible Columns</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {allAvailableColumns.map(col => {
-                            const isChecked = visibleColumns.includes(col);
-                            return (
-                              <label key={col} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>
-                                <input
-                                  type="checkbox"
-                                  checked={isChecked}
-                                  onChange={() => {
-                                    if (isChecked) {
-                                      setVisibleColumns(prev => prev.filter(c => c !== col));
-                                    } else {
-                                      setVisibleColumns(prev => [...prev, col]);
-                                    }
-                                  }}
-                                />
-                                {col}
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Search Text Input Field */}
@@ -833,7 +916,7 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                   </button>
 
                   <button
-                    onClick={() => printTeamPDF(mainTab.toUpperCase() + ' Ledger', filteredRecords)}
+                    onClick={() => printTeamPDF((mainTab === 'project_issues' ? 'SHOPIFY_PROJECT_ISSUES' : mainTab.toUpperCase()) + ' Ledger', filteredRecords)}
                     style={{ background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)', border: 'none', color: '#fff', padding: '8px 18px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(168, 85, 247, 0.25)' }}
                   >
                     <Download size={14} /> Download PDF
@@ -843,16 +926,120 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
 
               {/* Data Table Ledger display */}
               <div style={{ background: 'rgba(15, 23, 42, 0.3)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px', minHeight: '300px' }}>
-                <div style={{ marginBottom: '14px' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>Operational Ledger Database</h3>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Matching entries: {filteredRecords.length} orders found</span>
+                <div style={{ marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0 }}>
+                      {mainTab === 'project_issues' ? 'Shopify Project Issues Database' : 'Operational Ledger Database'}
+                    </h3>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                      Matching entries: {filteredRecords.length} {mainTab === 'project_issues' ? 'issues' : 'orders'} found
+                    </span>
+                  </div>
+                  {mainTab === 'project_issues' && (
+                    <span style={{ background: 'rgba(0, 229, 255, 0.1)', color: '#00e5ff', border: '1px solid rgba(0, 229, 255, 0.25)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00e5ff', boxShadow: '0 0 8px #00e5ff' }} />
+                      Shopify Live Sheet
+                    </span>
+                  )}
                 </div>
 
                 {filteredRecords.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '60px 10px', color: 'var(--text-secondary)', background: 'rgba(7, 8, 15, 0.1)', border: '1px dashed rgba(255,255,255,0.04)', borderRadius: '8px', fontSize: '0.82rem' }}>
                     No matching ledger tracking entries found. Clean filters configuration.
                   </div>
+                ) : mainTab === 'project_issues' ? (
+                  /* ─── SHOPIFY PROJECT ISSUES TABLE VIEW ─── */
+                  <div style={{ overflowX: 'auto', background: 'rgba(7, 8, 15, 0.2)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '10px' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.02)' }}>
+                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Date</th>
+                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Profile Name</th>
+                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Client's Name</th>
+                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Conversation Link</th>
+                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Team</th>
+                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Special Notes</th>
+                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Status</th>
+                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Note for Operation</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredRecords.map((r, rIdx) => (
+                          <tr key={(r["Client's Name"] || rIdx) + '-' + rIdx} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.01)'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                            <td style={{ padding: '12px 14px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                              {r['Date'] || '-'}
+                            </td>
+                            <td style={{ padding: '12px 14px' }}>
+                              <span style={{ background: 'rgba(168, 85, 247, 0.12)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.25)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700, display: 'inline-block' }}>
+                                {r['Profile Name'] || '-'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '12px 14px', color: '#fff', fontWeight: 700 }}>
+                              {r["Client's Name"] || '-'}
+                            </td>
+                            <td style={{ padding: '12px 14px' }}>
+                              {r['Conversation Page URL'] ? (
+                                <a
+                                  href={r['Conversation Page URL']}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    color: '#00e5ff',
+                                    textDecoration: 'none',
+                                    fontWeight: 600,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    background: 'rgba(0, 229, 255, 0.08)',
+                                    border: '1px solid rgba(0, 229, 255, 0.2)',
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.75rem',
+                                    transition: 'all 0.2s'
+                                  }}
+                                  onMouseEnter={e => e.currentTarget.style.background='rgba(0, 229, 255, 0.18)'}
+                                  onMouseLeave={e => e.currentTarget.style.background='rgba(0, 229, 255, 0.08)'}
+                                >
+                                  <ExternalLink size={12} /> View Fiverr Inbox
+                                </a>
+                              ) : (
+                                <span style={{ color: 'var(--text-secondary)' }}>-</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '12px 14px', color: '#94a3b8', fontWeight: 600, fontSize: '0.78rem' }}>
+                              {r['Team'] || '-'}
+                            </td>
+                            <td style={{ padding: '12px 14px' }}>
+                              <span style={{ background: 'rgba(234, 179, 8, 0.12)', color: '#facc15', border: '1px solid rgba(234, 179, 8, 0.3)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600, display: 'inline-block' }}>
+                                {r['Special Notes'] || '-'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '12px 14px' }}>
+                              <span style={{
+                                display: 'inline-flex',
+                                padding: '3px 10px',
+                                borderRadius: '6px',
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                background: r['Status']?.toUpperCase() === 'OPEN' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                                color: r['Status']?.toUpperCase() === 'OPEN' ? '#ff6b6b' : '#34d399',
+                                border: `1px solid ${r['Status']?.toUpperCase() === 'OPEN' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
+                              }}>
+                                {r['Status'] || 'Open'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '12px 14px' }}>
+                              <span style={{ background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
+                                {r['Note for Operation'] || '-'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
+                  /* ─── ORDERS TRACKER TABLE VIEW ─── */
                   <div style={{ overflowX: 'auto', background: 'rgba(7, 8, 15, 0.2)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '10px' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
                       <thead>
@@ -881,7 +1068,6 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                                 );
                               }
                               if (col === 'Deadline') {
-                                // Calculate countdown specifically from "Delivery Date" column as requested
                                 const deliveryDateVal = r['Delivery Date'] || r['Deli_Date'];
                                 const statusVal = r['Status'] || '';
                                 const timerText = getDeadlineCountdown(deliveryDateVal, statusVal);
