@@ -82,7 +82,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [months, setMonths] = useState<IWalletMonthData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonthId, setSelectedMonthId] = useState<string>('');
-  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'currency_tools' | 'daily_intel'>('single');
+  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'currency_tools' | 'daily_intel' | 'ai_simulator' | 'goals_debts'>('single');
   
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,6 +93,11 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [sendingEmailReport, setSendingEmailReport] = useState<boolean>(false);
   const [customAppPassword, setCustomAppPassword] = useState<string>('');
   const [isSmtpModalOpen, setIsSmtpModalOpen] = useState<boolean>(false);
+
+  // AI Financial Simulator State
+  const [simReturnRate, setSimReturnRate] = useState<number>(8);
+  const [simMonthlySavings, setSimMonthlySavings] = useState<number>(15000);
+  const [simYears, setSimYears] = useState<number>(5);
   
   // Date & Amount Sorting State
   const [expSortBy, setExpSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
@@ -2142,6 +2147,46 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
               }}
             >
               <Zap size={16} style={{ color: 'var(--accent-gold)' }} /> Daily Pace & Guidance
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('ai_simulator')}
+              style={{
+                background: walletSubTab === 'ai_simulator' ? 'rgba(168, 85, 247, 0.15)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'ai_simulator' ? '#c084fc' : 'var(--glass-border-light)',
+                color: walletSubTab === 'ai_simulator' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Activity size={16} style={{ color: '#c084fc' }} /> AI Forecast Lab
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('goals_debts')}
+              style={{
+                background: walletSubTab === 'goals_debts' ? 'rgba(236, 72, 153, 0.15)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'goals_debts' ? '#f472b6' : 'var(--glass-border-light)',
+                color: walletSubTab === 'goals_debts' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Target size={16} style={{ color: '#f472b6' }} /> Goals & Debt Audit
             </button>
           </div>
 
@@ -4700,6 +4745,232 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     <Send size={15} /> Send Test Email Now
                   </button>
                 </div>
+              </div>
+
+            </div>
+          )}
+
+          {walletSubTab === 'ai_simulator' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              {/* Header Hero Card */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(192, 132, 252, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '1px' }}>AI Wealth Compounder & Projections</span>
+                    <h2 style={{ margin: '4px 0 0', fontSize: '1.8rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Activity size={24} style={{ color: '#c084fc' }} /> AI Financial Forecast & Compound Simulator
+                    </h2>
+                  </div>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                  Simulate future wealth growth using compound interest formulas and test emergency runway resilience.
+                </p>
+              </div>
+
+              {/* Compound Calculator Controls & Outputs */}
+              <div className={styles.toolsGrid}>
+                
+                {/* Control Panel */}
+                <div className={styles.walletCard}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Sliders size={20} style={{ color: '#c084fc' }} /> Simulation Controls
+                  </h3>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Monthly Investment / Savings:</span>
+                        <strong style={{ color: '#fff' }}>৳{simMonthlySavings.toLocaleString()}</strong>
+                      </div>
+                      <input
+                        type="range"
+                        min="2000"
+                        max="100000"
+                        step="1000"
+                        value={simMonthlySavings}
+                        onChange={e => setSimMonthlySavings(Number(e.target.value))}
+                        style={{ width: '100%', accentColor: '#c084fc' }}
+                      />
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Expected Annual Return (APY):</span>
+                        <strong style={{ color: '#34d399' }}>{simReturnRate}% / year</strong>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="30"
+                        step="0.5"
+                        value={simReturnRate}
+                        onChange={e => setSimReturnRate(Number(e.target.value))}
+                        style={{ width: '100%', accentColor: '#10b981' }}
+                      />
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '6px' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Time Horizon:</span>
+                        <strong style={{ color: 'var(--accent-gold)' }}>{simYears} Years</strong>
+                      </div>
+                      <input
+                        type="range"
+                        min="1"
+                        max="20"
+                        step="1"
+                        value={simYears}
+                        onChange={e => setSimYears(Number(e.target.value))}
+                        style={{ width: '100%', accentColor: 'var(--accent-gold)' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Simulated Compound Output */}
+                <div className={styles.walletCard}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <TrendingUp size={20} style={{ color: '#34d399' }} /> Forecasted Portfolio Growth
+                  </h3>
+
+                  {(() => {
+                    const monthsCount = simYears * 12;
+                    const r = simReturnRate / 100 / 12;
+                    let futureValue = 0;
+                    if (r > 0) {
+                      futureValue = simMonthlySavings * (((Math.pow(1 + r, monthsCount) - 1) / r) * (1 + r));
+                    } else {
+                      futureValue = simMonthlySavings * monthsCount;
+                    }
+                    const totalInvested = simMonthlySavings * monthsCount;
+                    const totalInterest = Math.max(0, futureValue - totalInvested);
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        <div style={{ background: 'rgba(52, 211, 153, 0.1)', border: '1px solid rgba(52, 211, 153, 0.3)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Projected Portfolio Value in {simYears} Years</span>
+                          <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#34d399', margin: '4px 0' }}>
+                            {privacyMode ? '••••••' : `৳${Math.round(futureValue).toLocaleString()}`}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                          <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Total Deposited</span>
+                            <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff' }}>{privacyMode ? '••••' : `৳${totalInvested.toLocaleString()}`}</div>
+                          </div>
+                          <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Compound Profit</span>
+                            <div style={{ fontSize: '1rem', fontWeight: 800, color: '#c084fc' }}>{privacyMode ? '••••' : `৳${Math.round(totalInterest).toLocaleString()}`}</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+          {walletSubTab === 'goals_debts' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              {/* Header Hero Card */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.12) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(244, 114, 182, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '1px' }}>Goals & Loan Management Command</span>
+                    <h2 style={{ margin: '4px 0 0', fontSize: '1.8rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Target size={24} style={{ color: '#f472b6' }} /> Savings Milestones & Active Loans Audit
+                    </h2>
+                  </div>
+                  <button
+                    onClick={() => setIsAddLoanOpen(true)}
+                    style={{ background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    + Record New Loan
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid: Savings Goals & Loans */}
+              <div className={styles.toolsGrid}>
+                
+                {/* Active Savings Goals Card */}
+                <div className={styles.walletCard}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <PiggyBank size={20} style={{ color: '#f472b6' }} /> Target Savings Goals
+                  </h3>
+
+                  {savingsGoals.length === 0 ? (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No active savings goals added yet.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      {savingsGoals.map(g => {
+                        const pct = Math.min(100, (g.current / (g.target || 1)) * 100);
+                        return (
+                          <div key={g.id || g.name} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>
+                              <span style={{ color: '#fff' }}>{g.name}</span>
+                              <span style={{ color: '#f472b6' }}>{pct.toFixed(0)}% Completed</span>
+                            </div>
+                            <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', borderRadius: '4px' }} />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                              <span>Saved: <strong style={{ color: '#34d399' }}>{fmtVal(g.current)}</strong></span>
+                              <span>Target: <strong>{fmtVal(g.target)}</strong></span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Active Loans & Debt Tracker Card */}
+                <div className={styles.walletCard}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <PiggyBank size={20} style={{ color: 'var(--accent-gold)' }} /> Active Loans Audit (ধার/ঋণ)
+                  </h3>
+
+                  {(() => {
+                    const currentMonthData = activeMonth || months[0];
+                    const activeLoans = currentMonthData ? currentMonthData.loans || [] : [];
+                    if (activeLoans.length === 0) {
+                      return <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No active loans registered for this period.</div>;
+                    }
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {activeLoans.map((l: IWalletLoan) => (
+                          <div key={l._id || l.personName} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>{l.personName}</div>
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                                Due: {l.dueDate ? new Date(l.dueDate).toISOString().split('T')[0] : 'No deadline'} | Status: <span style={{ color: l.status === 'Returned' ? '#34d399' : '#f59e0b', fontWeight: 700 }}>{l.status}</span>
+                              </div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--accent-gold)' }}>{fmtVal(l.amount)}</div>
+                              <a
+                                href={`https://wa.me/8801952321390?text=${encodeURIComponent(`Hello ${l.personName}, friendly reminder regarding loan balance of ৳${l.amount}.`)}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ fontSize: '0.7rem', color: '#34d399', textDecoration: 'none', fontWeight: 700 }}
+                              >
+                                📲 WhatsApp Reminder
+                              </a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+
               </div>
 
             </div>
