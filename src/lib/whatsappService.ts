@@ -46,7 +46,7 @@ export const sendWhatsAppNotification = async (data: IWhatsAppMessageData) => {
     }
   }
 
-  // 2. CallMeBot Free WhatsApp API Gateway (Free instant key activation)
+  // 2. CallMeBot Free WhatsApp Gateway API
   const callMeBotApiKey = process.env.CALLMEBOT_API_KEY;
   if (callMeBotApiKey) {
     try {
@@ -61,7 +61,7 @@ export const sendWhatsAppNotification = async (data: IWhatsAppMessageData) => {
     }
   }
 
-  // 3. Green API / UltraMsg or custom Webhook fallback
+  // 3. Custom Webhook or Gateway fallback
   const customWebhookUrl = process.env.WHATSAPP_WEBHOOK_URL;
   if (customWebhookUrl) {
     try {
@@ -76,8 +76,7 @@ export const sendWhatsAppNotification = async (data: IWhatsAppMessageData) => {
     }
   }
 
-  // Fallback logging for audit
-  console.log(`[WhatsApp Dispatch queued for +${formattedPhone}]:\n${messageText}`);
+  console.log(`[WhatsApp Notification queued for +${formattedPhone}]:\n${messageText}`);
   return {
     success: true,
     simulated: true,
