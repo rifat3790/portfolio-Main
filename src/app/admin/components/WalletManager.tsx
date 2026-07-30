@@ -4321,6 +4321,135 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
               </div>
 
+              {/* ⚡ NEW VISUAL MODULE 1: Monthly Wealth Velocity & Cash Flow Trend Matrix */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(59, 130, 246, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <TrendingUp size={20} style={{ color: '#3b82f6' }} /> Monthly Wealth Velocity & Cash Flow Trend Matrix
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    MULTI-MONTH TREND ENGINE
+                  </span>
+                </div>
+
+                {(() => {
+                  if (months.length === 0) return <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No monthly ledger records found for trend analysis.</div>;
+
+                  const maxMonthVal = Math.max(1, ...months.map(m => Math.max(getIncomeTotal(m), getExpenseTotal(m))));
+                  const totalInflow = months.reduce((acc, m) => acc + getIncomeTotal(m), 0);
+                  const totalOutflow = months.reduce((acc, m) => acc + getExpenseTotal(m), 0);
+                  const bestSavingsMonth = [...months].sort((a, b) => (getIncomeTotal(b) - getExpenseTotal(b)) - (getIncomeTotal(a) - getExpenseTotal(a)))[0];
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {/* Dual Bar Trend Comparison */}
+                      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', height: '150px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.08)', overflowX: 'auto' }}>
+                        {months.map((m) => {
+                          const inc = getIncomeTotal(m);
+                          const exp = getExpenseTotal(m);
+                          const incHeight = (inc / maxMonthVal) * 100;
+                          const expHeight = (exp / maxMonthVal) * 100;
+                          const net = inc - exp;
+
+                          return (
+                            <div key={m._id} style={{ flex: 1, minWidth: '60px', display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
+                              <div style={{ display: 'flex', gap: '3px', alignItems: 'flex-end', height: '100%', width: '100%', justifyContent: 'center' }}>
+                                <div title={`Income: ${fmtVal(inc)}`} style={{ width: '45%', height: `${Math.max(8, incHeight)}%`, background: 'linear-gradient(180deg, #10b981 0%, #059669 100%)', borderRadius: '4px 4px 0 0', transition: 'all 0.3s ease' }} />
+                                <div title={`Expense: ${fmtVal(exp)}`} style={{ width: '45%', height: `${Math.max(8, expHeight)}%`, background: 'linear-gradient(180deg, #ef4444 0%, #b91c1c 100%)', borderRadius: '4px 4px 0 0', transition: 'all 0.3s ease' }} />
+                              </div>
+                              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#e2e8f0', marginTop: '6px', whiteSpace: 'nowrap' }}>
+                                {m.monthName}
+                              </span>
+                              <span style={{ fontSize: '0.62rem', fontWeight: 800, color: net >= 0 ? '#34d399' : '#f87171' }}>
+                                {fmtVal(net)}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Cash Flow Summary Metrics */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Cumulative Inflow</span>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#34d399', marginTop: '2px' }}>{fmtVal(totalInflow)}</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Cumulative Outflow</span>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#f87171', marginTop: '2px' }}>{fmtVal(totalOutflow)}</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700 }}>Best Savings Month</span>
+                          <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fbbf24', marginTop: '2px' }}>{bestSavingsMonth?.monthName || 'N/A'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* ⚡ NEW VISUAL MODULE 2: Debt Liability & Loan Exposure Radar */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldAlert size={20} style={{ color: 'var(--accent-gold)' }} /> Debt Liability & Pending Loan Safety Radar
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    LIABILITY AUDIT
+                  </span>
+                </div>
+
+                {(() => {
+                  const pendingLoans = months.flatMap(m => m.loans || []).filter(l => l.status === 'Pending');
+                  const totalPendingAmount = pendingLoans.reduce((acc, l) => acc + l.amount, 0);
+                  const totalIncomeVal = months.reduce((acc, m) => acc + getIncomeTotal(m), 0);
+                  const dtiRatio = totalIncomeVal > 0 ? (totalPendingAmount / totalIncomeVal) * 100 : 0;
+                  const isSafeDti = dtiRatio <= 20;
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Active Liabilities</span>
+                          <div style={{ fontSize: '1.3rem', fontWeight: 900, color: totalPendingAmount > 0 ? '#ef4444' : '#10b981', marginTop: '4px' }}>
+                            {fmtVal(totalPendingAmount)}
+                          </div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{pendingLoans.length} Unresolved loan entries</span>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700 }}>Debt-to-Income (DTI) Ratio</span>
+                          <div style={{ fontSize: '1.3rem', fontWeight: 900, color: isSafeDti ? '#34d399' : '#f87171', marginTop: '4px' }}>
+                            {dtiRatio.toFixed(1)}% <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>{isSafeDti ? '🟢 Safe Buffer' : '🔴 High Risk'}</span>
+                          </div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Target: Under 20% total revenue</span>
+                        </div>
+                      </div>
+
+                      {/* Pending Loans Table */}
+                      {pendingLoans.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e2e8f0' }}>Pending Loan Outstandings:</span>
+                          {pendingLoans.map(l => (
+                            <div key={l._id || l.personName} style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>👤 {l.personName}</span>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                  Date: {l.date ? new Date(l.date).toISOString().split('T')[0] : 'N/A'} {l.dueDate ? `| Due: ${new Date(l.dueDate).toISOString().split('T')[0]}` : ''}
+                                </div>
+                              </div>
+                              <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#f87171' }}>{fmtVal(l.amount)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+
               {/* Visual Category Distribution */}
               <div className={styles.walletCard}>
                 <h3 style={{ margin: '0 0 20px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
