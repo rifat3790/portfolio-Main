@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import ContactMessage from '@/models/ContactMessage';
+import { sendContactFormNotificationEmail, sendContactFormAutoResponderEmail } from '@/lib/emailService';
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,6 +21,12 @@ export async function POST(req: NextRequest) {
       message,
       read: false
     });
+
+    // 📩 Trigger Real-Time Notification to Admin & Professional Auto-Responder to Visitor
+    Promise.allSettled([
+      sendContactFormNotificationEmail({ name, email, subject, message }),
+      sendContactFormAutoResponderEmail({ name, email, subject })
+    ]).catch(err => console.error('Error triggering contact emails:', err));
 
     return NextResponse.json({ success: true, message: 'Message sent successfully.' }, { status: 201 });
   } catch (error) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import WalletMonth from '@/models/WalletMonth';
 import { isAuthenticated } from '@/lib/auth';
+import { sendWalletTransactionAlert } from '@/lib/emailService';
 
 type Params = Promise<{ id: string }>;
 
@@ -20,6 +21,9 @@ export async function PUT(req: NextRequest, segmentData: { params: Params }) {
       return NextResponse.json({ error: 'Month sheet not found' }, { status: 404 });
     }
 
+    const oldExpenseCount = (existing.expenses || []).length;
+    const oldLoanCount = (existing.loans || []).length;
+
     if (data.monthName !== undefined) existing.monthName = data.monthName;
     if (data.salary !== undefined) existing.salary = Number(data.salary);
     if (data.addon !== undefined) existing.addon = Number(data.addon);
@@ -32,6 +36,33 @@ export async function PUT(req: NextRequest, segmentData: { params: Params }) {
     if (data.assets !== undefined) existing.assets = data.assets;
 
     await existing.save();
+
+    // Check for newly added expenses
+    if (data.expenses && data.expenses.length > oldExpenseCount) {
+      const latestExp = data.expenses[data.expenses.length - 1];
+      sendWalletTransactionAlert({
+        type: 'expense',
+        description: latestExp.description || 'Expense Item',
+        amount: latestExp.amount || 0,
+        category: latestExp.category || 'General',
+        date: latestExp.date ? new Date(latestExp.date).toISOString().split('T')[0] : undefined,
+        monthName: existing.monthName
+      }).catch(err => console.error('Error sending expense alert email:', err));
+    }
+
+    // Check for newly added loans
+    if (data.loans && data.loans.length > oldLoanCount) {
+      const latestLoan = data.loans[data.loans.length - 1];
+      sendWalletTransactionAlert({
+        type: 'loan',
+        description: `Loan to/from ${latestLoan.personName || 'Person'}`,
+        amount: latestLoan.amount || 0,
+        category: 'Loan',
+        date: latestLoan.dateGiven ? new Date(latestLoan.dateGiven).toISOString().split('T')[0] : undefined,
+        monthName: existing.monthName
+      }).catch(err => console.error('Error sending loan alert email:', err));
+    }
+
     return NextResponse.json(existing);
   } catch (error) {
     console.error('Error updating wallet month:', error);

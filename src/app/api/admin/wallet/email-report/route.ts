@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     if (!result.success) {
       return NextResponse.json({
         success: false,
-        error: result.error || result.message || 'SMTP Authentication failed. Please configure GMAIL_APP_PASSWORD.',
+        error: result.error || 'SMTP Authentication failed. Please configure GMAIL_APP_PASSWORD.',
         recipients: result.recipients
       }, { status: 400 });
     }

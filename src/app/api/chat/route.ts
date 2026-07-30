@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import { Message, ChatSession } from '@/models/Chat';
 import { isAuthenticated } from '@/lib/auth';
+import { sendLiveChatNotificationEmail } from '@/lib/emailService';
 
 // GET messages for a session, or GET all chat sessions (if admin)
 export async function GET(req: NextRequest) {
@@ -79,7 +80,7 @@ export async function POST(req: NextRequest) {
       updateObj.userEmail = userEmail;
     }
 
-    // If user sent it, increment admin's unreadCount
+    // If user sent it, increment admin's unreadCount and trigger real-time email notification
     if (sender === 'user') {
       await ChatSession.findOneAndUpdate(
         { sessionId },
@@ -89,6 +90,15 @@ export async function POST(req: NextRequest) {
         },
         { upsert: true, new: true }
       );
+
+      // Trigger instant email notification to admin
+      sendLiveChatNotificationEmail({
+        sessionId,
+        senderName: userName || 'Website Visitor',
+        senderEmail: userEmail || 'Not provided',
+        messageText: text || (image ? 'Sent an attachment / image' : 'New chat message')
+      }).catch(err => console.error('Error sending chat email alert:', err));
+
     } else {
       // If admin replied, reset unreadCount to 0
       await ChatSession.findOneAndUpdate(
