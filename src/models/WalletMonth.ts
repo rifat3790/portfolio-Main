@@ -43,6 +43,15 @@ export interface IRecurringBill {
   category: string;
 }
 
+export interface IAsset {
+  _id?: string;
+  id?: string;
+  name: string;
+  category: string; // 'Cash' | 'Bank' | 'Gadget' | 'Investment' | 'Crypto' | 'Other'
+  value: number;
+  growthRate?: number;
+}
+
 export interface IWalletMonth extends Document {
   monthName: string; // e.g., "January 2026" or "2026-01"
   salary: number;
@@ -53,6 +62,7 @@ export interface IWalletMonth extends Document {
   loans: ILoan[];
   savingsGoals?: ISavingsGoal[];
   recurringBills?: IRecurringBill[];
+  assets?: IAsset[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -95,6 +105,14 @@ const RecurringBillSchema: Schema = new Schema({
   category: { type: String, required: true, default: 'Utility' },
 });
 
+const AssetSchema: Schema = new Schema({
+  id: { type: String },
+  name: { type: String, required: true },
+  category: { type: String, required: true, default: 'Other' },
+  value: { type: Number, required: true, min: 0 },
+  growthRate: { type: Number, default: 0 },
+});
+
 const WalletMonthSchema: Schema = new Schema(
   {
     monthName: { type: String, required: true, unique: true },
@@ -106,6 +124,7 @@ const WalletMonthSchema: Schema = new Schema(
     loans: { type: [LoanSchema], default: [] },
     savingsGoals: { type: [SavingsGoalSchema], default: [] },
     recurringBills: { type: [RecurringBillSchema], default: [] },
+    assets: { type: [AssetSchema], default: [] },
   },
   { timestamps: true }
 );

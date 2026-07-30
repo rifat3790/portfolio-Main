@@ -46,6 +46,9 @@ export async function POST(req: NextRequest) {
       expenses: data.expenses || [],
       incomes: data.incomes || [],
       loans: data.loans || [],
+      savingsGoals: data.savingsGoals || [],
+      recurringBills: data.recurringBills || [],
+      assets: data.assets || [],
     });
 
     return NextResponse.json(newMonth);

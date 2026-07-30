@@ -5,7 +5,8 @@ import {
   Wallet, Plus, Layers, TrendingUp, Edit, Download, Trash2, FileText, X, PieChart,
   HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check,
   Target, Zap, ArrowUpDown, ShieldAlert, Sparkles, Eye, EyeOff, CreditCard, ShieldCheck, PiggyBank, Flame,
-  TrendingDown, Lock, Award, Tag, CopyCheck, Share2, Gauge, FilePlus, Sliders, Activity, Compass, Filter
+  TrendingDown, Lock, Award, Tag, CopyCheck, Share2, Gauge, FilePlus, Sliders, Activity, Compass, Filter,
+  BarChart3, Coins, Globe, Building2, Laptop, DollarSign, Briefcase, ArrowRightLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../admin.module.css';
@@ -53,6 +54,15 @@ export interface IRecurringBill {
   category: string;
 }
 
+export interface IAsset {
+  _id?: string;
+  id?: string;
+  name: string;
+  category: string;
+  value: number;
+  growthRate?: number;
+}
+
 export interface IWalletMonthData {
   _id: string;
   monthName: string;
@@ -64,6 +74,7 @@ export interface IWalletMonthData {
   loans?: IWalletLoan[];
   savingsGoals?: ISavingsGoal[];
   recurringBills?: IRecurringBill[];
+  assets?: IAsset[];
   createdAt: string;
 }
 
@@ -71,7 +82,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [months, setMonths] = useState<IWalletMonthData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonthId, setSelectedMonthId] = useState<string>('');
-  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary'>('single');
+  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'currency_tools'>('single');
   
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -126,6 +137,26 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   ]);
 
   const [isVaultModalOpen, setIsVaultModalOpen] = useState(false);
+
+  // 💼 Wealth Vault & Assets State
+  const [assets, setAssets] = useState<IAsset[]>([
+    { id: 'a1', name: '💼 Primary Bank Savings Deposit', category: 'Bank', value: 185000, growthRate: 6 },
+    { id: 'a2', name: '💻 M3 Max MacBook & Workstation Gear', category: 'Gadget', value: 240000, growthRate: -10 },
+    { id: 'a3', name: '⚡ High-Yield Liquid Reserve', category: 'Cash', value: 75000, growthRate: 4 },
+    { id: 'a4', name: '🚀 Tech Growth Fund & Equities', category: 'Investment', value: 110000, growthRate: 12 },
+  ]);
+  const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
+  const [editingAssetId, setEditingAssetId] = useState('');
+  const [assetName, setAssetName] = useState('');
+  const [assetCategory, setAssetCategory] = useState('Bank');
+  const [assetValue, setAssetValue] = useState('');
+  const [assetGrowthRate, setAssetGrowthRate] = useState('');
+
+  // 💱 Remittance & FX Converter State
+  const [baseCurrency, setBaseCurrency] = useState<'USD' | 'EUR' | 'GBP' | 'BDT' | 'INR' | 'CAD' | 'AED'>('USD');
+  const [targetCurrency, setTargetCurrency] = useState<'BDT' | 'USD' | 'EUR' | 'GBP' | 'INR' | 'CAD' | 'AED'>('BDT');
+  const [convertAmount, setConvertAmount] = useState<string>('1000');
+  const [netWorthTarget, setNetWorthTarget] = useState<number>(1000000);
 
   // Modal states
   const [isAddMonthOpen, setIsAddMonthOpen] = useState(false);
@@ -1397,6 +1428,135 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     return `৳${amount.toLocaleString()}`;
   };
 
+  // 💼 Assets CRUD Handler (Persisted in MongoDB)
+  const handleAddOrEditAsset = async () => {
+    if (!assetName.trim() || !assetValue || isNaN(Number(assetValue))) {
+      showToast('Please enter a valid asset name and numeric value', 'error');
+      return;
+    }
+    const val = Number(assetValue);
+    const growth = Number(assetGrowthRate) || 0;
+
+    let updatedAssets: IAsset[];
+    if (editingAssetId) {
+      updatedAssets = assets.map(a => (a.id === editingAssetId || a._id === editingAssetId ? { ...a, name: assetName, category: assetCategory, value: val, growthRate: growth } : a));
+    } else {
+      const newAsset: IAsset = {
+        id: Date.now().toString(),
+        name: assetName,
+        category: assetCategory,
+        value: val,
+        growthRate: growth
+      };
+      updatedAssets = [...assets, newAsset];
+    }
+
+    setAssets(updatedAssets);
+    setIsAssetModalOpen(false);
+    setEditingAssetId('');
+    setAssetName('');
+    setAssetValue('');
+    setAssetGrowthRate('');
+
+    if (activeMonth) {
+      try {
+        const res = await fetch(`/api/admin/wallet/${activeMonth._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assets: updatedAssets }),
+        });
+        if (res.ok) {
+          showToast('Asset saved and synced with database!', 'success');
+          fetchMonths();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      showToast(editingAssetId ? 'Asset updated!' : 'Asset added!', 'success');
+    }
+  };
+
+  const handleDeleteAsset = async (id: string) => {
+    const updated = assets.filter(a => a.id !== id && a._id !== id);
+    setAssets(updated);
+    if (activeMonth) {
+      try {
+        await fetch(`/api/admin/wallet/${activeMonth._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assets: updated }),
+        });
+        fetchMonths();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    showToast('Asset removed', 'info');
+  };
+
+  // 📥 Export Ledger to CSV
+  const exportWalletCSV = () => {
+    if (months.length === 0) {
+      showToast('No wallet data available to export', 'error');
+      return;
+    }
+    const headers = ['Month', 'Base Salary', 'Add-on', 'Bonus', 'Total Income', 'Total Expense', 'Net Savings', 'Savings Rate %'];
+    const rows = months.map(m => {
+      const inc = getIncomeTotal(m);
+      const exp = getExpenseTotal(m);
+      const net = inc - exp;
+      const rate = inc > 0 ? ((net / inc) * 100).toFixed(1) : '0';
+      return [
+        `"${m.monthName}"`,
+        m.salary,
+        m.addon,
+        m.bonus,
+        inc,
+        exp,
+        net,
+        `"${rate}%"`
+      ].join(',');
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Personal_Wallet_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Wallet ledger exported to CSV successfully!', 'success');
+  };
+
+  // 📥 Export Complete Backup to JSON
+  const exportWalletJSON = () => {
+    if (months.length === 0) {
+      showToast('No wallet data available to export', 'error');
+      return;
+    }
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(months, null, 2));
+    const link = document.createElement('a');
+    link.setAttribute('href', dataStr);
+    link.setAttribute('download', `Personal_Wallet_Backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Wallet backup exported to JSON successfully!', 'success');
+  };
+
+  // FX Rates relative to BDT
+  const fxRates: { [key: string]: number } = {
+    BDT: 1.0,
+    USD: 122.50,
+    EUR: 132.80,
+    GBP: 158.40,
+    CAD: 89.20,
+    INR: 1.44,
+    AED: 33.35,
+  };
+
   // 🔒 Bulk Log Recurring Bills for Selected Month
   const handleBulkLogRecurringBills = async () => {
     if (!activeMonth) return;
@@ -1865,6 +2025,66 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
               }}
             >
               <TrendingUp size={16} /> Global Summary
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('analytics')}
+              style={{
+                background: walletSubTab === 'analytics' ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'analytics' ? '#10b981' : 'var(--glass-border-light)',
+                color: walletSubTab === 'analytics' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <PieChart size={16} style={{ color: '#10b981' }} /> Smart Analytics
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('wealth_vault')}
+              style={{
+                background: walletSubTab === 'wealth_vault' ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'wealth_vault' ? 'var(--accent-gold)' : 'var(--glass-border-light)',
+                color: walletSubTab === 'wealth_vault' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <PiggyBank size={16} style={{ color: 'var(--accent-gold)' }} /> Wealth Vault
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('currency_tools')}
+              style={{
+                background: walletSubTab === 'currency_tools' ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'currency_tools' ? '#3b82f6' : 'var(--glass-border-light)',
+                color: walletSubTab === 'currency_tools' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <ArrowRightLeft size={16} style={{ color: '#3b82f6' }} /> FX & Tools
             </button>
           </div>
 
@@ -3871,8 +4091,351 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     </div>
                   );
                 })()}
+              </div>
+            </div>
+          )}
+
+          {walletSubTab === 'analytics' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Financial Health Scorecard & AI Advice */}
+              <div className={styles.analyticsGrid}>
+                
+                {/* Financial Health Gauge Card */}
+                <div className={styles.healthGaugeCard}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Financial Health Score</span>
+                    <Award size={20} style={{ color: '#10b981' }} />
+                  </div>
+                  
+                  {(() => {
+                    const totalInc = months.reduce((acc, m) => acc + getIncomeTotal(m), 0);
+                    const totalExp = months.reduce((acc, m) => acc + getExpenseTotal(m), 0);
+                    const avgSavingsRate = totalInc > 0 ? ((totalInc - totalExp) / totalInc) * 100 : 0;
+                    
+                    let score = 50;
+                    if (avgSavingsRate >= 40) score += 30;
+                    else if (avgSavingsRate >= 20) score += 20;
+                    else if (avgSavingsRate >= 10) score += 10;
+                    
+                    const pendingLoansCount = months.flatMap(m => m.loans || []).filter(l => l.status === 'Pending').length;
+                    if (pendingLoansCount === 0) score += 20;
+                    else if (pendingLoansCount <= 2) score += 10;
+
+                    const capScore = Math.min(100, Math.max(10, score));
+                    const grade = capScore >= 80 ? 'EXCELLENT' : capScore >= 60 ? 'GOOD' : 'NEEDS ATTENTION';
+                    const color = capScore >= 80 ? '#10b981' : capScore >= 60 ? '#f59e0b' : '#ef4444';
+
+                    return (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <div style={{ position: 'relative', width: '90px', height: '90px', borderRadius: '50%', background: `conic-gradient(${color} ${capScore * 3.6}deg, rgba(255,255,255,0.08) 0deg)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 20px ${color}33` }}>
+                          <div style={{ width: '74px', height: '74px', borderRadius: '50%', background: '#0b0f19', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff' }}>{capScore}</span>
+                            <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>/ 100</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: color, marginBottom: '4px' }}>{grade} STATUS</div>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Based on savings margin ({avgSavingsRate.toFixed(1)}%) & loan safety</div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* AI Smart Advice Card */}
+                <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%)', border: '1px solid rgba(129, 140, 248, 0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', color: '#818cf8', fontWeight: 700, fontSize: '0.9rem' }}>
+                    <Sparkles size={18} /> Automated AI Wealth Advisor
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ fontSize: '0.8rem', color: '#e2e8f0', background: 'rgba(7, 8, 15, 0.4)', padding: '10px 12px', borderRadius: '8px', borderLeft: '3px solid #10b981' }}>
+                      💡 <strong>Pro Tip:</strong> Re-invest 15% of monthly net savings into high-yield tech assets or emergency reserves.
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#e2e8f0', background: 'rgba(7, 8, 15, 0.4)', padding: '10px 12px', borderRadius: '8px', borderLeft: '3px solid var(--accent-gold)' }}>
+                      ⚡ <strong>Budget Check:</strong> Keep fixed overheads below 30% of total salary for optimal wealth acceleration.
+                    </div>
+                  </div>
+                </div>
 
               </div>
+
+              {/* Visual Category Distribution */}
+              <div className={styles.walletCard}>
+                <h3 style={{ margin: '0 0 20px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <PieChart size={20} style={{ color: '#10b981' }} /> Lifetime Spending Category Breakdown
+                </h3>
+
+                {(() => {
+                  const categoryTotals: { [cat: string]: number } = {};
+                  let grandTotalExp = 0;
+
+                  months.forEach(m => {
+                    (m.expenses || []).forEach(e => {
+                      categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
+                      grandTotalExp += e.amount;
+                    });
+                  });
+
+                  const sortedCats = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]);
+
+                  if (sortedCats.length === 0) {
+                    return <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>No expense records found to generate category distribution.</div>;
+                  }
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {sortedCats.map(([cat, amt]) => {
+                        const pct = grandTotalExp > 0 ? (amt / grandTotalExp) * 100 : 0;
+                        return (
+                          <div key={cat} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                              <span style={{ fontWeight: 600, color: '#fff' }}>{cat}</span>
+                              <span style={{ color: 'var(--text-secondary)' }}>
+                                <strong style={{ color: '#fca5a5' }}>{fmtVal(amt)}</strong> ({pct.toFixed(1)}%)
+                              </span>
+                            </div>
+                            <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.06)', borderRadius: '6px', overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #10b981 0%, #3b82f6 100%)', borderRadius: '6px', transition: 'width 0.5s ease' }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+
+          {walletSubTab === 'wealth_vault' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              {/* Executive Net Worth HUD Card */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Net Worth Portfolio</span>
+                    <h2 style={{ margin: '4px 0 0', fontSize: '2rem', fontWeight: 900, color: '#fff' }}>
+                      {(() => {
+                        const lifetimeSavings = months.reduce((acc, m) => acc + (getIncomeTotal(m) - getExpenseTotal(m)), 0);
+                        const totalAssetsVal = assets.reduce((acc, a) => acc + a.value, 0);
+                        const totalPendingLoans = months.flatMap(m => m.loans || []).filter(l => l.status === 'Pending').reduce((acc, l) => acc + l.amount, 0);
+                        const netWorth = lifetimeSavings + totalAssetsVal - totalPendingLoans;
+                        return fmtVal(netWorth);
+                      })()}
+                    </h2>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setEditingAssetId('');
+                      setAssetName('');
+                      setAssetCategory('Bank');
+                      setAssetValue('');
+                      setAssetGrowthRate('');
+                      setIsAssetModalOpen(true);
+                    }}
+                    style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)' }}
+                  >
+                    <Plus size={16} /> Add New Asset
+                  </button>
+                </div>
+
+                {/* Net Worth Breakdown Pills */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Cumulative Liquid Savings</span>
+                    <div style={{ fontSize: '1rem', fontWeight: 700, color: '#818cf8' }}>
+                      {fmtVal(months.reduce((acc, m) => acc + (getIncomeTotal(m) - getExpenseTotal(m)), 0))}
+                    </div>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Total Assets Value</span>
+                    <div style={{ fontSize: '1rem', fontWeight: 700, color: '#10b981' }}>
+                      {fmtVal(assets.reduce((acc, a) => acc + a.value, 0))}
+                    </div>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Pending Loan Liabilities</span>
+                    <div style={{ fontSize: '1rem', fontWeight: 700, color: '#ef4444' }}>
+                      {fmtVal(months.flatMap(m => m.loans || []).filter(l => l.status === 'Pending').reduce((acc, l) => acc + l.amount, 0))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Freedom Target Calculator */}
+              <div className={styles.walletCard}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Target size={20} style={{ color: 'var(--accent-gold)' }} /> Financial Freedom Milestone Target
+                </h3>
+                {(() => {
+                  const netWorth = months.reduce((acc, m) => acc + (getIncomeTotal(m) - getExpenseTotal(m)), 0) + assets.reduce((acc, a) => acc + a.value, 0);
+                  const progressPct = netWorthTarget > 0 ? Math.min(100, Math.max(0, (netWorth / netWorthTarget) * 100)) : 0;
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                          Target: <strong style={{ color: '#fff' }}>{fmtVal(netWorthTarget)}</strong>
+                        </span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
+                          {progressPct.toFixed(1)}% Achieved
+                        </span>
+                      </div>
+                      <div style={{ width: '100%', height: '12px', background: 'rgba(255,255,255,0.06)', borderRadius: '6px', overflow: 'hidden' }}>
+                        <div style={{ width: `${progressPct}%`, height: '100%', background: 'linear-gradient(90deg, #f59e0b 0%, #10b981 100%)', borderRadius: '6px' }} />
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Assets Portfolio List */}
+              <div className={styles.walletCard}>
+                <h3 style={{ margin: '0 0 20px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Briefcase size={20} style={{ color: '#818cf8' }} /> Asset Allocation Vault
+                </h3>
+
+                <div className={styles.wealthGrid}>
+                  {assets.map((asset) => (
+                    <div key={asset.id || asset._id} className={styles.assetCardItem}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                        <div>
+                          <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', borderRadius: '4px', color: '#818cf8', fontWeight: 700 }}>
+                            {asset.category}
+                          </span>
+                          <h4 style={{ margin: '8px 0 0', fontSize: '0.95rem', fontWeight: 700, color: '#fff' }}>{asset.name}</h4>
+                        </div>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button
+                            onClick={() => {
+                              setEditingAssetId(asset.id || asset._id || '');
+                              setAssetName(asset.name);
+                              setAssetCategory(asset.category);
+                              setAssetValue(String(asset.value));
+                              setAssetGrowthRate(String(asset.growthRate || 0));
+                              setIsAssetModalOpen(true);
+                            }}
+                            style={{ background: 'transparent', border: 'none', color: '#818cf8', cursor: 'pointer', padding: '4px' }}
+                          >
+                            <Edit size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAsset(asset.id || asset._id || '')}
+                            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{fmtVal(asset.value)}</span>
+                        {asset.growthRate !== undefined && (
+                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: asset.growthRate >= 0 ? '#10b981' : '#ef4444' }}>
+                            {asset.growthRate >= 0 ? `+${asset.growthRate}%/yr` : `${asset.growthRate}%/yr`}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {walletSubTab === 'currency_tools' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              <div className={styles.toolsGrid}>
+                
+                {/* Live FX Converter Widget */}
+                <div className={styles.walletCard}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ArrowRightLeft size={20} style={{ color: '#3b82f6' }} /> Tech Freelance FX Calculator
+                  </h3>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div>
+                      <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Amount to Convert</label>
+                      <input
+                        type="number"
+                        value={convertAmount}
+                        onChange={e => setConvertAmount(e.target.value)}
+                        style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '1rem', fontWeight: 700 }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div>
+                        <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>From Currency</label>
+                        <select
+                          value={baseCurrency}
+                          onChange={e => setBaseCurrency(e.target.value as any)}
+                          style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                        >
+                          {Object.keys(fxRates).map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>To Currency</label>
+                        <select
+                          value={targetCurrency}
+                          onChange={e => setTargetCurrency(e.target.value as any)}
+                          style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                        >
+                          {Object.keys(fxRates).map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Conversion Output Box */}
+                    {(() => {
+                      const num = Number(convertAmount) || 0;
+                      const inBDT = num * (fxRates[baseCurrency] || 1);
+                      const converted = inBDT / (fxRates[targetCurrency] || 1);
+                      return (
+                        <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '12px', padding: '16px', textAlign: 'center', marginTop: '6px' }}>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Converted Estimate</span>
+                          <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#60a5fa', margin: '4px 0' }}>
+                            {privacyMode ? '••••••' : `${converted.toLocaleString('en-US', { maximumFractionDigits: 2 })} ${targetCurrency}`}
+                          </div>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                            Rate: 1 {baseCurrency} = {(fxRates[baseCurrency] / fxRates[targetCurrency]).toFixed(2)} {targetCurrency}
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Export & Data Backup Vault */}
+                <div className={styles.walletCard}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Download size={20} style={{ color: '#10b981' }} /> Export & Backup Vault
+                  </h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                    Download offline backups of your full financial ledger in standard CSV format for Excel/Google Sheets or JSON format.
+                  </p>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <button
+                      onClick={exportWalletCSV}
+                      style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#6ee7b7', padding: '12px 16px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                      <Download size={16} /> Export Full Ledger (CSV)
+                    </button>
+                    <button
+                      onClick={exportWalletJSON}
+                      style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#a5b4fc', padding: '12px 16px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                    >
+                      <FileText size={16} /> Export Complete Backup (JSON)
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
             </div>
           )}
 
@@ -4611,6 +5174,79 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             <div style={{ background: 'rgba(7, 8, 15, 0.4)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '12px', textAlign: 'center' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Total Fixed Overheads: </span>
               <strong style={{ color: '#fca5a5', fontSize: '0.95rem' }}>{fmtVal(activeRecurringBills.reduce((acc, b) => acc + b.amount, 0))}/month</strong>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 11: Add / Edit Asset */}
+      {isAssetModalOpen && (
+        <div className={styles.walletModalOverlay}>
+          <div className={styles.walletModalBox}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>
+                {editingAssetId ? 'Edit Asset Item' : 'Add New Wealth Asset'}
+              </h3>
+              <button onClick={() => setIsAssetModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Asset Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Workstation M3 Max / Savings Deposit"
+                  value={assetName}
+                  onChange={e => setAssetName(e.target.value)}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Category</label>
+                  <select
+                    value={assetCategory}
+                    onChange={e => setAssetCategory(e.target.value)}
+                    style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                  >
+                    <option value="Bank">Bank Deposit</option>
+                    <option value="Cash">Liquid Cash</option>
+                    <option value="Gadget">Tech Hardware</option>
+                    <option value="Investment">Stocks / Funds</option>
+                    <option value="Crypto">Crypto Asset</option>
+                    <option value="Other">Other Asset</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Value (৳)</label>
+                  <input
+                    type="number"
+                    placeholder="150000"
+                    value={assetValue}
+                    onChange={e => setAssetValue(e.target.value)}
+                    style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Annual Growth / Depreciation Rate (%)</label>
+                <input
+                  type="number"
+                  placeholder="e.g. 5 or -10"
+                  value={assetGrowthRate}
+                  onChange={e => setAssetGrowthRate(e.target.value)}
+                  style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
+                />
+              </div>
+
+              <button
+                onClick={handleAddOrEditAsset}
+                style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', marginTop: '8px' }}
+              >
+                {editingAssetId ? 'Save Asset Changes' : 'Add Asset to Vault'}
+              </button>
             </div>
           </div>
         </div>

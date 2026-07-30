@@ -1194,4 +1194,64 @@
   }
 }
 
+/* Smart Analytics, Wealth Vault & Remittance Tools Responsive Styling */
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.wealthGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.toolsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.healthGaugeCard {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.4) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.assetCardItem {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.assetCardItem:hover {
+  border-color: var(--accent-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.privacyBlur {
+  filter: blur(5px);
+  user-select: none;
+  transition: filter 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .analyticsGrid,
+  .wealthGrid,
+  .toolsGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
 
