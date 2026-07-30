@@ -100,7 +100,7 @@ MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/portfolio?re
 JWT_SECRET=your_jwt_secret_key
 ADMIN_EMAIL=mdrifayethossen@gmail.com
 ADMIN_PASSWORD=your_secure_password
-TELEGRAM_BOT_TOKEN=8895190327:AAFYwFQisNa0SJWbk7GOHW3eEvkf9lmq1GM
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 TELEGRAM_CHAT_ID=5960113085
 ```
 
