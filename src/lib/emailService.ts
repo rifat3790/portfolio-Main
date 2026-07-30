@@ -34,7 +34,7 @@ export const sendWalletDailyEmailReport = async (data: IEmailReportData) => {
     peakWeekday,
     healthScore,
     savingsRatePct,
-    smtpUser = process.env.SMTP_USER || process.env.GMAIL_USER || 'mdrifayethossen@gmail.com',
+    smtpUser = process.env.SMTP_USER || process.env.GMAIL_USER || 'rifayet.cse@gmail.com',
     smtpPass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || ''
   } = data;
 
