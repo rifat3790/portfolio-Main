@@ -28,6 +28,9 @@ function parseCSVLine(line: string): string[] {
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const notifyAll = searchParams.get('notifyAll') === 'true' || searchParams.get('test') === 'true';
+
     const sheetUrl = 'https://docs.google.com/spreadsheets/d/1ic9UMVX0FFsAyz0TZ-_lGKj_D9NornoGhq38KTRtM54/export?format=csv&gid=1412843338';
     
     const response = await fetch(sheetUrl, {
@@ -59,31 +62,47 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid Google Sheet headers format' }, { status: 400 });
     }
 
-    const rawHeaders = parsedRows[headerIndex];
-    const headers = rawHeaders.map(h => h.trim());
-
     const dataRows = parsedRows.slice(headerIndex + 1).filter(row => {
       return row.some(cell => cell.trim().length > 0);
     });
 
     const records = dataRows.map(row => {
-      const record: Record<string, string> = {};
-      headers.forEach((header, index) => {
-        if (header) {
-          record[header] = row[index] || '';
+      const date = (row[0] || '').trim();
+      const conversationUrl = (row[1] || '').trim();
+      const clientName = (row[2] || '').trim();
+      const team = (row[3] || 'Shopify Team').trim();
+      const specialNotes = (row[4] || '').trim();
+      const status = (row[5] || 'Open').trim();
+      const profileName = (row[6] || '').trim();
+      
+      let noteForOperation = '';
+      for (let i = 7; i < row.length; i++) {
+        if (row[i] && row[i].trim().length > 0) {
+          noteForOperation = row[i].trim();
+          break;
         }
-      });
-      return record;
+      }
+
+      return {
+        'Date': date,
+        'Conversation Page URL': conversationUrl,
+        "Client's Name": clientName,
+        'Team': team,
+        'Special Notes': specialNotes,
+        'Status': status,
+        'Profile Name': profileName,
+        'Note for Operation': noteForOperation
+      };
     }).filter(record => {
       return (
-        (record["Client's Name"] && record["Client's Name"].trim() !== '') ||
-        (record["Conversation Page URL"] && record["Conversation Page URL"].trim() !== '') ||
-        (record["Special Notes"] && record["Special Notes"].trim() !== '') ||
-        (record["Profile Name"] && record["Profile Name"].trim() !== '')
+        record["Client's Name"] !== '' ||
+        record["Conversation Page URL"] !== '' ||
+        record["Special Notes"] !== '' ||
+        record["Profile Name"] !== ''
       );
     });
 
-    const result = await checkAndNotifyNewIssues(records);
+    const result = await checkAndNotifyNewIssues(records, notifyAll);
 
     return NextResponse.json({ success: true, newCount: result.newCount });
   } catch (error) {

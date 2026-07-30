@@ -30,7 +30,7 @@ export const sendWhatsAppNotification = async (data: INotificationData) => {
         body: JSON.stringify({
           chat_id: telegramChatId,
           text: messageText,
-          parse_mode: 'Markdown'
+          parse_mode: 'HTML'
         })
       });
     } catch (err) {

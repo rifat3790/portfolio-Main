@@ -158,10 +158,25 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
     if (mainTab === 'project_issues') {
       const map: Record<string, Set<string>> = {};
       issueRecords.forEach(r => {
-        const team = r['Team'] || 'Shopify Team';
-        if (!map[team]) map[team] = new Set();
-        if (r['Profile Name']) map[team].add(r['Profile Name']);
-        if (r['Note for Operation']) map[team].add(r['Note for Operation']);
+        const rawNote = (r['Note for Operation'] || '').trim();
+        if (rawNote) {
+          const parts = rawNote.split('/');
+          if (parts.length >= 2) {
+            const member = parts[0].trim();
+            const subTeam = parts.slice(1).join('/').trim().toUpperCase();
+            if (!map[subTeam]) map[subTeam] = new Set();
+            map[subTeam].add(member);
+          } else {
+            const team = r['Team'] || 'Shopify Team';
+            if (!map[team]) map[team] = new Set();
+            map[team].add(rawNote);
+          }
+        }
+        if (r['Profile Name']) {
+          const mainTeam = r['Team'] || 'Shopify Team';
+          if (!map[mainTeam]) map[mainTeam] = new Set();
+          map[mainTeam].add(r['Profile Name']);
+        }
       });
       return Object.entries(map).map(([teamCode, namesSet]) => ({
         teamCode,
@@ -210,13 +225,20 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
         list = list.filter(r => selectedStatuses.includes(r['Status']));
       }
       if (selectedTeams.length > 0) {
-        list = list.filter(r => selectedTeams.includes(r['Team']));
+        list = list.filter(r => {
+          const rawNote = (r['Note for Operation'] || '').trim();
+          const parts = rawNote.split('/');
+          const subTeam = parts.length >= 2 ? parts.slice(1).join('/').trim().toUpperCase() : '';
+          return selectedTeams.includes(r['Team']) || selectedTeams.includes(subTeam);
+        });
       }
       if (selectedNames.length > 0) {
-        list = list.filter(r => 
-          selectedNames.includes(r['Profile Name']) || 
-          selectedNames.includes(r['Note for Operation'])
-        );
+        list = list.filter(r => {
+          const rawNote = (r['Note for Operation'] || '').trim();
+          const parts = rawNote.split('/');
+          const member = parts.length >= 2 ? parts[0].trim() : rawNote;
+          return selectedNames.includes(r['Profile Name']) || selectedNames.includes(member) || selectedNames.includes(rawNote);
+        });
       }
       if (searchQuery.trim() !== '') {
         const q = searchQuery.toLowerCase();
@@ -1029,9 +1051,28 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                               </span>
                             </td>
                             <td style={{ padding: '12px 14px' }}>
-                              <span style={{ background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
-                                {r['Note for Operation'] || '-'}
-                              </span>
+                              {(() => {
+                                const rawNote = (r['Note for Operation'] || '').trim();
+                                if (!rawNote) return <span style={{ color: 'var(--text-secondary)' }}>-</span>;
+                                const parts = rawNote.split('/');
+                                if (parts.length >= 2) {
+                                  const member = parts[0].trim();
+                                  const subTeam = parts.slice(1).join('/').trim().toUpperCase();
+                                  return (
+                                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap' }}>
+                                      <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.82rem' }}>{member}</span>
+                                      <span style={{ background: 'rgba(0, 229, 255, 0.12)', color: '#00e5ff', border: '1px solid rgba(0, 229, 255, 0.3)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 800 }}>
+                                        {subTeam}
+                                      </span>
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <span style={{ background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
+                                    {rawNote}
+                                  </span>
+                                );
+                              })()}
                             </td>
                           </tr>
                         ))}
