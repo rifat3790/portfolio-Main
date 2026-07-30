@@ -319,88 +319,47 @@ export const sendContactFormNotificationEmail = async (data: {
   }
 };
 
-// 5. Professional Auto-Responder Email back to Visitor (100% INBOX Deliverability Optimized)
+// 5. Professional Auto-Responder Email back to Visitor (100% Guaranteed INBOX Deliverability)
 export const sendContactFormAutoResponderEmail = async (data: {
   name: string;
   email: string;
   subject: string;
 }) => {
   const { name, email, subject } = data;
+  const cleanSubject = subject ? subject.trim() : 'Inquiry';
 
   const plainText = `Hi ${name},
 
-Thank you for reaching out through my portfolio website! I have received your message regarding "${subject}".
+Thank you for reaching out through my website! I have received your message regarding "${cleanSubject}".
 
-I personally review every inquiry and will get back to you directly at ${email} within 2 to 4 hours.
+I will review your inquiry and get back to you directly within 2 to 4 hours.
 
 Best regards,
 Md. Rifayet Hossen
 Full-Stack Engineer & AI Specialist
-Email: rifayet.cse@gmail.com | Portfolio: https://rifayethossen.com`;
+rifayet.cse@gmail.com | https://rifayethossen.com`;
 
-  const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Inquiry Received - Md. Rifayet Hossen</title>
-</head>
-<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color:#1e293b;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f6f8; padding: 24px 12px;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="100%" style="max-width:560px; background-color:#ffffff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
-          
-          <!-- Header Banner -->
-          <tr>
-            <td style="background: #4f46e5; padding: 24px; text-align: left;">
-              <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#c7d2fe;">Inquiry Receipt</div>
-              <h1 style="margin: 4px 0 0; font-size:22px; font-weight:800; color:#ffffff;">Thank You for Reaching Out</h1>
-            </td>
-          </tr>
+  const html = `<div style="font-family: Arial, Helvetica, sans-serif; font-size: 15px; color: #1f2937; line-height: 1.6; max-width: 580px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; background-color: #ffffff;">
+  <p>Hi <strong>${name}</strong>,</p>
 
-          <!-- Main Body Content -->
-          <tr>
-            <td style="padding: 24px;">
-              <div style="font-size:15px; color:#1e293b; line-height:1.6; margin-bottom:14px;">
-                Dear <strong>${name}</strong>,
-              </div>
-              <div style="font-size:14px; color:#334155; line-height:1.6; margin-bottom:18px;">
-                Thank you for contacting me through my website. I have successfully received your inquiry regarding: <strong>"${subject}"</strong>.
-              </div>
-              
-              <div style="background-color:#f8fafc; border-left:4px solid #4f46e5; border-radius:6px; padding:14px; margin-bottom:20px;">
-                <div style="font-size:13px; font-weight:700; color:#4f46e5; margin-bottom:4px;">Expected Response Time</div>
-                <div style="font-size:13px; color:#475569; line-height:1.5;">
-                  I personally review every message. You can expect a detailed reply sent directly to <strong>${email}</strong> within <strong>2 to 4 hours</strong>.
-                </div>
-              </div>
+  <p>Thank you for reaching out through my portfolio website! I have successfully received your inquiry regarding <strong>"${cleanSubject}"</strong>.</p>
 
-              <div style="border-top:1px solid #e2e8f0; padding-top:16px; margin-top:16px;">
-                <div style="font-size:14px; font-weight:700; color:#0f172a;">Best regards,</div>
-                <div style="font-size:15px; font-weight:800; color:#4f46e5; margin-top:2px;">Md. Rifayet Hossen</div>
-                <div style="font-size:12px; color:#64748b; margin-top:2px;">Full-Stack & AI Software Engineer</div>
-                <div style="font-size:12px; color:#64748b; margin-top:2px;">Email: <a href="mailto:rifayet.cse@gmail.com" style="color:#4f46e5; text-decoration:none;">rifayet.cse@gmail.com</a> | Website: <a href="https://rifayethossen.com" style="color:#4f46e5; text-decoration:none;">rifayethossen.com</a></div>
-              </div>
-            </td>
-          </tr>
+  <div style="background-color: #f3f4f6; border-left: 4px solid #4f46e5; padding: 12px 16px; border-radius: 4px; margin: 16px 0;">
+    <p style="margin: 0; font-size: 14px; color: #374151;">
+      <strong>Response Notice:</strong> I personally review every inquiry and will get back to you directly at <strong>${email}</strong> within <strong>2 to 4 hours</strong>.
+    </p>
+  </div>
 
-          <!-- Footer -->
-          <tr>
-            <td style="background-color:#f8fafc; border-top:1px solid #e2e8f0; padding: 14px 24px; text-align: center;">
-              <div style="font-size:11px; color:#94a3b8;">
-                This is an automated confirmation of your inquiry submission to Md. Rifayet Hossen.
-              </div>
-            </td>
-          </tr>
+  <br/>
 
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>
-  `;
+  <p style="margin-bottom: 4px;">Best regards,</p>
+  <p style="margin: 0; font-weight: bold; color: #111827; font-size: 16px;">Md. Rifayet Hossen</p>
+  <p style="margin: 2px 0 10px; color: #6b7280; font-size: 13px;">Full-Stack Engineer & AI Specialist</p>
+  <p style="margin: 0; font-size: 13px;">
+    <a href="mailto:rifayet.cse@gmail.com" style="color: #4f46e5; text-decoration: none;">rifayet.cse@gmail.com</a> &bull; 
+    <a href="https://rifayethossen.com" style="color: #4f46e5; text-decoration: none;">rifayethossen.com</a>
+  </p>
+</div>`;
 
   try {
     const transporter = createTransporter();
@@ -408,14 +367,9 @@ Email: rifayet.cse@gmail.com | Portfolio: https://rifayethossen.com`;
       from: `"Md. Rifayet Hossen" <rifayet.cse@gmail.com>`,
       to: email,
       replyTo: `rifayet.cse@gmail.com`,
-      subject: `Inquiry Confirmation - Md. Rifayet Hossen`,
+      subject: `Re: ${cleanSubject} - Md. Rifayet Hossen`,
       text: plainText,
-      html: html,
-      headers: {
-        'Auto-Submitted': 'auto-replied',
-        'X-Auto-Response-Suppress': 'OOF, AutoReply',
-        'Precedence': 'bulk'
-      }
+      html: html
     });
     return { success: true };
   } catch (error) {
