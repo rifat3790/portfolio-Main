@@ -51,9 +51,10 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
     setLoading(true);
     setError('');
     try {
+      const ts = Date.now();
       const [teamRes, issueRes] = await Promise.all([
-        fetch('/api/admin/team-data'),
-        fetch('/api/admin/project-issues')
+        fetch(`/api/admin/team-data?t=${ts}`, { cache: 'no-store' }),
+        fetch(`/api/admin/project-issues?t=${ts}`, { cache: 'no-store' })
       ]);
 
       if (teamRes.ok) {

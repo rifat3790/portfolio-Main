@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAndNotifyNewIssues } from '@/lib/issueNotifier';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let current = '';
@@ -31,7 +34,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const notifyAll = searchParams.get('notifyAll') === 'true' || searchParams.get('test') === 'true';
 
-    const sheetUrl = 'https://docs.google.com/spreadsheets/d/1ic9UMVX0FFsAyz0TZ-_lGKj_D9NornoGhq38KTRtM54/export?format=csv&gid=1412843338';
+    const sheetUrl = `https://docs.google.com/spreadsheets/d/1ic9UMVX0FFsAyz0TZ-_lGKj_D9NornoGhq38KTRtM54/export?format=csv&gid=1412843338&t=${Date.now()}`;
     
     const response = await fetch(sheetUrl, {
       cache: 'no-store'

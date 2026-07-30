@@ -16,7 +16,7 @@ export function parseOperationNote(noteStr: string): { memberName: string; teamN
   return { memberName: clean, teamName: '' };
 }
 
-export function getIssueKey(r: Record<string, string>): string {
+export function getIssueKey(r: Record<string, string>, index: number): string {
   const profile = (r['Profile Name'] || '').trim().toLowerCase();
   const client = (r["Client's Name"] || '').trim().toLowerCase();
   const date = (r['Date'] || '').trim().toLowerCase();
@@ -24,7 +24,7 @@ export function getIssueKey(r: Record<string, string>): string {
   const noteOp = (r['Note for Operation'] || '').trim().toLowerCase();
   const url = (r['Conversation Page URL'] || '').trim().toLowerCase();
 
-  return `issue_${profile}_${client}_${date}_${notes}_${noteOp}_${url}`;
+  return `row_${index}_${profile}_${client}_${date}_${notes}_${noteOp}_${url}`;
 }
 
 function escapeHtml(str: string): string {
@@ -44,8 +44,8 @@ export async function checkAndNotifyNewIssues(records: Record<string, string>[],
     const newRecordsToSave: any[] = [];
     const notificationsToSend: Record<string, string>[] = [];
 
-    for (const r of records) {
-      const issueKey = getIssueKey(r);
+    records.forEach((r, idx) => {
+      const issueKey = getIssueKey(r, idx);
       const isNew = !existingKeysSet.has(issueKey);
 
       if (isNew) {
@@ -66,13 +66,13 @@ export async function checkAndNotifyNewIssues(records: Record<string, string>[],
       if (isNew || forceNotify) {
         notificationsToSend.push(r);
       }
-    }
+    });
 
     if (newRecordsToSave.length > 0) {
       await ProjectIssue.insertMany(newRecordsToSave, { ordered: false }).catch(() => {});
     }
 
-    // Send Telegram Bot notifications for new / forced issue entries!
+    // Send Telegram Bot notifications for new / updated issue entries
     for (const r of notificationsToSend) {
       const noteStr = r['Note for Operation'] || '';
       const { memberName, teamName } = parseOperationNote(noteStr);
