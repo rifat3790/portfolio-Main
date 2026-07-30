@@ -976,29 +976,23 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                       <thead>
                         <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)', background: 'rgba(255,255,255,0.02)' }}>
                           <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Date</th>
-                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Profile Name</th>
-                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Client's Name</th>
                           <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Conversation Link</th>
+                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Client's Name</th>
                           <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Team</th>
                           <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Special Notes</th>
                           <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Status</th>
+                          <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Profile Name</th>
                           <th style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' }}>Note for Operation</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredRecords.map((r, rIdx) => (
                           <tr key={(r["Client's Name"] || rIdx) + '-' + rIdx} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.01)'} onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                            {/* Col A: Date */}
                             <td style={{ padding: '12px 14px', color: 'var(--text-secondary)', whiteSpace: 'nowrap', fontWeight: 500 }}>
                               {r['Date'] || '-'}
                             </td>
-                            <td style={{ padding: '12px 14px' }}>
-                              <span style={{ background: 'rgba(168, 85, 247, 0.12)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.25)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700, display: 'inline-block' }}>
-                                {r['Profile Name'] || '-'}
-                              </span>
-                            </td>
-                            <td style={{ padding: '12px 14px', color: '#fff', fontWeight: 700 }}>
-                              {r["Client's Name"] || '-'}
-                            </td>
+                            {/* Col B: Conversation Link */}
                             <td style={{ padding: '12px 14px' }}>
                               {r['Conversation Page URL'] ? (
                                 <a
@@ -1028,14 +1022,21 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                                 <span style={{ color: 'var(--text-secondary)' }}>-</span>
                               )}
                             </td>
+                            {/* Col C: Client's Name */}
+                            <td style={{ padding: '12px 14px', color: '#fff', fontWeight: 700 }}>
+                              {r["Client's Name"] || '-'}
+                            </td>
+                            {/* Col D: Team */}
                             <td style={{ padding: '12px 14px', color: '#94a3b8', fontWeight: 600, fontSize: '0.78rem' }}>
                               {r['Team'] || '-'}
                             </td>
+                            {/* Col E: Special Notes */}
                             <td style={{ padding: '12px 14px' }}>
                               <span style={{ background: 'rgba(234, 179, 8, 0.12)', color: '#facc15', border: '1px solid rgba(234, 179, 8, 0.3)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600, display: 'inline-block' }}>
                                 {r['Special Notes'] || '-'}
                               </span>
                             </td>
+                            {/* Col F: Status */}
                             <td style={{ padding: '12px 14px' }}>
                               <span style={{
                                 display: 'inline-flex',
@@ -1050,6 +1051,13 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                                 {r['Status'] || 'Open'}
                               </span>
                             </td>
+                            {/* Col G: Profile Name */}
+                            <td style={{ padding: '12px 14px' }}>
+                              <span style={{ background: 'rgba(168, 85, 247, 0.12)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.25)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700, display: 'inline-block' }}>
+                                {r['Profile Name'] || '-'}
+                              </span>
+                            </td>
+                            {/* Col H: Note for Operation */}
                             <td style={{ padding: '12px 14px' }}>
                               {(() => {
                                 const rawNote = (r['Note for Operation'] || '').trim();
@@ -1061,7 +1069,7 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                                   return (
                                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap' }}>
                                       <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.82rem' }}>{member}</span>
-                                      <span style={{ background: 'rgba(0, 229, 255, 0.12)', color: '#00e5ff', border: '1px solid rgba(0, 229, 255, 0.3)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 800 }}>
+                                      <span style={{ background: 'rgba(0, 229, 255, 0.15)', color: '#00e5ff', border: '1px solid rgba(0, 229, 255, 0.35)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800 }}>
                                         {subTeam}
                                       </span>
                                     </div>
