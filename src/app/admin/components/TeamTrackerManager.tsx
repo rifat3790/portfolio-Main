@@ -1061,7 +1061,7 @@ export default function TeamTrackerManager({ showToast }: { showToast: (msg: str
                             {/* Col H: Note for Operation */}
                             <td style={{ padding: '12px 14px' }}>
                               {(() => {
-                                const rawNote = (r['Note for Operation'] || '').trim();
+                                const rawNote = (r['Note for Operation'] || r['Operation Note'] || r['Employee Name'] || '').trim();
                                 if (!rawNote) return <span style={{ color: 'var(--text-secondary)' }}>-</span>;
                                 const parts = rawNote.split('/');
                                 if (parts.length >= 2) {

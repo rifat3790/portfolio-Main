@@ -29,6 +29,60 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
+function parseShopifyIssueRow(row: string[]): Record<string, string> {
+  const urlIdx = row.findIndex(c => c.startsWith('http://') || c.startsWith('https://') || c.includes('fiverr.com'));
+  
+  let date = '';
+  let conversationUrl = '';
+  let clientName = '';
+  let team = 'Shopify Team';
+  let specialNotes = '';
+  let status = 'Open';
+  let profileName = '';
+  let noteForOperation = '';
+
+  if (urlIdx !== -1) {
+    conversationUrl = row[urlIdx].trim();
+    date = row.slice(0, urlIdx).filter(Boolean).join(', ').trim();
+    const remaining = row.slice(urlIdx + 1).map(c => c.trim()).filter(Boolean);
+
+    if (remaining.length > 0) clientName = remaining[0];
+    if (remaining.length > 1) team = remaining[1];
+    if (remaining.length > 2) specialNotes = remaining[2];
+    if (remaining.length > 3) status = remaining[3];
+    if (remaining.length > 4) profileName = remaining[4];
+
+    const slashIdx = remaining.findIndex((c, i) => i >= 4 && c.includes('/'));
+    if (slashIdx !== -1) {
+      noteForOperation = remaining[slashIdx];
+    } else if (remaining.length >= 6) {
+      noteForOperation = remaining[5];
+    }
+  } else {
+    date = (row[0] || '').trim();
+    conversationUrl = (row[1] || '').trim();
+    clientName = (row[2] || '').trim();
+    team = (row[3] || 'Shopify Team').trim();
+    specialNotes = (row[4] || '').trim();
+    status = (row[5] || 'Open').trim();
+    profileName = (row[6] || '').trim();
+    noteForOperation = (row[7] || row[8] || '').trim();
+  }
+
+  return {
+    'Date': date,
+    'Conversation Page URL': conversationUrl,
+    "Client's Name": clientName,
+    'Team': team,
+    'Special Notes': specialNotes,
+    'Status': status,
+    'Profile Name': profileName,
+    'Note for Operation': noteForOperation,
+    'Operation Note': noteForOperation,
+    'Employee Name': noteForOperation
+  };
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -69,41 +123,13 @@ export async function GET(req: NextRequest) {
       return row.some(cell => cell.trim().length > 0);
     });
 
-    const records = dataRows.map(row => {
-      const date = (row[0] || '').trim();
-      const conversationUrl = (row[1] || '').trim();
-      const clientName = (row[2] || '').trim();
-      const team = (row[3] || 'Shopify Team').trim();
-      const specialNotes = (row[4] || '').trim();
-      const status = (row[5] || 'Open').trim();
-      const profileName = (row[6] || '').trim();
-      
-      let noteForOperation = '';
-      for (let i = 7; i < row.length; i++) {
-        if (row[i] && row[i].trim().length > 0) {
-          noteForOperation = row[i].trim();
-          break;
-        }
-      }
-
-      return {
-        'Date': date,
-        'Conversation Page URL': conversationUrl,
-        "Client's Name": clientName,
-        'Team': team,
-        'Special Notes': specialNotes,
-        'Status': status,
-        'Profile Name': profileName,
-        'Note for Operation': noteForOperation
-      };
-    }).filter(record => {
-      return (
-        record["Client's Name"] !== '' ||
-        record["Conversation Page URL"] !== '' ||
-        record["Special Notes"] !== '' ||
+    const records = dataRows
+      .map(row => parseShopifyIssueRow(row))
+      .filter(record => 
+        record["Client's Name"] !== '' || 
+        record["Conversation Page URL"] !== '' || 
         record["Profile Name"] !== ''
       );
-    });
 
     const result = await checkAndNotifyNewIssues(records, notifyAll);
 
