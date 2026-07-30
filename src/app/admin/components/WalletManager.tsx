@@ -130,11 +130,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [consolidatedSortBy, setConsolidatedSortBy] = useState<'name' | 'income_desc' | 'savings_desc' | 'rate_desc'>('name');
 
   // 🎯 Savings Goals & Wealth Target Allocator State
-  const [savingsGoals, setSavingsGoals] = useState<Array<{ id: string; name: string; target: number; current: number; category: string }>>([
-    { id: '1', name: '💻 High-End M3 Max MacBook Pro', target: 280000, current: 125000, category: 'Gadgets' },
-    { id: '2', name: '🛡️ 6-Month Emergency Safety Fund', target: 120000, current: 85000, category: 'Other' },
-    { id: '3', name: '✈️ Cox’s Bazar & Travel Fund', target: 35000, current: 20000, category: 'Entertainment' },
-  ]);
+  const [savingsGoals, setSavingsGoals] = useState<ISavingsGoal[]>([]);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState('');
   const [goalName, setGoalName] = useState('');
@@ -142,22 +138,12 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [goalCurrent, setGoalCurrent] = useState('');
 
   // 🔒 Recurring Bills Overhead Vault State
-  const [recurringBills, setRecurringBills] = useState<Array<{ name: string; amount: number; category: string }>>([
-    { name: 'Mess Rent & Food Deposit', amount: 5000, category: 'Rent' },
-    { name: 'Wi-Fi & High-Speed Internet', amount: 1000, category: 'Utility' },
-    { name: 'AWS & Vercel Production Server', amount: 1450, category: 'Server' },
-    { name: 'Mobile Data & Prepaid Package', amount: 500, category: 'Utility' },
-  ]);
+  const [recurringBills, setRecurringBills] = useState<IRecurringBill[]>([]);
 
   const [isVaultModalOpen, setIsVaultModalOpen] = useState(false);
 
   // 💼 Wealth Vault & Assets State
-  const [assets, setAssets] = useState<IAsset[]>([
-    { id: 'a1', name: '💼 Primary Bank Savings Deposit', category: 'Bank', value: 185000, growthRate: 6 },
-    { id: 'a2', name: '💻 M3 Max MacBook & Workstation Gear', category: 'Gadget', value: 240000, growthRate: -10 },
-    { id: 'a3', name: '⚡ High-Yield Liquid Reserve', category: 'Cash', value: 75000, growthRate: 4 },
-    { id: 'a4', name: '🚀 Tech Growth Fund & Equities', category: 'Investment', value: 110000, growthRate: 12 },
-  ]);
+  const [assets, setAssets] = useState<IAsset[]>([]);
   const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
   const [editingAssetId, setEditingAssetId] = useState('');
   const [assetName, setAssetName] = useState('');
@@ -245,6 +231,20 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     if (activeMonth) {
       if (activeMonth.targetDailyCap) setTargetDailyCap(activeMonth.targetDailyCap);
       if (activeMonth.categoryBudgets) setCategoryBudgets(activeMonth.categoryBudgets);
+      setAssets(activeMonth.assets || []);
+      setSavingsGoals(activeMonth.savingsGoals || []);
+      setRecurringBills(activeMonth.recurringBills || []);
+    } else if (months.length > 0) {
+      const latest = months[months.length - 1];
+      if (latest.targetDailyCap) setTargetDailyCap(latest.targetDailyCap);
+      if (latest.categoryBudgets) setCategoryBudgets(latest.categoryBudgets);
+      setAssets(latest.assets || []);
+      setSavingsGoals(latest.savingsGoals || []);
+      setRecurringBills(latest.recurringBills || []);
+    } else {
+      setAssets([]);
+      setSavingsGoals([]);
+      setRecurringBills([]);
     }
   }, [selectedMonthId, months]);
 
@@ -4457,50 +4457,73 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   <Briefcase size={20} style={{ color: '#818cf8' }} /> Asset Allocation Vault
                 </h3>
 
-                <div className={styles.wealthGrid}>
-                  {assets.map((asset) => (
-                    <div key={asset.id || asset._id} className={styles.assetCardItem}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                        <div>
-                          <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', borderRadius: '4px', color: '#818cf8', fontWeight: 700 }}>
-                            {asset.category}
-                          </span>
-                          <h4 style={{ margin: '8px 0 0', fontSize: '0.95rem', fontWeight: 700, color: '#fff' }}>{asset.name}</h4>
+                {assets.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '36px 16px', background: 'rgba(15, 23, 42, 0.4)', borderRadius: '12px', border: '1px dashed rgba(129, 140, 248, 0.3)' }}>
+                    <Briefcase size={38} style={{ color: '#818cf8', marginBottom: '12px' }} />
+                    <h4 style={{ margin: '0 0 6px', fontSize: '1rem', fontWeight: 800, color: '#fff' }}>No Assets Saved in Vault</h4>
+                    <p style={{ margin: '0 0 16px', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                      Add your bank deposits, gadgets, liquid cash reserves, or investments to dynamically compute your total net worth portfolio.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setEditingAssetId('');
+                        setAssetName('');
+                        setAssetCategory('Bank');
+                        setAssetValue('');
+                        setAssetGrowthRate('');
+                        setIsAssetModalOpen(true);
+                      }}
+                      style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem' }}
+                    >
+                      <Plus size={16} /> Add First Asset to Database
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.wealthGrid}>
+                    {assets.map((asset) => (
+                      <div key={asset.id || asset._id} className={styles.assetCardItem}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                          <div>
+                            <span style={{ fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', borderRadius: '4px', color: '#818cf8', fontWeight: 700 }}>
+                              {asset.category}
+                            </span>
+                            <h4 style={{ margin: '8px 0 0', fontSize: '0.95rem', fontWeight: 700, color: '#fff' }}>{asset.name}</h4>
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button
+                              onClick={() => {
+                                setEditingAssetId(asset.id || asset._id || '');
+                                setAssetName(asset.name);
+                                setAssetCategory(asset.category);
+                                setAssetValue(String(asset.value));
+                                setAssetGrowthRate(String(asset.growthRate || 0));
+                                setIsAssetModalOpen(true);
+                              }}
+                              style={{ background: 'transparent', border: 'none', color: '#818cf8', cursor: 'pointer', padding: '4px' }}
+                            >
+                              <Edit size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteAsset(asset.id || asset._id || '')}
+                              style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <button
-                            onClick={() => {
-                              setEditingAssetId(asset.id || asset._id || '');
-                              setAssetName(asset.name);
-                              setAssetCategory(asset.category);
-                              setAssetValue(String(asset.value));
-                              setAssetGrowthRate(String(asset.growthRate || 0));
-                              setIsAssetModalOpen(true);
-                            }}
-                            style={{ background: 'transparent', border: 'none', color: '#818cf8', cursor: 'pointer', padding: '4px' }}
-                          >
-                            <Edit size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteAsset(asset.id || asset._id || '')}
-                            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
 
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{fmtVal(asset.value)}</span>
-                        {asset.growthRate !== undefined && (
-                          <span style={{ fontSize: '0.75rem', fontWeight: 700, color: asset.growthRate >= 0 ? '#10b981' : '#ef4444' }}>
-                            {asset.growthRate >= 0 ? `+${asset.growthRate}%/yr` : `${asset.growthRate}%/yr`}
-                          </span>
-                        )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{fmtVal(asset.value)}</span>
+                          {asset.growthRate !== undefined && (
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: asset.growthRate >= 0 ? '#10b981' : '#ef4444' }}>
+                              {asset.growthRate >= 0 ? `+${asset.growthRate}%/yr` : `${asset.growthRate}%/yr`}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>
