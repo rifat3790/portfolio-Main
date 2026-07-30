@@ -1587,6 +1587,29 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       setSendingEmailReport(false);
     }
   };
+  const [sendingTelegramPush, setSendingTelegramPush] = useState<boolean>(false);
+
+  const handleSendTelegramPacePush = async () => {
+    setSendingTelegramPush(true);
+    showToast('🚀 Sending Daily Pace & Guidance push to Telegram Bot...', 'info');
+    try {
+      const res = await fetch('/api/admin/wallet/telegram-pace', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetDailyCap }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast('🤖 Daily Pace push sent to Telegram Bot successfully!', 'success');
+      } else {
+        showToast(data.error || 'Failed to send Telegram push', 'error');
+      }
+    } catch (err) {
+      showToast('Error sending Telegram push notification', 'error');
+    } finally {
+      setSendingTelegramPush(false);
+    }
+  };
 
   // FX Rates relative to BDT
   const fxRates: { [key: string]: number } = {
@@ -4537,7 +4560,6 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 </div>
 
               </div>
-
             </div>
           )}
 
@@ -4553,29 +4575,55 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       <Zap size={24} style={{ color: 'var(--accent-gold)' }} /> Daily Expense Pace & AI Advisor
                     </h2>
                   </div>
-                  <button
-                    onClick={handleSendTestEmailReport}
-                    disabled={sendingEmailReport}
-                    style={{
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '10px 18px',
-                      borderRadius: '8px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-                      opacity: sendingEmailReport ? 0.7 : 1
-                    }}
-                  >
-                    <Send size={16} /> {sendingEmailReport ? 'Sending Test Email...' : 'Send Instant Test Email Report'}
-                  </button>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={handleSendTelegramPacePush}
+                      disabled={sendingTelegramPush}
+                      style={{
+                        background: 'linear-gradient(135deg, #0088cc 0%, #006699 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 12px rgba(0, 136, 204, 0.3)',
+                        opacity: sendingTelegramPush ? 0.7 : 1,
+                        fontSize: '0.82rem'
+                      }}
+                    >
+                      <MessageCircle size={16} /> {sendingTelegramPush ? 'Pushing Telegram...' : 'Telegram Push Alert'}
+                    </button>
+
+                    <button
+                      onClick={handleSendTestEmailReport}
+                      disabled={sendingEmailReport}
+                      style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                        opacity: sendingEmailReport ? 0.7 : 1,
+                        fontSize: '0.82rem'
+                      }}
+                    >
+                      <Send size={16} /> {sendingEmailReport ? 'Sending Email...' : 'Send Test Email Report'}
+                    </button>
+                  </div>
                 </div>
 
-                {/* Daily Metrics Dashboard Pills */}
+                {/* Daily Metrics Dashboard Pills & No-Spend Streak */}
                 {(() => {
                   const now = new Date();
                   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -4590,6 +4638,17 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   const dailyAverage = totalExp / daysElapsed;
                   const recommendedDailyCap = Math.max(0, netSav) / daysRemaining;
                   const isSafePace = dailyAverage <= recommendedDailyCap;
+
+                  // No spend days calculator
+                  const expenseDates = new Set((currentMonthData?.expenses || []).map(e => 
+                    e.date ? new Date(e.date).toISOString().split('T')[0] : ''
+                  ).filter(Boolean));
+
+                  let noSpendDays = 0;
+                  for (let d = 1; d <= daysElapsed; d++) {
+                    const dateStr = new Date(now.getFullYear(), now.getMonth(), d).toISOString().split('T')[0];
+                    if (!expenseDates.has(dateStr)) noSpendDays++;
+                  }
 
                   return (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
@@ -4618,10 +4677,125 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           {isSafePace ? 'Within target savings margin' : 'Consider reducing daily spend'}
                         </span>
                       </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(251, 191, 36, 0.25)' }}>
+                        <span style={{ fontSize: '0.72rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700 }}>🔥 No-Spend Streak</span>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#fbbf24', marginTop: '4px' }}>
+                          {noSpendDays} Days <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#fef08a' }}>Achieved 🌟</span>
+                        </div>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Days with ৳0 expenditure</span>
+                      </div>
                     </div>
                   );
                 })()}
               </div>
+
+              {/* ⚡ NEW FEATURE 1: Interactive Daily Budget Simulator & End-of-Month Projection Engine */}
+              {(() => {
+                const now = new Date();
+                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const daysElapsed = Math.max(1, now.getDate());
+                const daysRemaining = Math.max(1, daysInMonth - daysElapsed + 1);
+
+                const currentMonthData = activeMonth || months[0];
+                const totalExp = currentMonthData ? getExpenseTotal(currentMonthData) : 0;
+                const totalInc = currentMonthData ? getIncomeTotal(currentMonthData) : 0;
+                const currentNetSavings = totalInc - totalExp;
+
+                const projectedRemainingSpend = targetDailyCap * daysRemaining;
+                const projectedTotalExp = totalExp + projectedRemainingSpend;
+                const projectedEndSavings = totalInc - projectedTotalExp;
+                const projectedSavingsRate = totalInc > 0 ? (projectedEndSavings / totalInc) * 100 : 0;
+                const runwayDays = targetDailyCap > 0 ? Math.max(0, currentNetSavings) / targetDailyCap : 0;
+
+                return (
+                  <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%)', border: '1px solid rgba(0, 229, 255, 0.25)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Sliders size={20} style={{ color: '#00e5ff' }} /> Interactive Daily Budget Simulator & Projection Engine
+                      </h3>
+                      <span style={{ background: 'rgba(0, 229, 255, 0.12)', color: '#00e5ff', border: '1px solid rgba(0, 229, 255, 0.25)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 800 }}>
+                        REAL-TIME SIMULATION
+                      </span>
+                    </div>
+
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 16px' }}>
+                      Adjust your target daily spending limit below to instantly project your End-of-Month Savings balance and runway coverage.
+                    </p>
+
+                    {/* Range Slider & Preset Buttons */}
+                    <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#e2e8f0' }}>Target Daily Spending Cap:</span>
+                        <span style={{ fontSize: '1.2rem', fontWeight: 900, color: '#00e5ff' }}>{fmtVal(targetDailyCap)} / day</span>
+                      </div>
+
+                      <input
+                        type="range"
+                        min={500}
+                        max={5000}
+                        step={100}
+                        value={targetDailyCap}
+                        onChange={(e) => setTargetDailyCap(Number(e.target.value))}
+                        style={{ width: '100%', height: '8px', borderRadius: '4px', cursor: 'pointer', accentColor: '#00e5ff', marginBottom: '14px' }}
+                      />
+
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {[
+                          { label: '৳1,000 / day (Ultra Saver)', val: 1000 },
+                          { label: '৳1,800 / day (Balanced)', val: 1800 },
+                          { label: '৳2,500 / day (Comfortable)', val: 2500 },
+                          { label: '৳3,500 / day (Flex)', val: 3500 },
+                        ].map((preset) => (
+                          <button
+                            key={preset.val}
+                            onClick={() => setTargetDailyCap(preset.val)}
+                            style={{
+                              background: targetDailyCap === preset.val ? 'rgba(0, 229, 255, 0.2)' : 'rgba(255,255,255,0.04)',
+                              color: targetDailyCap === preset.val ? '#00e5ff' : 'var(--text-secondary)',
+                              border: targetDailyCap === preset.val ? '1px solid #00e5ff' : '1px solid rgba(255,255,255,0.08)',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Simulation Live Metrics Result Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
+                      <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Projected Remaining Spend</span>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#f87171', marginTop: '4px' }}>
+                          {fmtVal(projectedRemainingSpend)}
+                        </div>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>At {fmtVal(targetDailyCap)}/day for {daysRemaining} days</span>
+                      </div>
+
+                      <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                        <span style={{ fontSize: '0.7rem', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>Projected End Net Savings</span>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: projectedEndSavings >= 0 ? '#34d399' : '#ef4444', marginTop: '4px' }}>
+                          {fmtVal(projectedEndSavings)}
+                        </div>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Savings Margin: {projectedSavingsRate.toFixed(1)}%</span>
+                      </div>
+
+                      <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                        <span style={{ fontSize: '0.7rem', color: '#a5b4fc', textTransform: 'uppercase', fontWeight: 700 }}>Savings Runway Coverage</span>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#818cf8', marginTop: '4px' }}>
+                          {runwayDays.toFixed(1)} Days
+                        </div>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Living coverage by current savings</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Peak Spending Days & Weekday Heatmap */}
               <div className={styles.toolsGrid}>
@@ -4721,6 +4895,65 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   })()}
                 </div>
 
+              </div>
+
+              {/* ⚡ NEW FEATURE 2: AI Category Daily Pace & Anomaly Advisory */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                <h3 style={{ margin: '0 0 14px', fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Sparkles size={20} style={{ color: '#f59e0b' }} /> AI Category Daily Pace Breakdown & Advisory
+                </h3>
+
+                {(() => {
+                  const now = new Date();
+                  const daysElapsed = Math.max(1, now.getDate());
+                  const currentMonthData = activeMonth || months[0];
+                  
+                  if (!currentMonthData || !currentMonthData.expenses || currentMonthData.expenses.length === 0) {
+                    return <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No expense data logged for category pace analysis.</div>;
+                  }
+
+                  const catTotals: { [cat: string]: number } = {};
+                  let totalExp = 0;
+                  currentMonthData.expenses.forEach(e => {
+                    const cat = e.category || 'Other';
+                    catTotals[cat] = (catTotals[cat] || 0) + e.amount;
+                    totalExp += e.amount;
+                  });
+
+                  const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+                  const topCategory = sortedCats[0];
+                  const topCatPct = totalExp > 0 && topCategory ? (topCategory[1] / totalExp) * 100 : 0;
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                        {sortedCats.map(([cat, amt]) => {
+                          const dailyCategoryPace = amt / daysElapsed;
+                          const budgetCap = categoryBudgets[cat] || 5000;
+                          const isOver = amt > budgetCap;
+
+                          return (
+                            <div key={cat} style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '12px', borderRadius: '10px', border: isOver ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(255,255,255,0.06)' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#fff' }}>{cat}</span>
+                                {isOver && <span style={{ fontSize: '0.65rem', background: 'rgba(239,68,68,0.2)', color: '#fca5a5', padding: '1px 5px', borderRadius: '4px', fontWeight: 800 }}>EXCEEDED</span>}
+                              </div>
+                              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: isOver ? '#ef4444' : '#fbbf24' }}>
+                                {fmtVal(dailyCategoryPace)} <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>/ day</span>
+                              </div>
+                              <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Total: {fmtVal(amt)} (Cap: {fmtVal(budgetCap)})</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Smart Advisory Banner */}
+                      <div style={{ background: 'rgba(15, 23, 42, 0.7)', borderLeft: '4px solid #f59e0b', padding: '14px 16px', borderRadius: '8px', fontSize: '0.82rem', color: '#e2e8f0', lineHeight: 1.6 }}>
+                        💡 <strong>Smart Advisory:</strong> {topCategory ? `${topCategory[0]} খরচে আপনার বাজেটের ${topCatPct.toFixed(0)}% খরচ হয়েছে। দৈনিক খরচের হার নিয়ন্ত্রণ করলে মাসে অতিরিক্ত সেভিংস নিশ্চিত থাকবে।` : 'দৈনিক বাজেটের সীমার মধ্যে খরচ বজায় রাখুন।'}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Scheduled Daily 8:00 PM Email Report Card */}
