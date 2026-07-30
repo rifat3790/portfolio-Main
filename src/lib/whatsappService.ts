@@ -16,7 +16,7 @@ export const sendWhatsAppNotification = async (data: INotificationData) => {
   const messageText = data.message;
 
   // 1. Telegram Bot Instant Push (100% Guaranteed & Free for Vercel production)
-  const defaultTelegramToken = Buffer.from('ODg5NTE5MDMyNzpBQUZZd0ZRaXNOYTBTSldiazdHT0hXM2VFdmtmOWxtcTFHTQ==', 'base64').toString('utf-8');
+  const defaultTelegramToken = Buffer.from('ODg5NTE5MDMyNzpBQUczaE1WZkdDQy1LRWR3b19DTk5GZnlqaHlPbzFuUkloOA==', 'base64').toString('utf-8');
   const defaultChatId = Buffer.from('NTk2MDExMzA4NQ==', 'base64').toString('utf-8');
 
   const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || defaultTelegramToken;
