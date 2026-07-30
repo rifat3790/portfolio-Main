@@ -82,11 +82,15 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [months, setMonths] = useState<IWalletMonthData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonthId, setSelectedMonthId] = useState<string>('');
-  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'currency_tools'>('single');
+  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'currency_tools' | 'daily_intel'>('single');
   
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
+
+  // Daily Pace & Email State
+  const [targetDailyCap, setTargetDailyCap] = useState<number>(2000);
+  const [sendingEmailReport, setSendingEmailReport] = useState<boolean>(false);
   
   // Date & Amount Sorting State
   const [expSortBy, setExpSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
@@ -1546,6 +1550,29 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     showToast('Wallet backup exported to JSON successfully!', 'success');
   };
 
+  // ✉️ Send Test Email Report to Inbox (mdrifayethossen@gmail.com)
+  const handleSendTestEmailReport = async () => {
+    setSendingEmailReport(true);
+    showToast('🚀 Generating & sending Test Email Report to mdrifayethossen@gmail.com...', 'info');
+    try {
+      const res = await fetch('/api/admin/wallet/email-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'mdrifayethossen@gmail.com' }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast('✉️ Test Email Digest successfully delivered to mdrifayethossen@gmail.com (Inbox)!', 'success');
+      } else {
+        showToast(data.error || 'Failed to send email report', 'error');
+      }
+    } catch (err) {
+      showToast('Error sending email report', 'error');
+    } finally {
+      setSendingEmailReport(false);
+    }
+  };
+
   // FX Rates relative to BDT
   const fxRates: { [key: string]: number } = {
     BDT: 1.0,
@@ -2085,6 +2112,26 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
               }}
             >
               <ArrowRightLeft size={16} style={{ color: '#3b82f6' }} /> FX & Tools
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('daily_intel')}
+              style={{
+                background: walletSubTab === 'daily_intel' ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'daily_intel' ? 'var(--accent-gold)' : 'var(--glass-border-light)',
+                color: walletSubTab === 'daily_intel' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Zap size={16} style={{ color: 'var(--accent-gold)' }} /> Daily Pace & Guidance
             </button>
           </div>
 
@@ -4434,6 +4481,215 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   </div>
                 </div>
 
+              </div>
+
+            </div>
+          )}
+
+          {walletSubTab === 'daily_intel' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              {/* Daily Pace HUD Header */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(129, 140, 248, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '1px' }}>Daily Spending & Budget Guidance Engine</span>
+                    <h2 style={{ margin: '4px 0 0', fontSize: '1.8rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Zap size={24} style={{ color: 'var(--accent-gold)' }} /> Daily Expense Pace & AI Advisor
+                    </h2>
+                  </div>
+                  <button
+                    onClick={handleSendTestEmailReport}
+                    disabled={sendingEmailReport}
+                    style={{
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '10px 18px',
+                      borderRadius: '8px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                      opacity: sendingEmailReport ? 0.7 : 1
+                    }}
+                  >
+                    <Send size={16} /> {sendingEmailReport ? 'Sending Test Email...' : 'Send Instant Test Email Report'}
+                  </button>
+                </div>
+
+                {/* Daily Metrics Dashboard Pills */}
+                {(() => {
+                  const now = new Date();
+                  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                  const daysElapsed = Math.max(1, now.getDate());
+                  const daysRemaining = Math.max(1, daysInMonth - daysElapsed + 1);
+
+                  const currentMonthData = activeMonth || months[0];
+                  const totalExp = currentMonthData ? getExpenseTotal(currentMonthData) : 0;
+                  const totalInc = currentMonthData ? getIncomeTotal(currentMonthData) : 0;
+                  const netSav = totalInc - totalExp;
+
+                  const dailyAverage = totalExp / daysElapsed;
+                  const recommendedDailyCap = Math.max(0, netSav) / daysRemaining;
+                  const isSafePace = dailyAverage <= recommendedDailyCap;
+
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Current Daily Average</span>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#f87171', marginTop: '4px' }}>
+                          {fmtVal(dailyAverage)} <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>/ day</span>
+                        </div>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Based on {daysElapsed} days elapsed</span>
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Recommended Safe Daily Limit</span>
+                        <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#10b981', marginTop: '4px' }}>
+                          {fmtVal(recommendedDailyCap)} <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>/ day</span>
+                        </div>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>For remaining {daysRemaining} days</span>
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Spending Velocity</span>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 900, color: isSafePace ? '#10b981' : '#ef4444', marginTop: '6px' }}>
+                          {isSafePace ? '🟢 OPTIMAL / SAFE' : '🔴 HIGH SPENDING PACE'}
+                        </div>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                          {isSafePace ? 'Within target savings margin' : 'Consider reducing daily spend'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Peak Spending Days & Weekday Heatmap */}
+              <div className={styles.toolsGrid}>
+                
+                {/* Top Highest Spending Days */}
+                <div className={styles.walletCard}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Flame size={20} style={{ color: '#ef4444' }} /> Peak Expenditure Days (কোন দিন বেশি খরচ হচ্ছে)
+                  </h3>
+
+                  {(() => {
+                    const currentMonthData = activeMonth || months[0];
+                    if (!currentMonthData || !currentMonthData.expenses || currentMonthData.expenses.length === 0) {
+                      return <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No expense records logged for this period.</div>;
+                    }
+
+                    const dateMap: { [date: string]: { total: number; items: string[] } } = {};
+                    currentMonthData.expenses.forEach(e => {
+                      const dateStr = e.date ? new Date(e.date).toISOString().split('T')[0] : 'Other';
+                      if (!dateMap[dateStr]) dateMap[dateStr] = { total: 0, items: [] };
+                      dateMap[dateStr].total += e.amount;
+                      dateMap[dateStr].items.push(`${e.description} (${fmtVal(e.amount)})`);
+                    });
+
+                    const sortedDates = Object.entries(dateMap).sort((a, b) => b[1].total - a[1].total).slice(0, 4);
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {sortedDates.map(([date, data], index) => (
+                          <div key={date} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <span style={{ fontSize: '0.7rem', padding: '2px 6px', background: index === 0 ? 'rgba(239, 68, 68, 0.2)' : 'rgba(129, 140, 248, 0.15)', color: index === 0 ? '#fca5a5' : '#a5b4fc', borderRadius: '4px', fontWeight: 700 }}>
+                                #{index + 1} PEAK DATE: {date}
+                              </span>
+                              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                                {data.items.slice(0, 2).join(', ')}
+                              </div>
+                            </div>
+                            <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#f87171' }}>{fmtVal(data.total)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Weekday Spending Distribution (Heatmap) */}
+                <div className={styles.walletCard}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Calendar size={20} style={{ color: 'var(--accent-gold)' }} /> Weekday Expenditure Distribution
+                  </h3>
+
+                  {(() => {
+                    const currentMonthData = activeMonth || months[0];
+                    const weekdayTotals: { [day: string]: number } = {
+                      Friday: 0, Saturday: 0, Sunday: 0, Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0
+                    };
+                    let grandTotal = 0;
+
+                    if (currentMonthData && currentMonthData.expenses) {
+                      currentMonthData.expenses.forEach(e => {
+                        if (e.date) {
+                          const dayName = new Date(e.date).toLocaleDateString('en-US', { weekday: 'long' });
+                          if (weekdayTotals[dayName] !== undefined) {
+                            weekdayTotals[dayName] += e.amount;
+                            grandTotal += e.amount;
+                          }
+                        }
+                      });
+                    }
+
+                    const dayNamesInOrder = ['Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
+
+                    return (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {dayNamesInOrder.map((day) => {
+                          const amount = weekdayTotals[day] || 0;
+                          const pct = grandTotal > 0 ? (amount / grandTotal) * 100 : 0;
+                          return (
+                            <div key={day} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                                <span style={{ fontWeight: 600, color: day === 'Friday' || day === 'Saturday' ? 'var(--accent-gold)' : '#fff' }}>
+                                  🇧🇩 {day} {day === 'Friday' ? '(ছুটির দিন)' : ''}
+                                </span>
+                                <span style={{ color: 'var(--text-secondary)' }}>
+                                  <strong style={{ color: '#fff' }}>{fmtVal(amount)}</strong> ({pct.toFixed(0)}%)
+                                </span>
+                              </div>
+                              <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                                <div style={{ width: `${pct}%`, height: '100%', background: day === 'Friday' ? 'linear-gradient(90deg, #f59e0b, #ef4444)' : 'linear-gradient(90deg, #6366f1, #3b82f6)', borderRadius: '4px' }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+              </div>
+
+              {/* Scheduled Daily 8:00 PM Email Report Card */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.72rem', padding: '3px 8px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '4px', color: '#34d399', fontWeight: 700 }}>
+                      🟢 AUTOMATED SCHEDULE ACTIVE
+                    </span>
+                    <h3 style={{ margin: '8px 0 4px', fontSize: '1.15rem', fontWeight: 800, color: '#fff' }}>
+                      ✉️ Daily 8:00 PM BST Executive Digest Dispatch
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      Recipient: <strong style={{ color: '#fff' }}>mdrifayethossen@gmail.com</strong> | Schedule: Everyday at 8:00 PM Bangladesh Time (BST)
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleSendTestEmailReport}
+                    disabled={sendingEmailReport}
+                    style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#34d399', padding: '10px 16px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem' }}
+                  >
+                    <Send size={15} /> Send Test Email Now
+                  </button>
+                </div>
               </div>
 
             </div>
