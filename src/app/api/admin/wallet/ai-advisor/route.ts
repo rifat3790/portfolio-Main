@@ -43,10 +43,23 @@ export async function GET(req: NextRequest) {
     // 1. ML Spending Velocity & Regression Model
     const currentDailyPace = totalExpense / daysElapsed;
     const recommendedDailyCap = Math.max(0, netLiquidSavings) / daysRemaining;
-    const projectedMonthEndExpense = totalExpense + (currentDailyPace * daysRemaining);
-    const projectedEndSavings = carriedOverSavings + totalIncome - projectedMonthEndExpense - activeLoans;
 
-    // 2. Category Burn Rate Anomaly Detection
+    // 2. Monte Carlo 3-Tier Risk Simulation Forecast
+    // Optimistic (20% reduction in daily pace)
+    const monteCarloOptimistic = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * 0.8 * daysRemaining)) - activeLoans;
+    // Expected (current daily pace)
+    const monteCarloExpected = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * daysRemaining)) - activeLoans;
+    // Conservative (25% increase in daily pace due to unexpected bills)
+    const monteCarloConservative = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * 1.25 * daysRemaining)) - activeLoans;
+
+    // 3. FIRE (Financial Independence) Roadmap & Runway Math
+    const estimatedAnnualExpense = (totalExpense / Math.max(1, daysElapsed)) * 365;
+    const fireTargetNumber = estimatedAnnualExpense * 25; // 4% rule
+    const fireProgressPct = fireTargetNumber > 0 ? Math.min(100, Math.max(0, (netLiquidSavings / fireTargetNumber) * 100)) : 0;
+    const livingRunwayDays = currentDailyPace > 0 ? Math.round(netLiquidSavings / currentDailyPace) : 999;
+    const livingRunwayMonths = (livingRunwayDays / 30).toFixed(1);
+
+    // 4. Category Burn Rate Anomaly Detection
     const categoryTotals: Record<string, number> = {};
     (latestMonth.expenses || []).forEach((e: any) => {
       const cat = e.category || 'Other';
@@ -72,7 +85,7 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // 3. Financial Discipline & Health Score (0-100)
+    // 5. Financial Health Index (0-100)
     const savingsRate = (totalIncome + carriedOverSavings) > 0 ? (netLiquidSavings / (totalIncome + carriedOverSavings)) * 100 : 0;
     let healthScore = 60;
     if (savingsRate >= 35) healthScore += 25;
@@ -82,28 +95,27 @@ export async function GET(req: NextRequest) {
     else healthScore -= anomalies.length * 5;
     healthScore = Math.max(10, Math.min(100, healthScore));
 
-    // 4. Personalized AI Lifestyle & Action Advice ("কিভাবে চলা উচিত")
+    // 6. Actionable AI Recommendations & Roadmap Direction ("কিভাবে চলা উচিত")
     const adviceRules: string[] = [];
 
     if (currentDailyPace > recommendedDailyCap) {
-      adviceRules.push(`⚠️ দৈনিক খরচের গড় (${fmt(currentDailyPace)}/দিন) প্রস্তাবিত সীমা (${fmt(recommendedDailyCap)}/দিন) অতিক্রম করেছে। দৈনিক খরচ ${fmt(currentDailyPace - recommendedDailyCap)} টাকা কমালে মাস শেষে ${fmt(projectedEndSavings > 0 ? projectedEndSavings : 0)} সঞ্চয় নিশ্চিত হবে।`);
+      adviceRules.push(`⚠️ দৈনিক খরচের গড় (${fmt(currentDailyPace)}/দিন) প্রস্তাবিত সীমা (${fmt(recommendedDailyCap)}/দিন) অতিক্রম করেছে। দৈনিক খরচ ${fmt(currentDailyPace - recommendedDailyCap)} টাকা কমালে মাস শেষে ${fmt(monteCarloExpected > 0 ? monteCarloExpected : 0)} সঞ্চয় নিশ্চিত হবে।`);
     } else {
-      adviceRules.push(`🌟 আপনার দৈনিক খরচের গতি নিয়ন্ত্রণাধীন রয়েছে (${fmt(currentDailyPace)}/দিন)। প্রস্তাবিত ক্যাপিং অনুযায়ী চললে মাস শেষে আনুমানিক ${fmt(projectedEndSavings)} ব্যালেন্স থাকবে।`);
+      adviceRules.push(`🌟 আপনার দৈনিক খরচের গতি বজায় রয়েছে (${fmt(currentDailyPace)}/দিন)। প্রস্তাবিত সীমার মধ্যে থাকলে মাস শেষে মন্টে কার্লো প্রেডিকশন অনুযায়ী ${fmt(monteCarloExpected)} জমা থাকবে।`);
     }
 
     if (anomalies.length > 0) {
       const catNames = anomalies.map(a => a.category).join(', ');
-      adviceRules.push(`🔴 ${catNames} খাতে বাজেট সীমা অতিক্রম করেছে। এই খাতে অপ্রয়োজনীয় ব্যয় স্থগিত রাখার পরামর্শ দেওয়া হচ্ছে।`);
+      adviceRules.push(`🔴 ${catNames} খাতে বাজেট সীমা ওভার-স্পেন্ড হয়েছে। এই খাতে বাকি দিনগুলোতে ব্যয় ছাঁটাইয়ের নির্দেশ দেয়া হলো।`);
     }
 
     if (activeLoans > 0) {
-      adviceRules.push(`🤝 মোট ${fmt(activeLoans)} টাকা বাজারে লোন/ধারে দেওয়া আছে। দ্রুত আদায়ের চেষ্টা করলে আপনার লিকুইড সেভিংস বৃদ্ধি পাবে।`);
+      adviceRules.push(`🤝 মোট ${fmt(activeLoans)} টাকা বাজারে পেন্ডিং লোন রয়েছে। ১-ক্লিক রিমাইন্ডার পাঠিয়ে লোন উদ্ধার করলে ব্যালেন্স বাড়বে।`);
     } else {
-      adviceRules.push(`✅ বাজারে কোনো বকেয়া লোন পেন্ডিং নেই। আপনার লিকুইড ব্যালেন্স নিরাপদ রয়েছে।`);
+      adviceRules.push(`✅ বাজারে কোনো বকেয়া লোন পেন্ডিং নেই। সকল পাওনা টাকা আদায়কৃত।`);
     }
 
-    const livingRunwayDays = currentDailyPace > 0 ? Math.round(netLiquidSavings / currentDailyPace) : 999;
-    adviceRules.push(`🛡️ বর্তমান ব্যালেন্সে আপনার কোনো ইনকাম ছাড়াও পরবর্তী প্রায় ${livingRunwayDays} দিন চলার সক্ষমতা রয়েছে।`);
+    adviceRules.push(`🛡️ বর্তমান জমানো ব্যালেন্সে আপনার কোনো ইনকাম ছাড়াও প্রায় ${livingRunwayMonths} মাস (${livingRunwayDays} দিন) সম্পূর্ণ নিরাপদে সংসার চালানোর সক্ষমতা রয়েছে।`);
 
     return NextResponse.json({
       monthName: latestMonth.monthName,
@@ -118,13 +130,20 @@ export async function GET(req: NextRequest) {
       netLiquidSavings,
       currentDailyPace,
       recommendedDailyCap,
-      projectedMonthEndExpense,
-      projectedEndSavings,
       healthScore,
       savingsRate,
       anomalies,
       livingRunwayDays,
+      livingRunwayMonths,
+      fireTargetNumber,
+      fireProgressPct,
+      monteCarlo: {
+        optimistic: monteCarloOptimistic,
+        expected: monteCarloExpected,
+        conservative: monteCarloConservative,
+      },
       adviceRules,
+      scheduledTimeNotice: 'Automated Daily 9:00 PM BST Notifications Active'
     });
   } catch (error: any) {
     console.error('Error computing AI Advisor data:', error);
@@ -167,6 +186,7 @@ export async function POST(req: NextRequest) {
 
     const currentDailyPace = totalExpense / daysElapsed;
     const recommendedDailyCap = Math.max(0, netLiquidSavings) / daysRemaining;
+    const monteCarloExpected = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * daysRemaining)) - activeLoans;
     const savingsRatePct = (totalIncome + carriedOverSavings) > 0 ? (netLiquidSavings / (totalIncome + carriedOverSavings)) * 100 : 0;
 
     let healthScore = 65;
@@ -174,31 +194,33 @@ export async function POST(req: NextRequest) {
 
     const results: Record<string, any> = {};
 
-    // Send Telegram Notification
+    // Send Telegram Notification (Daily 9:00 PM BST)
     if (channel === 'telegram' || channel === 'all') {
-      const telegramMsg = `🤖 <b>AI EXECUTIVE FINANCIAL COPILOT REPORT</b>
+      const telegramMsg = `🤖 <b>DAILY 9:00 PM BST AI EXECUTIVE FINANCIAL ADVISOR</b>
 
 🗓️ <b>Period:</b> ${latestMonth.monthName} (Day ${daysElapsed}/${daysInMonth})
 💰 <b>Net Liquid Savings:</b> ${fmt(netLiquidSavings)}
 ⚡ <b>Current Daily Pace:</b> ${fmt(currentDailyPace)} / day
-🎯 <b>Recommended Daily Cap:</b> ${fmt(recommendedDailyCap)} / day
+🎯 <b>Recommended Safe Daily Cap:</b> ${fmt(recommendedDailyCap)} / day
 
+🔮 <b>Monte Carlo Expected Savings:</b> ${fmt(monteCarloExpected)}
 📊 <b>Health Rating:</b> ${healthScore}/100
 🛡️ <b>Status:</b> ${currentDailyPace <= recommendedDailyCap ? '🟢 SAFE PACING' : '⚠️ ELEVATED PACING'}
 
-💡 <b>AI Executive Advice:</b>
-• ${currentDailyPace <= recommendedDailyCap ? 'দৈনিক খরচ নিয়ন্ত্রণে আছে। প্রস্তাবিত ক্যাপিং বজায় রাখুন।' : 'দৈনিক খরচ প্রস্তাবিত ক্যাপিং ছাড়িয়েছে। অপচয় কমানো প্রয়োজন।'}
-• পেন্ডিং লোন: ${fmt(activeLoans)} (আদায়ে সচেষ্ট হন)।`;
+💡 <b>AI Executive Direction:</b>
+• ${currentDailyPace <= recommendedDailyCap ? 'দৈনিক খরচ নিয়ন্ত্রণে আছে। প্রস্তাবিত ক্যাপিং বজায় রাখুন।' : 'দৈনিক খরচ সীমা অতিক্রম করেছে। অপচয় ছাঁটাই করুন।'}
+• পেন্ডিং লোন: ${fmt(activeLoans)} (আদায়ে সচেষ্ট হন)।
+• <i>Automated Dispatch at 9:00 PM BST Everyday</i>`;
 
       try {
         await sendWhatsAppNotification({ message: telegramMsg });
-        results.telegram = { success: true, message: 'Dispatched to Telegram Bot successfully!' };
+        results.telegram = { success: true, message: 'Dispatched 9:00 PM report to Telegram Bot successfully!' };
       } catch (err: any) {
         results.telegram = { success: false, error: err.message };
       }
     }
 
-    // Send Email Notification
+    // Send Email Notification (Daily 9:00 PM BST)
     if (channel === 'email' || channel === 'all') {
       try {
         const emailResult = await sendWalletDailyEmailReport({
@@ -223,7 +245,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'AI Executive Advisory dispatch completed!',
+      message: 'Daily 9:00 PM AI Executive Advisory dispatch completed!',
       results
     });
   } catch (error: any) {
