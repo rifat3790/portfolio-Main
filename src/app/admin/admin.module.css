@@ -977,6 +977,8 @@
   margin-bottom: 24px;
   flex-wrap: wrap;
   gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 640px) {
@@ -988,9 +990,11 @@
   .walletHeaderBtns {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
   .walletHeaderBtns button {
     flex: 1;
+    min-width: 120px;
     justify-content: center;
   }
 }
@@ -1006,6 +1010,8 @@
   flex-wrap: nowrap;
   scrollbar-width: thin;
   max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .walletTabs button {
@@ -1019,38 +1025,43 @@
     padding-bottom: 8px;
   }
   .walletTabs button {
-    padding: 8px 12px !important;
-    font-size: 0.78rem !important;
+    padding: 8px 10px !important;
+    font-size: 0.76rem !important;
   }
 }
 
 /* Grid Utility Layouts & Mobile Responsiveness */
 .grid260_1fr {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 240px minmax(0, 1fr);
   gap: 20px;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .grid4 {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .grid3 {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .grid2 {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1024px) {
@@ -1059,11 +1070,11 @@
     gap: 16px;
   }
   .grid4 {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 840px) {
   .grid3 {
     grid-template-columns: 1fr;
   }
@@ -1082,32 +1093,36 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  width: 100%;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 1024px) {
   .monthsListContainer {
     flex-direction: row;
     overflow-x: auto;
-    padding-bottom: 8px;
+    padding-bottom: 6px;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
   }
   .monthsListContainer button {
     white-space: nowrap;
-    min-width: 140px;
+    min-width: 130px;
     flex-shrink: 0;
   }
 }
 
 .walletHudContainer {
   display: grid;
-  grid-template-columns: 150px 1fr 1fr;
+  grid-template-columns: 140px minmax(0, 1fr) minmax(0, 1fr);
   gap: 20px;
   align-items: start;
   margin-bottom: 24px;
-  background: rgba(7, 8, 15, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.02);
+  background: rgba(7, 8, 15, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 14px;
   padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .walletHudCol1 {
@@ -1115,12 +1130,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
   padding-right: 12px;
 }
 
 .walletHudCol2 {
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
   padding-right: 12px;
 }
 
@@ -1128,22 +1143,23 @@
   padding-left: 4px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 840px) {
   .walletHudContainer {
     grid-template-columns: 1fr;
     gap: 16px;
+    padding: 14px 12px;
   }
   .walletHudCol1 {
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     padding-right: 0;
-    padding-bottom: 16px;
+    padding-bottom: 14px;
   }
   .walletHudCol2 {
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     padding-right: 0;
-    padding-bottom: 16px;
+    padding-bottom: 14px;
   }
   .walletHudCol3 {
     padding-left: 0;
@@ -1164,6 +1180,7 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
+  box-sizing: border-box;
 }
 
 .walletModalBox {
@@ -1177,11 +1194,12 @@
   padding: 24px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
   -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
 @media (max-width: 480px) {
   .walletModalBox {
-    padding: 18px 16px;
+    padding: 18px 14px;
     border-radius: 14px;
   }
 }
@@ -1195,6 +1213,7 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
@@ -1216,26 +1235,27 @@
   max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background: rgba(7, 8, 15, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: rgba(7, 8, 15, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 10px;
   box-sizing: border-box;
+  scrollbar-width: thin;
 }
 
 .walletTableWrapper table {
   width: 100%;
-  min-width: 480px;
+  min-width: 440px;
   border-collapse: collapse;
 }
 
 @media (max-width: 600px) {
   .walletTableWrapper table {
-    min-width: 440px;
+    min-width: 380px;
   }
   .walletTableWrapper th,
   .walletTableWrapper td {
-    padding: 8px 6px !important;
-    font-size: 0.74rem !important;
+    padding: 8px 5px !important;
+    font-size: 0.72rem !important;
   }
 }
 
@@ -1257,23 +1277,26 @@
 /* Smart Analytics, Wealth Vault & Remittance Tools Responsive Styling */
 .analyticsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .wealthGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 16px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .toolsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .healthGaugeCard {
@@ -1283,6 +1306,7 @@
   padding: 24px;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .assetCardItem {
@@ -1291,6 +1315,7 @@
   border-radius: 14px;
   padding: 16px;
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .assetCardItem:hover {
@@ -1313,5 +1338,6 @@
     gap: 14px;
   }
 }
+
 
 

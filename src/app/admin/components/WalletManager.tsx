@@ -2458,16 +2458,16 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', position: 'relative', zIndex: 2 }}>
                       <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                          <span style={{ background: 'linear-gradient(90deg, #d4af37, #f3e5ab)', color: '#0f172a', fontSize: '0.65rem', fontWeight: 900, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ background: 'linear-gradient(90deg, #d4af37, #f3e5ab)', color: '#0f172a', fontSize: '0.62rem', fontWeight: 900, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>
                             👑 PRIVATE WEALTH • EXECUTIVE ASSET CARD
                           </span>
                           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>ID: **** 3790</span>
                         </div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
                           Available Net Cash Balance
                         </div>
-                        <div style={{ fontSize: '2.2rem', fontWeight: 900, background: 'linear-gradient(135deg, #ffffff 0%, #d4af37 60%, #fef08a 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginTop: '4px' }}>
+                        <div style={{ fontSize: 'clamp(1.4rem, 4.5vw, 2.2rem)', fontWeight: 900, background: 'linear-gradient(135deg, #ffffff 0%, #d4af37 60%, #fef08a 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginTop: '4px' }}>
                           {fmtVal(getSavings(activeMonth))}
                         </div>
                       </div>
@@ -2506,7 +2506,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                     {/* Card Footer Indicators */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '14px', marginTop: '16px', flexWrap: 'wrap', gap: '10px', fontSize: '0.75rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
                         <span>⚡ Daily Pace: <strong style={{ color: '#fff' }}>{fmtVal(getDailyVelocity(activeMonth))}/day</strong></span>
                         {(() => {
                           const vComp = getVelocityComparison(activeMonth);
@@ -2628,7 +2628,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         </div>
 
                         {/* Legend Pills */}
-                        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span style={{ width: 8, height: 8, background: '#f87171', borderRadius: '50%' }} />
                             Fixed Overhead: <strong style={{ color: '#fff' }}>{fixedPct}% ({fmtVal(fixedCost)})</strong>
@@ -2670,47 +2670,46 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   })()}
 
                   {/* Sub-sheet metrics summary cards */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginBottom: '24px' }}>
-                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(52, 211, 153, 0.2)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '0.72rem', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>Opening Savings (বিগত মাসের জমা)</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#34d399', marginTop: '4px' }}>{fmtVal(getCarriedOverSavings(activeMonth))}</div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Carried over from previous month
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', marginBottom: '24px' }}>
+                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(52, 211, 153, 0.2)', borderRadius: '12px', padding: '12px 10px' }}>
+                      <div style={{ fontSize: '0.68rem', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>Opening Savings (বিগত জমা)</div>
+                      <div style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 800, color: '#34d399', marginTop: '4px' }}>{fmtVal(getCarriedOverSavings(activeMonth))}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        Carried over balance
                       </div>
                     </div>
 
-                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>This Month Earned</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4caf50', marginTop: '4px' }}>{fmtVal(getIncomeTotal(activeMonth))}</div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Salary: {fmtVal(getSalaryTotal(activeMonth))} • Side: {fmtVal(getAddonTotal(activeMonth))}
+                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '12px 10px' }}>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>This Month Earned</div>
+                      <div style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 800, color: '#4caf50', marginTop: '4px' }}>{fmtVal(getIncomeTotal(activeMonth))}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        Salary: {fmtVal(getSalaryTotal(activeMonth))}
                       </div>
                     </div>
 
-                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '12px 10px' }}>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
                         <span>This Month Spent</span>
-                        <span style={{ color: '#ff6b6b', fontWeight: 700 }}>{fmtVal(getDailyVelocity(activeMonth))}/day</span>
                       </div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f44336', marginTop: '4px' }}>{fmtVal(getExpenseTotal(activeMonth))}</div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        {(activeMonth.expenses || []).length} items logged • Daily Avg Pace
-                      </div>
-                    </div>
-
-                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '0.72rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700 }}>Active Money Lent (ধারে দেওয়া)</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fbbf24', marginTop: '4px' }}>{fmtVal(getActiveLoansTotal(activeMonth))}</div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Deducted from Savings • Recovered: {fmtVal(getReturnedLoansTotal(activeMonth))}
+                      <div style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 800, color: '#f44336', marginTop: '4px' }}>{fmtVal(getExpenseTotal(activeMonth))}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        {(activeMonth.expenses || []).length} items logged
                       </div>
                     </div>
 
-                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>Total Net Liquid Savings</div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#818cf8', marginTop: '4px' }}>{fmtVal(getSavings(activeMonth))}</div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Gross Cashflow: {fmtVal(getGrossSavings(activeMonth))} • Rate: {getSavingsRate(activeMonth).toFixed(1)}%
+                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(245, 158, 11, 0.2)', borderRadius: '12px', padding: '12px 10px' }}>
+                      <div style={{ fontSize: '0.68rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 700 }}>Active Money Lent (ধারে)</div>
+                      <div style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 800, color: '#fbbf24', marginTop: '4px' }}>{fmtVal(getActiveLoansTotal(activeMonth))}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        Recovered: {fmtVal(getReturnedLoansTotal(activeMonth))}
+                      </div>
+                    </div>
+
+                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: '12px', padding: '12px 10px' }}>
+                      <div style={{ fontSize: '0.68rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>Net Liquid Savings</div>
+                      <div style={{ fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 800, color: '#818cf8', marginTop: '4px' }}>{fmtVal(getSavings(activeMonth))}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        Rate: {getSavingsRate(activeMonth).toFixed(1)}%
                       </div>
                     </div>
                   </div>
