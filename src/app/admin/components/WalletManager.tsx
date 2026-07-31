@@ -4850,6 +4850,165 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   })}
                 </div>
               </div>
+
+              {/* ⚡ NEW ULTRA-PREMIUM FEATURE 4: 4-Week Monthly Phase Breakdown & Peak Spending Velocity Detector */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(236, 72, 153, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Activity size={20} style={{ color: '#f472b6' }} /> 4-Week Monthly Phase Breakdown & Peak Spending Velocity Detector
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', background: 'rgba(236, 72, 153, 0.15)', color: '#f472b6', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    4-WEEK PHASE AUDIT
+                  </span>
+                </div>
+
+                {(() => {
+                  let week1Spent = 0; // Days 1 to 7
+                  let week2Spent = 0; // Days 8 to 14
+                  let week3Spent = 0; // Days 15 to 21
+                  let week4Spent = 0; // Days 22+
+
+                  months.forEach(m => {
+                    (m.expenses || []).forEach(e => {
+                      const dayOfMonth = new Date(e.date).getDate();
+                      if (dayOfMonth <= 7) week1Spent += e.amount;
+                      else if (dayOfMonth <= 14) week2Spent += e.amount;
+                      else if (dayOfMonth <= 21) week3Spent += e.amount;
+                      else week4Spent += e.amount;
+                    });
+                  });
+
+                  const grandTotal4Weeks = week1Spent + week2Spent + week3Spent + week4Spent;
+                  const maxWeekSpent = Math.max(1, week1Spent, week2Spent, week3Spent, week4Spent);
+
+                  const week1Pct = grandTotal4Weeks > 0 ? Math.round((week1Spent / grandTotal4Weeks) * 100) : 0;
+                  const week2Pct = grandTotal4Weeks > 0 ? Math.round((week2Spent / grandTotal4Weeks) * 100) : 0;
+                  const week3Pct = grandTotal4Weeks > 0 ? Math.round((week3Spent / grandTotal4Weeks) * 100) : 0;
+                  const week4Pct = grandTotal4Weeks > 0 ? Math.round((week4Spent / grandTotal4Weeks) * 100) : 0;
+
+                  // Determine Peak Week
+                  let peakWeekName = '1st Week (Days 1–7)';
+                  let peakWeekAmt = week1Spent;
+
+                  if (week2Spent > peakWeekAmt) {
+                    peakWeekName = '2nd Week (Days 8–14)';
+                    peakWeekAmt = week2Spent;
+                  }
+                  if (week3Spent > peakWeekAmt) {
+                    peakWeekName = '3rd Week (Days 15–21)';
+                    peakWeekAmt = week3Spent;
+                  }
+                  if (week4Spent > peakWeekAmt) {
+                    peakWeekName = '4th Week (Days 22–31)';
+                    peakWeekAmt = week4Spent;
+                  }
+
+                  const weeksData = [
+                    { name: '1st Week (Days 1–7)', spent: week1Spent, pct: week1Pct, note: 'মাসিক শুরু (Rent, Utility, Grocery)' },
+                    { name: '2nd Week (Days 8–14)', spent: week2Spent, pct: week2Pct, note: 'মিড-মান্থ শপিং ও রুটিন খরচ' },
+                    { name: '3rd Week (Days 15–21)', spent: week3Spent, pct: week3Pct, note: 'মিড-টার্ম ক্যাজুয়াল আউটিং' },
+                    { name: '4th Week (Days 22–31)', spent: week4Spent, pct: week4Pct, note: 'মাস শেষ (বাজেট টাইট কালেকশন)' },
+                  ];
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                      
+                      {/* Top Peak Velocity Indicator HUD */}
+                      <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(236, 72, 153, 0.3)', borderRadius: '12px', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                          <span style={{ fontSize: '0.72rem', color: '#f472b6', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>🔥 HIGHEST SPENDING PHASE</span>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>
+                            {peakWeekName} — <span style={{ color: '#f472b6' }}>{fmtVal(peakWeekAmt)}</span>
+                          </div>
+                        </div>
+                        <div style={{ background: 'rgba(236, 72, 153, 0.15)', border: '1px solid rgba(236, 72, 153, 0.3)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.78rem', color: '#f472b6', fontWeight: 800 }}>
+                          ⚡ {Math.round((peakWeekAmt / (grandTotal4Weeks || 1)) * 100)}% of Total Outflow
+                        </div>
+                      </div>
+
+                      {/* 4-Week Progress Cards Grid */}
+                      <div className={styles.grid4} style={{ gap: '12px' }}>
+                        {weeksData.map((w, idx) => {
+                          const isPeak = w.spent === peakWeekAmt && w.spent > 0;
+                          const barColor = isPeak ? '#f472b6' : idx === 0 ? '#60a5fa' : idx === 1 ? '#818cf8' : idx === 2 ? '#fbbf24' : '#34d399';
+                          const hPct = (w.spent / maxWeekSpent) * 100;
+
+                          return (
+                            <div key={w.name} style={{ background: isPeak ? 'rgba(236, 72, 153, 0.12)' : 'rgba(15, 23, 42, 0.4)', border: isPeak ? '1px solid rgba(236, 72, 153, 0.4)' : '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                              <div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#fff' }}>{w.name}</span>
+                                  <span style={{ fontSize: '0.68rem', fontWeight: 900, color: barColor, background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '4px' }}>
+                                    {w.pct}% SHARE
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: '1.25rem', fontWeight: 900, color: barColor, marginTop: '4px' }}>
+                                  {fmtVal(w.spent)}
+                                </div>
+                              </div>
+
+                              <div style={{ marginTop: '12px' }}>
+                                <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' }}>
+                                  <div style={{ height: '100%', width: `${Math.max(6, hPct)}%`, background: barColor, borderRadius: '3px', transition: 'width 0.4s ease' }} />
+                                </div>
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', display: 'block' }}>{w.note}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* ⚡ NEW ULTRA-PREMIUM FEATURE 5: Pareto Top-Outflow High Value Transaction Audit */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Flame size={20} style={{ color: 'var(--accent-gold)' }} /> High-Value Outflow & Pareto Transaction Audit (80/20 Rule)
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    TOP OUTFLOWS
+                  </span>
+                </div>
+
+                {(() => {
+                  const allExpenses = months.flatMap(m => (m.expenses || []).map(e => ({ ...e, monthName: m.monthName })));
+                  allExpenses.sort((a, b) => b.amount - a.amount);
+                  const top5 = allExpenses.slice(0, 5);
+
+                  if (top5.length === 0) {
+                    return <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No expense entries logged for high-value audit.</div>;
+                  }
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e2e8f0' }}>Top 5 Highest Single Expenses Logged (Highest Financial Impact):</span>
+                      {top5.map((item, idx) => (
+                        <div key={idx} style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '12px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.2)', border: '1px solid rgba(245, 158, 11, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#fbbf24', fontSize: '0.8rem' }}>
+                              #{idx + 1}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#fff' }}>{item.description}</div>
+                              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                Category: <span style={{ color: '#818cf8', fontWeight: 700 }}>{item.category}</span> | Period: {item.monthName} | Date: {new Date(item.date).toISOString().split('T')[0]}
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#ef4444' }}>
+                            {fmtVal(item.amount)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
             </div>
           )}
 
