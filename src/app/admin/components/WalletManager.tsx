@@ -36,6 +36,8 @@ export interface IWalletLoan {
   status: 'Pending' | 'Returned';
   returnedDate?: string | Date;
   notes?: string;
+  isCarriedOver?: boolean;
+  originalMonthName?: string;
 }
 
 export interface ISavingsGoal {
@@ -71,6 +73,7 @@ export interface IWalletMonthData {
   bonus: number;
   targetDailyCap?: number;
   categoryBudgets?: Record<string, number>;
+  carriedOverSavings?: number;
   expenses: IWalletExpense[];
   incomes?: IWalletIncome[];
   loans?: IWalletLoan[];
@@ -84,7 +87,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [months, setMonths] = useState<IWalletMonthData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonthId, setSelectedMonthId] = useState<string>('');
-  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'currency_tools' | 'daily_intel' | 'ai_simulator' | 'goals_debts'>('single');
+  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'daily_intel' | 'goals_debts' | 'ai_advisor'>('single');
   
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -270,6 +273,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     return m.bonus || 0;
   };
 
+  const getCarriedOverSavings = (m: IWalletMonthData) => m.carriedOverSavings || 0;
+
   const getIncomeTotal = (m: IWalletMonthData) => {
     if (m.incomes && m.incomes.length > 0) {
       return m.incomes.reduce((acc, curr) => acc + (curr.amount || 0), 0);
@@ -296,17 +301,16 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     return (m.loans || []).reduce((acc, curr) => acc + (curr.amount || 0), 0);
   };
 
-  // Gross Savings (Total Income minus Total Expenses, before active loan deductions)
+  // Fresh Monthly Cashflow Savings (This Month's Income - This Month's Expenses)
   const getGrossSavings = (m: IWalletMonthData) => getIncomeTotal(m) - getExpenseTotal(m);
 
-  // Net Liquid Savings (Total Income minus Total Expenses minus Active Pending Loans)
-  // Loan money is deducted from Savings until it is returned!
+  // Total Available Net Liquid Savings = Opening Balance + This Month's Income - This Month's Expenses - Active Pending Loans
   const getSavings = (m: IWalletMonthData) => {
-    return getIncomeTotal(m) - getExpenseTotal(m) - getActiveLoansTotal(m);
+    return getCarriedOverSavings(m) + getIncomeTotal(m) - getExpenseTotal(m) - getActiveLoansTotal(m);
   };
 
   const getSavingsRate = (m: IWalletMonthData) => {
-    const inc = getIncomeTotal(m);
+    const inc = getIncomeTotal(m) + getCarriedOverSavings(m);
     if (inc === 0) return 0;
     return Math.max(0, (getSavings(m) / inc) * 100);
   };
@@ -320,9 +324,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const globalActiveLoans = months.reduce((acc, m) => acc + getActiveLoansTotal(m), 0);
   const globalReturnedLoans = months.reduce((acc, m) => acc + getReturnedLoansTotal(m), 0);
   const globalGrossSavings = globalTotalIncome - globalTotalSpent;
-  const globalTotalSavings = globalTotalIncome - globalTotalSpent - globalActiveLoans;
+  const globalTotalSavings = months.length > 0 ? getSavings(months[months.length - 1]) : 0;
   const globalNetBalance = globalTotalSavings;
-  const globalSavingsRate = globalTotalIncome > 0 ? (globalTotalSavings / globalTotalIncome) * 100 : 0;
+  const globalSavingsRate = globalTotalIncome > 0 ? (globalGrossSavings / globalTotalIncome) * 100 : 0;
 
   // Expense Categories mapping & colors
   const categoriesList = ['Food', 'Rent', 'Utility', 'Gadgets', 'Server', 'Entertainment', 'Parents (Baba Ma)', 'Other'];
@@ -1620,6 +1624,34 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     }
   };
 
+  const handlePushAiAdvisory = async (channel: 'email' | 'telegram' | 'all') => {
+    showToast(`🚀 Pushing AI Advisory report via ${channel.toUpperCase()}...`, 'info');
+    try {
+      const res = await fetch('/api/admin/wallet/ai-advisor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel,
+          emails: ['mdrifayethossen@gmail.com', 'rifayet.cse@gmail.com'],
+          appPassword: customAppPassword
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`🎉 AI Advisory report successfully pushed via ${channel.toUpperCase()}!`, 'success');
+      } else {
+        if (data.error && (data.error.includes('Authentication') || data.error.includes('App Password') || data.error.includes('535'))) {
+          showToast('⚠️ Gmail SMTP App Password required. Opening SMTP Setup...', 'error');
+          setIsSmtpModalOpen(true);
+        } else {
+          showToast(data.error || 'Failed to dispatch AI advisory report', 'error');
+        }
+      }
+    } catch (err) {
+      showToast('Error pushing AI advisory notification', 'error');
+    }
+  };
+
   const handleSaveDailyIntelSettings = async (newCap?: number, newBudgets?: Record<string, number>) => {
     if (!activeMonth) {
       showToast('No active month sheet selected', 'error');
@@ -2170,15 +2202,15 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             </button>
 
             <button
-              onClick={() => setWalletSubTab('currency_tools')}
+              onClick={() => setWalletSubTab('ai_advisor')}
               style={{
-                background: walletSubTab === 'currency_tools' ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
+                background: walletSubTab === 'ai_advisor' ? 'rgba(129, 140, 248, 0.2)' : 'transparent',
                 border: '1px solid',
-                borderColor: walletSubTab === 'currency_tools' ? '#3b82f6' : 'var(--glass-border-light)',
-                color: walletSubTab === 'currency_tools' ? '#ffffff' : 'var(--text-secondary)',
+                borderColor: walletSubTab === 'ai_advisor' ? 'var(--accent-gold)' : 'var(--glass-border-light)',
+                color: walletSubTab === 'ai_advisor' ? '#ffffff' : 'var(--text-secondary)',
                 padding: '10px 20px',
                 borderRadius: '8px',
-                fontWeight: 600,
+                fontWeight: 700,
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 display: 'flex',
@@ -2186,7 +2218,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 gap: '8px'
               }}
             >
-              <ArrowRightLeft size={16} style={{ color: '#3b82f6' }} /> FX & Tools
+              <Sparkles size={16} style={{ color: 'var(--accent-gold)' }} /> 🤖 AI Executive Copilot
             </button>
 
             <button
@@ -2207,26 +2239,6 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
               }}
             >
               <Zap size={16} style={{ color: 'var(--accent-gold)' }} /> Daily Pace & Guidance
-            </button>
-
-            <button
-              onClick={() => setWalletSubTab('ai_simulator')}
-              style={{
-                background: walletSubTab === 'ai_simulator' ? 'rgba(168, 85, 247, 0.15)' : 'transparent',
-                border: '1px solid',
-                borderColor: walletSubTab === 'ai_simulator' ? '#c084fc' : 'var(--glass-border-light)',
-                color: walletSubTab === 'ai_simulator' ? '#ffffff' : 'var(--text-secondary)',
-                padding: '10px 20px',
-                borderRadius: '8px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              <Activity size={16} style={{ color: '#c084fc' }} /> AI Forecast Lab
             </button>
 
             <button
@@ -2590,9 +2602,17 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   })()}
 
                   {/* Sub-sheet metrics summary cards */}
-                  <div className={styles.grid4} style={{ marginBottom: '24px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+                    <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(52, 211, 153, 0.2)', borderRadius: '12px', padding: '16px' }}>
+                      <div style={{ fontSize: '0.72rem', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>Opening Savings (বিগত মাসের জমা)</div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#34d399', marginTop: '4px' }}>{fmtVal(getCarriedOverSavings(activeMonth))}</div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        Carried over from previous month
+                      </div>
+                    </div>
+
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Earned</div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>This Month Earned</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4caf50', marginTop: '4px' }}>{fmtVal(getIncomeTotal(activeMonth))}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
                         Salary: {fmtVal(getSalaryTotal(activeMonth))} • Side: {fmtVal(getAddonTotal(activeMonth))}
@@ -2601,7 +2621,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Total Spent</span>
+                        <span>This Month Spent</span>
                         <span style={{ color: '#ff6b6b', fontWeight: 700 }}>{fmtVal(getDailyVelocity(activeMonth))}/day</span>
                       </div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f44336', marginTop: '4px' }}>{fmtVal(getExpenseTotal(activeMonth))}</div>
@@ -2619,10 +2639,10 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     </div>
 
                     <div style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(129, 140, 248, 0.2)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>Net Liquid Savings & Balance</div>
+                      <div style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>Total Net Liquid Savings</div>
                       <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#818cf8', marginTop: '4px' }}>{fmtVal(getSavings(activeMonth))}</div>
                       <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Gross: {fmtVal(getGrossSavings(activeMonth))} • Rate: {getSavingsRate(activeMonth).toFixed(1)}%
+                        Gross Cashflow: {fmtVal(getGrossSavings(activeMonth))} • Rate: {getSavingsRate(activeMonth).toFixed(1)}%
                       </div>
                     </div>
                   </div>
@@ -3273,7 +3293,14 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                                           {loan.personName.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
-                                          <div style={{ fontWeight: 700, color: '#fff' }}>{loan.personName}</div>
+                                          <div style={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                            {loan.personName}
+                                            {loan.isCarriedOver && (
+                                              <span style={{ fontSize: '0.64rem', background: 'rgba(129, 140, 248, 0.15)', color: '#a5b4fc', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                                                🔄 Carried Over {loan.originalMonthName ? `(${loan.originalMonthName})` : ''}
+                                              </span>
+                                            )}
+                                          </div>
                                           {loan.notes && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{loan.notes}</div>}
                                         </div>
                                       </div>
@@ -4658,97 +4685,206 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             </div>
           )}
 
-          {walletSubTab === 'currency_tools' && (
+          {walletSubTab === 'ai_advisor' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               
-              <div className={styles.toolsGrid}>
-                
-                {/* Live FX Converter Widget */}
-                <div className={styles.walletCard}>
-                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <ArrowRightLeft size={20} style={{ color: '#3b82f6' }} /> Tech Freelance FX Calculator
-                  </h3>
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div>
-                      <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Amount to Convert</label>
-                      <input
-                        type="number"
-                        value={convertAmount}
-                        onChange={e => setConvertAmount(e.target.value)}
-                        style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff', fontSize: '1rem', fontWeight: 700 }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      <div>
-                        <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>From Currency</label>
-                        <select
-                          value={baseCurrency}
-                          onChange={e => setBaseCurrency(e.target.value as any)}
-                          style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                        >
-                          {Object.keys(fxRates).map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      </div>
-                      <div>
-                        <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>To Currency</label>
-                        <select
-                          value={targetCurrency}
-                          onChange={e => setTargetCurrency(e.target.value as any)}
-                          style={{ width: '100%', padding: '10px', background: '#07070b', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', color: '#fff' }}
-                        >
-                          {Object.keys(fxRates).map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Conversion Output Box */}
-                    {(() => {
-                      const num = Number(convertAmount) || 0;
-                      const inBDT = num * (fxRates[baseCurrency] || 1);
-                      const converted = inBDT / (fxRates[targetCurrency] || 1);
-                      return (
-                        <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.25)', borderRadius: '12px', padding: '16px', textAlign: 'center', marginTop: '6px' }}>
-                          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Converted Estimate</span>
-                          <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#60a5fa', margin: '4px 0' }}>
-                            {privacyMode ? '••••••' : `${converted.toLocaleString('en-US', { maximumFractionDigits: 2 })} ${targetCurrency}`}
-                          </div>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                            Rate: 1 {baseCurrency} = {(fxRates[baseCurrency] / fxRates[targetCurrency]).toFixed(2)} {targetCurrency}
-                          </span>
-                        </div>
-                      );
-                    })()}
+              {/* Header HUD */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      🤖 ADVANCED FINANCIAL ML & EXECUTIVE ADVISORY COPILOT
+                    </span>
+                    <h2 style={{ margin: '4px 0 2px', fontSize: '1.8rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Sparkles size={24} style={{ color: 'var(--accent-gold)' }} /> AI Financial Advisor & Lifestyle Guidance
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                      মেশিন লার্নিং ও অ্যাডভান্সড অ্যালগরিদম ভিত্তিক পার্সোনালাইজড আর্থিক দিকনির্দেশনা ও সিদ্ধান্ত সহায়িকা।
+                    </p>
                   </div>
-                </div>
 
-                {/* Export & Data Backup Vault */}
-                <div className={styles.walletCard}>
-                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Download size={20} style={{ color: '#10b981' }} /> Export & Backup Vault
-                  </h3>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
-                    Download offline backups of your full financial ledger in standard CSV format for Excel/Google Sheets or JSON format.
-                  </p>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {/* Multi-Channel Push Action Buttons */}
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <button
-                      onClick={exportWalletCSV}
-                      style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#6ee7b7', padding: '12px 16px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                      onClick={() => handlePushAiAdvisory('email')}
+                      style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.82rem',
+                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                      }}
                     >
-                      <Download size={16} /> Export Full Ledger (CSV)
+                      <Send size={15} /> ✉️ Push to Email
                     </button>
                     <button
-                      onClick={exportWalletJSON}
-                      style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#a5b4fc', padding: '12px 16px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                      onClick={() => handlePushAiAdvisory('telegram')}
+                      style={{
+                        background: 'linear-gradient(135deg, #0088cc 0%, #006699 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.82rem',
+                        boxShadow: '0 4px 12px rgba(0, 136, 204, 0.3)'
+                      }}
                     >
-                      <FileText size={16} /> Export Complete Backup (JSON)
+                      <MessageCircle size={15} /> 📲 Push to Telegram
+                    </button>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all')}
+                      style={{
+                        background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.82rem',
+                        boxShadow: '0 4px 12px rgba(129, 140, 248, 0.3)'
+                      }}
+                    >
+                      <Zap size={15} /> 🚀 Push All Channels
                     </button>
                   </div>
                 </div>
-
               </div>
+
+              {/* Main Analytics & Guidance Grid */}
+              {(() => {
+                const currentM = activeMonth || (months.length > 0 ? months[months.length - 1] : null);
+                if (!currentM) return null;
+
+                const inc = getIncomeTotal(currentM);
+                const exp = getExpenseTotal(currentM);
+                const loans = getActiveLoansTotal(currentM);
+                const carriedOver = getCarriedOverSavings(currentM);
+                const netSavings = getSavings(currentM);
+
+                const now = new Date();
+                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                const daysElapsed = Math.max(1, now.getDate());
+                const daysRemaining = Math.max(1, daysInMonth - daysElapsed + 1);
+
+                const dailyAvg = exp / daysElapsed;
+                const safeDailyCap = Math.max(0, netSavings) / daysRemaining;
+                const isSafePace = dailyAvg <= safeDailyCap;
+
+                const anomalies = getOverBudgetCategories(currentM);
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    
+                    {/* ML Velocity & Health Score Gauge Grid */}
+                    <div className={styles.grid3} style={{ gap: '16px' }}>
+                      
+                      {/* Card 1: Machine Learning Velocity */}
+                      <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase' }}>
+                          ⚡ ML Expenditure Velocity Model
+                        </div>
+                        <div style={{ fontSize: '1.6rem', fontWeight: 900, color: isSafePace ? '#34d399' : '#f87171', marginTop: '6px' }}>
+                          {fmtVal(dailyAvg)} <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>/ day avg</span>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: isSafePace ? '#34d399' : '#f87171', marginTop: '6px', fontWeight: 700 }}>
+                          {isSafePace ? '🟢 Controlled Velocity' : `🔴 Over Pace by ${fmtVal(dailyAvg - safeDailyCap)}/day`}
+                        </div>
+                      </div>
+
+                      {/* Card 2: Recommended Safe Daily Cap */}
+                      <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#34d399', textTransform: 'uppercase' }}>
+                          🎯 Recommended Safe Daily Limit
+                        </div>
+                        <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#34d399', marginTop: '6px' }}>
+                          {fmtVal(safeDailyCap)} <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)' }}>/ day cap</span>
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+                          For remaining {daysRemaining} days in {currentM.monthName}
+                        </div>
+                      </div>
+
+                      {/* Card 3: Financial Health Rating */}
+                      <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#818cf8', textTransform: 'uppercase' }}>
+                          🛡️ Financial Health Index
+                        </div>
+                        <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#818cf8', marginTop: '6px' }}>
+                          {getHealthScore(currentM)} / 100
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+                          Zero-income runway: {exp > 0 ? Math.round(netSavings / (dailyAvg || 1)) : '∞'} days
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section: Actionable Personal AI Recommendations ("কিভাবে চলা উচিত") */}
+                    <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(30, 41, 59, 0.4) 100%)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                      <h3 style={{ margin: '0 0 16px', fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Compass size={20} style={{ color: 'var(--accent-gold)' }} /> Personal AI Lifestyle & Budget Direction ("কিভাবে চলা উচিত")
+                      </h3>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        
+                        {/* Guidance Item 1 */}
+                        <div style={{ background: 'rgba(15, 23, 42, 0.5)', borderLeft: `4px solid ${isSafePace ? '#10b981' : '#ef4444'}`, padding: '14px 16px', borderRadius: '8px', fontSize: '0.88rem', color: '#fff', lineHeight: 1.6 }}>
+                          <strong>১. দৈনিক খরচের সঠিক সীমা (Daily Spending Cap):</strong><br />
+                          {isSafePace ? (
+                            <span>আপনার বর্তমান দৈনিক খরচ <strong>{fmtVal(dailyAvg)}/দিন</strong> যা আপনার বাজেট অনুযায়ী নিরাপদ সীমার মধ্যে আছে। এই গতি বজায় রাখলে মাস শেষে আপনার জমা সুরক্ষিত থাকবে।</span>
+                          ) : (
+                            <span>আপনার দৈনিক গড় খরচ নির্ধারিত সীমার চেয়ে বেশি হচ্ছে। প্রতিদিনের খরচ <strong>{fmtVal(safeDailyCap)} টাকার</strong> মধ্যে রাখলে মাস শেষে সঞ্চয় রক্ষা করা সম্ভব হবে।</span>
+                          )}
+                        </div>
+
+                        {/* Guidance Item 2 */}
+                        <div style={{ background: 'rgba(15, 23, 42, 0.5)', borderLeft: '4px solid #818cf8', padding: '14px 16px', borderRadius: '8px', fontSize: '0.88rem', color: '#fff', lineHeight: 1.6 }}>
+                          <strong>২. সেভিংস বৃদ্ধি ও ছাঁটাই পরিকল্পনা (Savings Optimization):</strong><br />
+                          বিগত মাসের জমানো টাকা (<strong>{fmtVal(carriedOver)}</strong>) সহ আপনার মোট নেট ব্যালেন্স রয়েছে <strong>{fmtVal(netSavings)}</strong>। অপ্রয়োজনীয় বিনোদন বা বাইরের খাবার খরচ সীমিত রাখলে আপনার জমানো তহবিল আরও সুরক্ষিত হবে।
+                        </div>
+
+                        {/* Guidance Item 3 */}
+                        <div style={{ background: 'rgba(15, 23, 42, 0.5)', borderLeft: `4px solid ${anomalies.length > 0 ? '#f59e0b' : '#34d399'}`, padding: '14px 16px', borderRadius: '8px', fontSize: '0.88rem', color: '#fff', lineHeight: 1.6 }}>
+                          <strong>৩. খাতের বাজেট ও ওভার-স্পেন্ডিং রিকভারি (Category Audit):</strong><br />
+                          {anomalies.length > 0 ? (
+                            <span>⚠️ <strong>{anomalies.map(a => a.category).join(', ')}</strong> খাতে আপনি বাজেটের বেশি খরচ করেছেন। এই খাতে বাকি দিনগুলোতে কেনাকাটা স্থগিত রাখার পরামর্শ দেওয়া হচ্ছে।</span>
+                          ) : (
+                            <span>✅ আপনার কোনো নির্দিষ্ট ক্যাটাগরিতে বাজেট অতিক্রম করেনি। এটি অত্যন্ত শৃঙ্খলাবদ্ধ আর্থিক অভ্যাসের নির্দেশক।</span>
+                          )}
+                        </div>
+
+                        {/* Guidance Item 4 */}
+                        <div style={{ background: 'rgba(15, 23, 42, 0.5)', borderLeft: `4px solid ${loans > 0 ? '#fbbf24' : '#10b981'}`, padding: '14px 16px', borderRadius: '8px', fontSize: '0.88rem', color: '#fff', lineHeight: 1.6 }}>
+                          <strong>৪. বকেয়া লোন ও পাওনা ব্যবস্থাপনা (Debt Pacing):</strong><br />
+                          {loans > 0 ? (
+                            <span>বাজারে আপনার মোট <strong>{fmtVal(loans)}</strong> পাওনা বা লোন রয়েছে। ১-ক্লিক রিমাইন্ডারের মাধ্যমে এই টাকা আদায়ের পদক্ষেপ নিন।</span>
+                          ) : (
+                            <span>বর্তমানে কোনো পেন্ডিং লোন নেই। সমস্ত দেওয়া ধার আদায় হয়েছে।</span>
+                          )}
+                        </div>
+
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })()}
+
             </div>
           )}
 
@@ -5504,130 +5640,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             </div>
           )}
 
-          {walletSubTab === 'ai_simulator' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              
-              {/* Header Hero Card */}
-              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(192, 132, 252, 0.25)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '12px' }}>
-                  <div>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#c084fc', textTransform: 'uppercase', letterSpacing: '1px' }}>AI Wealth Compounder & Projections</span>
-                    <h2 style={{ margin: '4px 0 0', fontSize: '1.8rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Activity size={24} style={{ color: '#c084fc' }} /> AI Financial Forecast & Compound Simulator
-                    </h2>
-                  </div>
-                </div>
-                <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                  Simulate future wealth growth using compound interest formulas and test emergency runway resilience.
-                </p>
-              </div>
 
-              {/* Compound Calculator Controls & Outputs */}
-              <div className={styles.toolsGrid}>
-                
-                {/* Control Panel */}
-                <div className={styles.walletCard}>
-                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Sliders size={20} style={{ color: '#c084fc' }} /> Simulation Controls
-                  </h3>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Monthly Investment / Savings:</span>
-                        <strong style={{ color: '#fff' }}>৳{simMonthlySavings.toLocaleString()}</strong>
-                      </div>
-                      <input
-                        type="range"
-                        min="2000"
-                        max="100000"
-                        step="1000"
-                        value={simMonthlySavings}
-                        onChange={e => setSimMonthlySavings(Number(e.target.value))}
-                        style={{ width: '100%', accentColor: '#c084fc' }}
-                      />
-                    </div>
-
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Expected Annual Return (APY):</span>
-                        <strong style={{ color: '#34d399' }}>{simReturnRate}% / year</strong>
-                      </div>
-                      <input
-                        type="range"
-                        min="1"
-                        max="30"
-                        step="0.5"
-                        value={simReturnRate}
-                        onChange={e => setSimReturnRate(Number(e.target.value))}
-                        style={{ width: '100%', accentColor: '#10b981' }}
-                      />
-                    </div>
-
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '6px' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Time Horizon:</span>
-                        <strong style={{ color: 'var(--accent-gold)' }}>{simYears} Years</strong>
-                      </div>
-                      <input
-                        type="range"
-                        min="1"
-                        max="20"
-                        step="1"
-                        value={simYears}
-                        onChange={e => setSimYears(Number(e.target.value))}
-                        style={{ width: '100%', accentColor: 'var(--accent-gold)' }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Simulated Compound Output */}
-                <div className={styles.walletCard}>
-                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <TrendingUp size={20} style={{ color: '#34d399' }} /> Forecasted Portfolio Growth
-                  </h3>
-
-                  {(() => {
-                    const monthsCount = simYears * 12;
-                    const r = simReturnRate / 100 / 12;
-                    let futureValue = 0;
-                    if (r > 0) {
-                      futureValue = simMonthlySavings * (((Math.pow(1 + r, monthsCount) - 1) / r) * (1 + r));
-                    } else {
-                      futureValue = simMonthlySavings * monthsCount;
-                    }
-                    const totalInvested = simMonthlySavings * monthsCount;
-                    const totalInterest = Math.max(0, futureValue - totalInvested);
-
-                    return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                        <div style={{ background: 'rgba(52, 211, 153, 0.1)', border: '1px solid rgba(52, 211, 153, 0.3)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Projected Portfolio Value in {simYears} Years</span>
-                          <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#34d399', margin: '4px 0' }}>
-                            {privacyMode ? '••••••' : `৳${Math.round(futureValue).toLocaleString()}`}
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                          <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Total Deposited</span>
-                            <div style={{ fontSize: '1rem', fontWeight: 800, color: '#fff' }}>{privacyMode ? '••••' : `৳${totalInvested.toLocaleString()}`}</div>
-                          </div>
-                          <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Compound Profit</span>
-                            <div style={{ fontSize: '1rem', fontWeight: 800, color: '#c084fc' }}>{privacyMode ? '••••' : `৳${Math.round(totalInterest).toLocaleString()}`}</div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-              </div>
-
-            </div>
-          )}
 
           {walletSubTab === 'goals_debts' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -5743,6 +5756,35 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>Create Month Sheet</h3>
               <button onClick={() => setIsAddMonthOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
             </div>
+
+            {/* 🔄 Live Rollover Preview Box */}
+            {(() => {
+              const latestMonth = months.length > 0 ? months[months.length - 1] : null;
+              if (!latestMonth) return null;
+              const estOpeningSavings = getSavings(latestMonth);
+              const estPendingLoans = (latestMonth.loans || []).filter(l => l.status === 'Pending');
+              const estPendingLoanTotal = estPendingLoans.reduce((sum, l) => sum + l.amount, 0);
+
+              return (
+                <div style={{ marginBottom: '14px', background: 'rgba(129, 140, 248, 0.08)', border: '1px solid rgba(129, 140, 248, 0.25)', borderRadius: '10px', padding: '12px 14px', fontSize: '0.78rem', color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontWeight: 800, color: 'var(--accent-gold)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Sparkles size={14} /> Automatic Month Rollover Preview
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>💰 Carried-Over Opening Savings:</span>
+                    <strong style={{ color: '#34d399' }}>{fmtVal(estOpeningSavings)}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>🤝 Pending Loans to Migrate ({estPendingLoans.length} items):</span>
+                    <strong style={{ color: '#fbbf24' }}>{fmtVal(estPendingLoanTotal)}</strong>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', borderTop: '1px dashed rgba(255,255,255,0.08)', paddingTop: '6px' }}>
+                    ℹ️ New month income & expenses will start fresh (0), while your savings balance and active pending debts seamlessly carry forward.
+                  </div>
+                </div>
+              );
+            })()}
+
             <form onSubmit={handleAddMonth} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
                 <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Month Name (e.g. "January 2026")</label>

@@ -25,6 +25,8 @@ export interface ILoan {
   status: 'Pending' | 'Returned';
   returnedDate?: Date | string;
   notes?: string;
+  isCarriedOver?: boolean;
+  originalMonthName?: string;
 }
 
 export interface ISavingsGoal {
@@ -59,6 +61,7 @@ export interface IWalletMonth extends Document {
   bonus: number;
   targetDailyCap?: number;
   categoryBudgets?: Record<string, number>;
+  carriedOverSavings?: number;
   expenses: IExpense[];
   incomes: IIncome[];
   loans: ILoan[];
@@ -91,6 +94,8 @@ const LoanSchema: Schema = new Schema({
   status: { type: String, enum: ['Pending', 'Returned'], default: 'Pending' },
   returnedDate: { type: Date },
   notes: { type: String, default: '' },
+  isCarriedOver: { type: Boolean, default: false },
+  originalMonthName: { type: String, default: '' },
 });
 
 const SavingsGoalSchema: Schema = new Schema({
@@ -123,6 +128,7 @@ const WalletMonthSchema: Schema = new Schema(
     bonus: { type: Number, required: true, default: 0 },
     targetDailyCap: { type: Number, default: 2000 },
     categoryBudgets: { type: Schema.Types.Mixed, default: {} },
+    carriedOverSavings: { type: Number, default: 0 },
     expenses: { type: [ExpenseSchema], default: [] },
     incomes: { type: [IncomeSchema], default: [] },
     loans: { type: [LoanSchema], default: [] },

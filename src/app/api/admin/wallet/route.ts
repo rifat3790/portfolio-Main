@@ -38,17 +38,62 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'This month sheet already exists.' }, { status: 400 });
     }
 
+    // Find the latest existing month sheet to carry over pending loans and opening savings balance
+    const previousMonth = await WalletMonth.findOne({}).sort({ createdAt: -1 }).lean();
+
+    let carriedOverSavings = 0;
+    let inheritedLoans: any[] = [];
+    let inheritedSavingsGoals: any[] = [];
+    let inheritedRecurringBills: any[] = [];
+    let inheritedAssets: any[] = [];
+    let inheritedDailyCap = 2000;
+    let inheritedCategoryBudgets = {};
+
+    if (previousMonth) {
+      const prevInc = (previousMonth.salary || 0) + (previousMonth.addon || 0) + (previousMonth.bonus || 0) +
+        (previousMonth.incomes || []).reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
+      const prevExp = (previousMonth.expenses || []).reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
+      const prevActiveLoans = (previousMonth.loans || [])
+        .filter((l: any) => l.status === 'Pending')
+        .reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
+
+      // Previous Net Liquid Savings (Opening balance for the new month)
+      carriedOverSavings = (previousMonth.carriedOverSavings || 0) + prevInc - prevExp - prevActiveLoans;
+
+      // Extract pending loans to migrate into the new month sheet
+      const pendingLoans = (previousMonth.loans || []).filter((l: any) => l.status === 'Pending');
+      inheritedLoans = pendingLoans.map((l: any) => ({
+        personName: l.personName,
+        amount: l.amount,
+        date: l.date,
+        dueDate: l.dueDate,
+        status: 'Pending',
+        notes: l.notes || '',
+        isCarriedOver: true,
+        originalMonthName: l.originalMonthName || previousMonth.monthName,
+      }));
+
+      inheritedSavingsGoals = previousMonth.savingsGoals || [];
+      inheritedRecurringBills = previousMonth.recurringBills || [];
+      inheritedAssets = previousMonth.assets || [];
+      inheritedDailyCap = previousMonth.targetDailyCap || 2000;
+      inheritedCategoryBudgets = previousMonth.categoryBudgets || {};
+    }
+
     const newMonth = await WalletMonth.create({
       monthName: data.monthName,
       salary: Number(data.salary) || 0,
       addon: Number(data.addon) || 0,
       bonus: Number(data.bonus) || 0,
+      targetDailyCap: data.targetDailyCap !== undefined ? Number(data.targetDailyCap) : inheritedDailyCap,
+      categoryBudgets: data.categoryBudgets || inheritedCategoryBudgets,
+      carriedOverSavings: data.carriedOverSavings !== undefined ? Number(data.carriedOverSavings) : carriedOverSavings,
       expenses: data.expenses || [],
       incomes: data.incomes || [],
-      loans: data.loans || [],
-      savingsGoals: data.savingsGoals || [],
-      recurringBills: data.recurringBills || [],
-      assets: data.assets || [],
+      loans: data.loans && data.loans.length > 0 ? data.loans : inheritedLoans,
+      savingsGoals: data.savingsGoals && data.savingsGoals.length > 0 ? data.savingsGoals : inheritedSavingsGoals,
+      recurringBills: data.recurringBills && data.recurringBills.length > 0 ? data.recurringBills : inheritedRecurringBills,
+      assets: data.assets && data.assets.length > 0 ? data.assets : inheritedAssets,
     });
 
     return NextResponse.json(newMonth);
