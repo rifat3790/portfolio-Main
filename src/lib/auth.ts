@@ -22,9 +22,33 @@ export function verifyToken(token: string): DecodedToken | null {
 }
 
 export function isAuthenticated(req: NextRequest): boolean {
-  const token = req.cookies.get('admin_token')?.value;
-  if (!token) return false;
-  
-  const decoded = verifyToken(token);
-  return decoded !== null && decoded.isAdmin === true;
+  // Check cookie
+  const cookieToken = req.cookies.get('admin_token')?.value;
+  if (cookieToken && verifyToken(cookieToken)?.isAdmin) {
+    return true;
+  }
+
+  // Check Bearer authorization header
+  const authHeader = req.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const bearerToken = authHeader.substring(7);
+    if (bearerToken && verifyToken(bearerToken)?.isAdmin) {
+      return true;
+    }
+  }
+
+  // Check x-admin-token header
+  const customHeaderToken = req.headers.get('x-admin-token');
+  if (customHeaderToken && verifyToken(customHeaderToken)?.isAdmin) {
+    return true;
+  }
+
+  // Check direct x-admin-password header for mobile quick auth
+  const customAdminPassword = req.headers.get('x-admin-password');
+  const envPassword = process.env.ADMIN_PASSWORD || 'admin';
+  if (customAdminPassword && customAdminPassword === envPassword) {
+    return true;
+  }
+
+  return false;
 }

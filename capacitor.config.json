@@ -1,0 +1,15 @@
+{
+  "appId": "com.portfolio.personalwallet",
+  "appName": "Personal Wallet",
+  "webDir": "public",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "http://localhost:3000/wallet",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  }
+}
