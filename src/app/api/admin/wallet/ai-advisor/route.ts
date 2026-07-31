@@ -45,11 +45,8 @@ export async function GET(req: NextRequest) {
     const recommendedDailyCap = Math.max(0, netLiquidSavings) / daysRemaining;
 
     // 2. Monte Carlo 3-Tier Risk Simulation Forecast
-    // Optimistic (20% reduction in daily pace)
     const monteCarloOptimistic = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * 0.8 * daysRemaining)) - activeLoans;
-    // Expected (current daily pace)
     const monteCarloExpected = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * daysRemaining)) - activeLoans;
-    // Conservative (25% increase in daily pace due to unexpected bills)
     const monteCarloConservative = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * 1.25 * daysRemaining)) - activeLoans;
 
     // 3. FIRE (Financial Independence) Roadmap & Runway Math
@@ -59,7 +56,7 @@ export async function GET(req: NextRequest) {
     const livingRunwayDays = currentDailyPace > 0 ? Math.round(netLiquidSavings / currentDailyPace) : 999;
     const livingRunwayMonths = (livingRunwayDays / 30).toFixed(1);
 
-    // 4. Category Burn Rate Anomaly Detection
+    // 4. Dynamic Category Burn Rate & Over-spending Anomaly Detection
     const categoryTotals: Record<string, number> = {};
     (latestMonth.expenses || []).forEach((e: any) => {
       const cat = e.category || 'Other';
@@ -105,8 +102,8 @@ export async function GET(req: NextRequest) {
     }
 
     if (anomalies.length > 0) {
-      const catNames = anomalies.map(a => a.category).join(', ');
-      adviceRules.push(`🔴 ${catNames} খাতে বাজেট সীমা ওভার-স্পেন্ড হয়েছে। এই খাতে বাকি দিনগুলোতে ব্যয় ছাঁটাইয়ের নির্দেশ দেয়া হলো।`);
+      const catNames = anomalies.map(a => `${a.category} (${fmt(a.excess)} ওভার)`).join(', ');
+      adviceRules.push(`🚨 <b>OVER-SPENDING ALERT:</b> ${catNames} খাতে বাজেটের অতিরিক্ত খরচ হয়েছে। অবিলম্বে নিয়ন্ত্রণ করুন।`);
     }
 
     if (activeLoans > 0) {
@@ -189,8 +186,33 @@ export async function POST(req: NextRequest) {
     const monteCarloExpected = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * daysRemaining)) - activeLoans;
     const savingsRatePct = (totalIncome + carriedOverSavings) > 0 ? (netLiquidSavings / (totalIncome + carriedOverSavings)) * 100 : 0;
 
+    // Check individual category budget over-spending warnings
+    const categoryTotals: Record<string, number> = {};
+    (latestMonth.expenses || []).forEach((e: any) => {
+      const cat = e.category || 'Other';
+      categoryTotals[cat] = (categoryTotals[cat] || 0) + (e.amount || 0);
+    });
+
+    const categoryBudgets: Record<string, number> = latestMonth.categoryBudgets || {
+      Food: 6000, Rent: 5000, Utility: 3000, Gadgets: 5000, Server: 2000, Entertainment: 2000, 'Parents (Baba Ma)': 5000, Other: 3000
+    };
+
+    const catOverWarnings: string[] = [];
+    Object.entries(categoryTotals).forEach(([cat, spent]) => {
+      const limit = categoryBudgets[cat] || 5000;
+      if (spent > limit) {
+        catOverWarnings.push(`🔴 <b>${cat}</b>: Spent ${fmt(spent)} (Exceeded limit ${fmt(limit)} by ${fmt(spent - limit)})`);
+      }
+    });
+
+    const warningNoticeText = catOverWarnings.length > 0
+      ? `\n🚨 <b>OVER-SPENDING WARNING ALERTS:</b>\n${catOverWarnings.join('\n')}\n`
+      : `\n✅ <b>Category Budgets:</b> All sectors within budget caps.\n`;
+
     let healthScore = 65;
     if (currentDailyPace <= recommendedDailyCap) healthScore += 20;
+    if (catOverWarnings.length > 0) healthScore -= catOverWarnings.length * 10;
+    healthScore = Math.max(10, Math.min(100, healthScore));
 
     const results: Record<string, any> = {};
 
@@ -205,8 +227,8 @@ export async function POST(req: NextRequest) {
 
 🔮 <b>Monte Carlo Expected Savings:</b> ${fmt(monteCarloExpected)}
 📊 <b>Health Rating:</b> ${healthScore}/100
-🛡️ <b>Status:</b> ${currentDailyPace <= recommendedDailyCap ? '🟢 SAFE PACING' : '⚠️ ELEVATED PACING'}
-
+🛡️ <b>Status:</b> ${catOverWarnings.length > 0 ? '🚨 OVER-SPENDING WARNING' : currentDailyPace <= recommendedDailyCap ? '🟢 SAFE PACING' : '⚠️ ELEVATED PACING'}
+${warningNoticeText}
 💡 <b>AI Executive Direction:</b>
 • ${currentDailyPace <= recommendedDailyCap ? 'দৈনিক খরচ নিয়ন্ত্রণে আছে। প্রস্তাবিত ক্যাপিং বজায় রাখুন।' : 'দৈনিক খরচ সীমা অতিক্রম করেছে। অপচয় ছাঁটাই করুন।'}
 • পেন্ডিং লোন: ${fmt(activeLoans)} (আদায়ে সচেষ্ট হন)।
@@ -214,7 +236,7 @@ export async function POST(req: NextRequest) {
 
       try {
         await sendWhatsAppNotification({ message: telegramMsg });
-        results.telegram = { success: true, message: 'Dispatched 9:00 PM report to Telegram Bot successfully!' };
+        results.telegram = { success: true, message: 'Dispatched 9:00 PM report with over-spending warnings to Telegram Bot successfully!' };
       } catch (err: any) {
         results.telegram = { success: false, error: err.message };
       }

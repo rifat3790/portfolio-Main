@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Wallet, Plus, Layers, TrendingUp, Edit, Download, Trash2, FileText, X, PieChart,
-  HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check,
+  HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check, AlertTriangle,
   Target, Zap, ArrowUpDown, ShieldAlert, Sparkles, Eye, EyeOff, CreditCard, ShieldCheck, PiggyBank, Flame,
   TrendingDown, Lock, Award, Tag, CopyCheck, Share2, Gauge, FilePlus, Sliders, Activity, Compass, Filter,
   BarChart3, Coins, Globe, Building2, Laptop, DollarSign, Briefcase, ArrowRightLeft, Save
@@ -2942,52 +2942,140 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   <div className={styles.walletCard} style={{ background: 'rgba(7, 8, 15, 0.25)', border: '1px solid rgba(255, 255, 255, 0.04)', marginTop: '24px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
                       <div>
-                        <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
+                        <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#fff' }}>
                           <Target size={18} style={{ color: 'var(--accent-gold)' }} /> Category Budget Limits & Over-spending Tracker
                         </h3>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                          Track spending against target monthly caps per sector. Real-time visual status indicator.
+                          Track spending against target monthly caps per sector. Real-time visual status indicator & over-spending warnings.
                         </span>
                       </div>
                       <button
                         onClick={() => setIsBudgetModalOpen(true)}
-                        style={{ background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-secondary)', padding: '5px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 600 }}
+                        style={{ background: 'rgba(212, 175, 55, 0.15)', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#fef08a', padding: '6px 14px', borderRadius: '8px', fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}
                       >
-                        <Edit size={12} /> Edit Budgets
+                        <Edit size={14} /> Edit Target Budgets
                       </button>
                     </div>
 
-                    <div className={styles.grid4} style={{ gap: '12px' }}>
-                      {categoriesList.map((cat) => {
-                        const spent = (activeMonth.expenses || []).filter(e => e.category === cat).reduce((sum, e) => sum + e.amount, 0);
-                        const budget = categoryBudgets[cat] || 5000;
-                        const pct = Math.round((spent / budget) * 100);
-                        const isOver = spent > budget;
-                        const isWarning = pct >= 80 && !isOver;
-                        const statusColor = isOver ? '#ef4444' : isWarning ? '#f59e0b' : '#10b981';
+                    {(() => {
+                      const currentBudgets = activeMonth.categoryBudgets || categoryBudgets;
+                      let totalTarget = 0;
+                      let totalSpent = 0;
+                      const catOverList: { cat: string; spent: number; limit: number; excess: number }[] = [];
 
-                        return (
-                          <div key={cat} style={{ background: 'rgba(15, 23, 42, 0.4)', border: `1px solid ${isOver ? 'rgba(239, 68, 68, 0.35)' : 'rgba(255,255,255,0.04)'}`, borderRadius: '10px', padding: '12px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', marginBottom: '6px' }}>
-                              <span style={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span style={{ width: 8, height: 8, background: categoryColors[cat] || '#607d8b', borderRadius: '50%' }} />
-                                {cat}
-                              </span>
-                              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: statusColor }}>
-                                {isOver ? '🔴 OVER' : `${pct}%`}
-                              </span>
+                      categoriesList.forEach((cat) => {
+                        const limit = currentBudgets[cat] || 5000;
+                        const spent = (activeMonth.expenses || []).filter(e => e.category === cat).reduce((sum, e) => sum + e.amount, 0);
+                        totalTarget += limit;
+                        totalSpent += spent;
+                        if (spent > limit) {
+                          catOverList.push({ cat, spent, limit, excess: spent - limit });
+                        }
+                      });
+
+                      const totalPct = totalTarget > 0 ? Math.round((totalSpent / totalTarget) * 100) : 0;
+                      const isTotalOver = totalSpent > totalTarget;
+                      const totalBuffer = totalTarget - totalSpent;
+
+                      return (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          
+                          {/* Top Executive Summary HUD Bar */}
+                          <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px' }}>
+                            <div className={styles.grid3} style={{ gap: '14px', marginBottom: '14px' }}>
+                              
+                              <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Target Monthly Budget Cap</span>
+                                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-gold)', marginTop: '4px' }}>
+                                  {fmtVal(totalTarget)}
+                                </div>
+                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Sum of all 8 sector caps</span>
+                              </div>
+
+                              <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Month-to-Date Expense</span>
+                                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: isTotalOver ? '#ef4444' : '#34d399', marginTop: '4px' }}>
+                                  {fmtVal(totalSpent)}
+                                </div>
+                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Overall Utilization: {totalPct}%</span>
+                              </div>
+
+                              <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Remaining Safe Buffer</span>
+                                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: totalBuffer >= 0 ? '#60a5fa' : '#ef4444', marginTop: '4px' }}>
+                                  {fmtVal(totalBuffer)}
+                                </div>
+                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{totalBuffer >= 0 ? 'Remaining budget allocation' : 'Budget deficit'}</span>
+                              </div>
+
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                              <span>Spent: ৳{spent.toLocaleString()}</span>
-                              <span>Limit: ৳{budget.toLocaleString()}</span>
+
+                            {/* Overall Progress Bar */}
+                            <div style={{ marginBottom: '8px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                                <span>Overall Sector Budget Utilization Rate</span>
+                                <span style={{ color: isTotalOver ? '#ef4444' : totalPct >= 80 ? '#f59e0b' : '#34d399' }}>{totalPct}%</span>
+                              </div>
+                              <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${Math.min(100, totalPct)}%`, background: isTotalOver ? '#ef4444' : totalPct >= 80 ? '#f59e0b' : '#34d399', borderRadius: '4px', transition: 'width 0.4s ease' }} />
+                              </div>
                             </div>
-                            <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
-                              <div style={{ height: '100%', width: `${Math.min(100, pct)}%`, background: statusColor, borderRadius: '3px', transition: 'width 0.4s ease' }} />
-                            </div>
+
+                            {/* Over-spending Warning Banner */}
+                            {(isTotalOver || catOverList.length > 0) && (
+                              <div style={{ marginTop: '12px', background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.35)', borderLeft: '4px solid #ef4444', borderRadius: '8px', padding: '10px 14px', fontSize: '0.82rem', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <AlertTriangle size={18} style={{ color: '#ef4444', flexShrink: 0 }} />
+                                <div>
+                                  <strong>⚠️ OVER-SPENDING WARNING ALERT:</strong>{' '}
+                                  {catOverList.length > 0 ? (
+                                    <span>
+                                      {catOverList.map(c => `${c.cat} (Exceeded by ${fmtVal(c.excess)})`).join(', ')} খাতের বাজেট সীমা অতিক্রম করেছে। ডেইলি ইমেইল ও টেলিগ্রাম ওয়ার্নিং পাঠানো হচ্ছে।
+                                    </span>
+                                  ) : (
+                                    <span>মোট মাসিক বাজেটের সীমা অতিক্রম করেছে।</span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
                           </div>
-                        );
-                      })}
-                    </div>
+
+                          {/* 8 Individual Sector Cards Grid */}
+                          <div className={styles.grid4} style={{ gap: '12px' }}>
+                            {categoriesList.map((cat) => {
+                              const spent = (activeMonth.expenses || []).filter(e => e.category === cat).reduce((sum, e) => sum + e.amount, 0);
+                              const budget = currentBudgets[cat] || 5000;
+                              const pct = Math.round((spent / budget) * 100);
+                              const isOver = spent > budget;
+                              const excessAmt = spent - budget;
+                              const isWarning = pct >= 80 && !isOver;
+                              const statusColor = isOver ? '#ef4444' : isWarning ? '#f59e0b' : '#10b981';
+
+                              return (
+                                <div key={cat} style={{ background: 'rgba(15, 23, 42, 0.4)', border: `1px solid ${isOver ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255,255,255,0.06)'}`, borderRadius: '10px', padding: '12px' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', marginBottom: '6px' }}>
+                                    <span style={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <span style={{ width: 8, height: 8, background: categoryColors[cat] || '#607d8b', borderRadius: '50%' }} />
+                                      {cat}
+                                    </span>
+                                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: statusColor, background: isOver ? 'rgba(239, 68, 68, 0.2)' : 'transparent', padding: isOver ? '1px 6px' : '0', borderRadius: '4px' }}>
+                                      {isOver ? `🔴 OVER BY ${fmtVal(excessAmt)}` : `${pct}%`}
+                                    </span>
+                                  </div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                                    <span>Spent: {fmtVal(spent)}</span>
+                                    <span>Limit: {fmtVal(budget)}</span>
+                                  </div>
+                                  <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                                    <div style={{ height: '100%', width: `${Math.min(100, pct)}%`, background: statusColor, borderRadius: '3px', transition: 'width 0.4s ease' }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* 🎯 SAVINGS JARS & WEALTH GOALS ALLOCATOR WIDGET */}
@@ -6519,12 +6607,12 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             </div>
             <button
               onClick={() => {
-                showToast('Category budget targets saved!', 'success');
+                handleSaveDailyIntelSettings(targetDailyCap, categoryBudgets);
                 setIsBudgetModalOpen(false);
               }}
-              style={{ width: '100%', background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', marginTop: '16px' }}
+              style={{ width: '100%', background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', marginTop: '16px', boxShadow: '0 4px 12px rgba(129, 140, 248, 0.3)' }}
             >
-              Done & Save Caps
+              💾 Save Target Caps to Database
             </button>
           </div>
         </div>
