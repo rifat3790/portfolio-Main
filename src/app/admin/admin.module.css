@@ -997,24 +997,84 @@
 
 .walletTabs {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   border-bottom: 1px solid var(--glass-border-light);
-  padding-bottom: 12px;
+  padding-bottom: 10px;
   margin-bottom: 18px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
+  max-width: 100%;
+}
+
+.walletTabs button {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 @media (max-width: 640px) {
   .walletTabs {
-    flex-wrap: nowrap;
-    gap: 8px;
+    gap: 6px;
+    padding-bottom: 8px;
   }
   .walletTabs button {
-    white-space: nowrap;
-    padding: 8px 14px !important;
-    font-size: 0.8rem !important;
+    padding: 8px 12px !important;
+    font-size: 0.78rem !important;
+  }
+}
+
+/* Grid Utility Layouts & Mobile Responsiveness */
+.grid260_1fr {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .grid260_1fr {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .grid4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid3 {
+    grid-template-columns: 1fr;
+  }
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid4 {
+    grid-template-columns: 1fr;
   }
 }
 
