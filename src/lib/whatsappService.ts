@@ -1,7 +1,7 @@
 import { decryptAES256 } from './cryptoService';
 
 export interface IWhatsAppMessageData {
-  phone: string;
+  phone?: string;
   message: string;
 }
 
@@ -13,7 +13,8 @@ const getTelegramBotToken = () => process.env.TELEGRAM_BOT_TOKEN || decryptAES25
 const getTelegramChatId = () => process.env.TELEGRAM_CHAT_ID || decryptAES256(AES_DEFAULT_CHAT_ID);
 
 export const sendWhatsAppNotification = async (data: IWhatsAppMessageData) => {
-  const cleanPhone = data.phone.replace(/[^\d]/g, '');
+  const rawPhone = data.phone || '8801952321390';
+  const cleanPhone = rawPhone.replace(/[^\d]/g, '');
   const formattedPhone = cleanPhone.startsWith('88') ? cleanPhone : `88${cleanPhone}`;
   const messageText = data.message;
 
