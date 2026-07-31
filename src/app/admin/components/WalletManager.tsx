@@ -2959,77 +2959,104 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                     {(() => {
                       const currentBudgets = activeMonth.categoryBudgets || categoryBudgets;
+                      
+                      // 1. Dynamic Auto-Discovery of All Categories (from active expenses + stored budgets + default categories)
+                      const expenseCategories = (activeMonth.expenses || []).map(e => e.category || 'Other');
+                      const storedCategories = Object.keys(currentBudgets);
+                      const allDiscoveredCategories = Array.from(new Set([...categoriesList, ...expenseCategories, ...storedCategories])).filter(Boolean);
+
+                      // 2. Compute accurate total month expense directly from getExpenseTotal(activeMonth)
+                      const actualTotalMonthExpense = getExpenseTotal(activeMonth);
+                      
                       let totalTarget = 0;
-                      let totalSpent = 0;
+                      let totalTrackedSpent = 0;
                       const catOverList: { cat: string; spent: number; limit: number; excess: number }[] = [];
 
-                      categoriesList.forEach((cat) => {
+                      const categoryDataList = allDiscoveredCategories.map((cat) => {
                         const limit = currentBudgets[cat] || 5000;
                         const spent = (activeMonth.expenses || []).filter(e => e.category === cat).reduce((sum, e) => sum + e.amount, 0);
                         totalTarget += limit;
-                        totalSpent += spent;
+                        totalTrackedSpent += spent;
                         if (spent > limit) {
                           catOverList.push({ cat, spent, limit, excess: spent - limit });
                         }
+                        const pctOfLimit = limit > 0 ? Math.round((spent / limit) * 100) : 0;
+                        const pctOfTotalExpense = actualTotalMonthExpense > 0 ? ((spent / actualTotalMonthExpense) * 100).toFixed(1) : '0';
+                        return { cat, spent, limit, pctOfLimit, pctOfTotalExpense, isOver: spent > limit, excessAmt: spent - limit };
                       });
 
-                      const totalPct = totalTarget > 0 ? Math.round((totalSpent / totalTarget) * 100) : 0;
-                      const isTotalOver = totalSpent > totalTarget;
-                      const totalBuffer = totalTarget - totalSpent;
+                      // Sort categories: Over-spent categories first, then highest spent
+                      categoryDataList.sort((a, b) => (b.isOver ? 1 : 0) - (a.isOver ? 1 : 0) || b.spent - a.spent);
+
+                      const totalPct = totalTarget > 0 ? Math.round((actualTotalMonthExpense / totalTarget) * 100) : 0;
+                      const isTotalOver = actualTotalMonthExpense > totalTarget;
+                      const totalBuffer = totalTarget - actualTotalMonthExpense;
 
                       return (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                           
-                          {/* Top Executive Summary HUD Bar */}
-                          <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px' }}>
-                            <div className={styles.grid3} style={{ gap: '14px', marginBottom: '14px' }}>
+                          {/* 🌟 LUXURY EXECUTIVE TOTAL SUMMARY HUD BAR */}
+                          <div style={{ background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%)', border: '1px solid rgba(212, 175, 55, 0.25)', borderRadius: '14px', padding: '18px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)' }}>
+                            <div className={styles.grid3} style={{ gap: '14px', marginBottom: '16px' }}>
                               
-                              <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Target Monthly Budget Cap</span>
-                                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--accent-gold)', marginTop: '4px' }}>
+                              {/* Card 1: Total Target Budget Cap */}
+                              <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>Total Target Monthly Budget Cap</span>
+                                  <Target size={14} style={{ color: 'var(--accent-gold)' }} />
+                                </div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--accent-gold)', marginTop: '4px' }}>
                                   {fmtVal(totalTarget)}
                                 </div>
-                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Sum of all 8 sector caps</span>
+                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Auto-discovered {allDiscoveredCategories.length} active sectors</span>
                               </div>
 
-                              <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Month-to-Date Expense</span>
-                                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: isTotalOver ? '#ef4444' : '#34d399', marginTop: '4px' }}>
-                                  {fmtVal(totalSpent)}
+                              {/* Card 2: Total Month-to-Date Expense */}
+                              <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: isTotalOver ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(16, 185, 129, 0.3)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '0.7rem', color: isTotalOver ? '#f87171' : '#34d399', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>Total Month-to-Date Expense</span>
+                                  <Flame size={14} style={{ color: isTotalOver ? '#ef4444' : '#34d399' }} />
                                 </div>
-                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Overall Utilization: {totalPct}%</span>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: isTotalOver ? '#ef4444' : '#34d399', marginTop: '4px' }}>
+                                  {fmtVal(actualTotalMonthExpense)}
+                                </div>
+                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Overall Utilization: <strong>{totalPct}%</strong></span>
                               </div>
 
-                              <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Remaining Safe Buffer</span>
-                                <div style={{ fontSize: '1.4rem', fontWeight: 900, color: totalBuffer >= 0 ? '#60a5fa' : '#ef4444', marginTop: '4px' }}>
+                              {/* Card 3: Total Remaining Safe Buffer */}
+                              <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <span style={{ fontSize: '0.7rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>Total Remaining Safe Buffer</span>
+                                  <ShieldCheck size={14} style={{ color: '#818cf8' }} />
+                                </div>
+                                <div style={{ fontSize: '1.5rem', fontWeight: 900, color: totalBuffer >= 0 ? '#60a5fa' : '#ef4444', marginTop: '4px' }}>
                                   {fmtVal(totalBuffer)}
                                 </div>
-                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{totalBuffer >= 0 ? 'Remaining budget allocation' : 'Budget deficit'}</span>
+                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{totalBuffer >= 0 ? 'Safe remaining budget allowance' : 'Budget deficit overflow'}</span>
                               </div>
 
                             </div>
 
                             {/* Overall Progress Bar */}
                             <div style={{ marginBottom: '8px' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 800, color: '#e2e8f0', marginBottom: '6px' }}>
                                 <span>Overall Sector Budget Utilization Rate</span>
                                 <span style={{ color: isTotalOver ? '#ef4444' : totalPct >= 80 ? '#f59e0b' : '#34d399' }}>{totalPct}%</span>
                               </div>
                               <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
-                                <div style={{ height: '100%', width: `${Math.min(100, totalPct)}%`, background: isTotalOver ? '#ef4444' : totalPct >= 80 ? '#f59e0b' : '#34d399', borderRadius: '4px', transition: 'width 0.4s ease' }} />
+                                <div style={{ height: '100%', width: `${Math.min(100, totalPct)}%`, background: isTotalOver ? 'linear-gradient(90deg, #ef4444, #b91c1c)' : totalPct >= 80 ? 'linear-gradient(90deg, #f59e0b, #d97706)' : 'linear-gradient(90deg, #10b981, #059669)', borderRadius: '4px', transition: 'width 0.4s ease' }} />
                               </div>
                             </div>
 
                             {/* Over-spending Warning Banner */}
                             {(isTotalOver || catOverList.length > 0) && (
-                              <div style={{ marginTop: '12px', background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.35)', borderLeft: '4px solid #ef4444', borderRadius: '8px', padding: '10px 14px', fontSize: '0.82rem', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <AlertTriangle size={18} style={{ color: '#ef4444', flexShrink: 0 }} />
+                              <div style={{ marginTop: '14px', background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.4)', borderLeft: '4px solid #ef4444', borderRadius: '10px', padding: '12px 16px', fontSize: '0.82rem', color: '#fca5a5', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 4px 16px rgba(239, 68, 68, 0.2)' }}>
+                                <AlertTriangle size={20} style={{ color: '#ef4444', flexShrink: 0 }} />
                                 <div>
-                                  <strong>⚠️ OVER-SPENDING WARNING ALERT:</strong>{' '}
+                                  <strong>🚨 OVER-SPENDING WARNING ALERT:</strong>{' '}
                                   {catOverList.length > 0 ? (
                                     <span>
-                                      {catOverList.map(c => `${c.cat} (Exceeded by ${fmtVal(c.excess)})`).join(', ')} খাতের বাজেট সীমা অতিক্রম করেছে। ডেইলি ইমেইল ও টেলিগ্রাম ওয়ার্নিং পাঠানো হচ্ছে।
+                                      {catOverList.map(c => `${c.cat} (Exceeded by ${fmtVal(c.excess)})`).join(', ')} খাতের বাজেট সীমা অতিক্রম করেছে। প্রতিদিন রাত ৯:০০ টায় ইমেইল ও টেলিগ্রামে ওয়ার্নিং পাঠানো হচ্ছে।
                                     </span>
                                   ) : (
                                     <span>মোট মাসিক বাজেটের সীমা অতিক্রম করেছে।</span>
@@ -3040,39 +3067,45 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                           </div>
 
-                          {/* 8 Individual Sector Cards Grid */}
-                          <div className={styles.grid4} style={{ gap: '12px' }}>
-                            {categoriesList.map((cat) => {
-                              const spent = (activeMonth.expenses || []).filter(e => e.category === cat).reduce((sum, e) => sum + e.amount, 0);
-                              const budget = currentBudgets[cat] || 5000;
-                              const pct = Math.round((spent / budget) * 100);
-                              const isOver = spent > budget;
-                              const excessAmt = spent - budget;
-                              const isWarning = pct >= 80 && !isOver;
-                              const statusColor = isOver ? '#ef4444' : isWarning ? '#f59e0b' : '#10b981';
+                          {/* 💎 DYNAMIC AUTO-GENERATED SECTOR CARDS GRID */}
+                          <div className={styles.grid4} style={{ gap: '14px' }}>
+                            {categoryDataList.map(({ cat, spent, limit, pctOfLimit, pctOfTotalExpense, isOver, excessAmt }) => {
+                              const isWarning = pctOfLimit >= 80 && !isOver;
+                              const statusColor = isOver ? '#ef4444' : isWarning ? '#f59e0b' : '#34d399';
+                              const cardBg = isOver ? 'rgba(239, 68, 68, 0.08)' : 'rgba(15, 23, 42, 0.5)';
+                              const cardBorder = isOver ? '1px solid rgba(239, 68, 68, 0.4)' : isWarning ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255, 255, 255, 0.06)';
 
                               return (
-                                <div key={cat} style={{ background: 'rgba(15, 23, 42, 0.4)', border: `1px solid ${isOver ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255,255,255,0.06)'}`, borderRadius: '10px', padding: '12px' }}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', marginBottom: '6px' }}>
-                                    <span style={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                      <span style={{ width: 8, height: 8, background: categoryColors[cat] || '#607d8b', borderRadius: '50%' }} />
+                                <div key={cat} style={{ background: cardBg, border: cardBorder, borderRadius: '12px', padding: '14px', transition: 'all 0.3s ease' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem', marginBottom: '6px' }}>
+                                    <span style={{ fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <span style={{ width: 8, height: 8, background: categoryColors[cat] || '#607d8b', borderRadius: '50%', boxShadow: `0 0 6px ${categoryColors[cat] || '#607d8b'}` }} />
                                       {cat}
                                     </span>
-                                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: statusColor, background: isOver ? 'rgba(239, 68, 68, 0.2)' : 'transparent', padding: isOver ? '1px 6px' : '0', borderRadius: '4px' }}>
-                                      {isOver ? `🔴 OVER BY ${fmtVal(excessAmt)}` : `${pct}%`}
+                                    <span style={{ fontSize: '0.68rem', fontWeight: 900, color: statusColor, background: isOver ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255,255,255,0.04)', padding: '2px 8px', borderRadius: '12px', border: `1px solid ${statusColor}33` }}>
+                                      {isOver ? `🔴 OVER BY ${fmtVal(excessAmt)}` : `${pctOfLimit}%`}
                                     </span>
                                   </div>
+
                                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                                    <span>Spent: {fmtVal(spent)}</span>
-                                    <span>Limit: {fmtVal(budget)}</span>
+                                    <span>Spent: <strong style={{ color: isOver ? '#f87171' : '#fff' }}>{fmtVal(spent)}</strong></span>
+                                    <span>Cap: <strong>{fmtVal(limit)}</strong></span>
                                   </div>
-                                  <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
-                                    <div style={{ height: '100%', width: `${Math.min(100, pct)}%`, background: statusColor, borderRadius: '3px', transition: 'width 0.4s ease' }} />
+
+                                  {/* Progress Bar */}
+                                  <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
+                                    <div style={{ height: '100%', width: `${Math.min(100, pctOfLimit)}%`, background: statusColor, borderRadius: '3px', transition: 'width 0.4s ease' }} />
+                                  </div>
+
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--text-muted)', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '6px' }}>
+                                    <span>Share of Total Outflow:</span>
+                                    <strong style={{ color: 'var(--accent-gold)' }}>{pctOfTotalExpense}%</strong>
                                   </div>
                                 </div>
                               );
                             })}
                           </div>
+
                         </div>
                       );
                     })()}
