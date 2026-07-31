@@ -5068,6 +5068,28 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     peakWeekAmt = week4Spent;
                   }
 
+                  // Determine Peak Single Day Date & Amount
+                  let peakSingleDayDateStr = 'No expense logged';
+                  let peakSingleDayAmt = 0;
+                  let peakSingleDayDesc = '';
+                  const dayAggMap: Record<string, { amount: number; desc: string }> = {};
+
+                  (targetAnalyticsMonth?.expenses || []).forEach(e => {
+                    const dStr = new Date(e.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+                    if (!dayAggMap[dStr]) {
+                      dayAggMap[dStr] = { amount: 0, desc: e.description };
+                    }
+                    dayAggMap[dStr].amount += e.amount;
+                  });
+
+                  Object.entries(dayAggMap).forEach(([dStr, val]) => {
+                    if (val.amount > peakSingleDayAmt) {
+                      peakSingleDayAmt = val.amount;
+                      peakSingleDayDateStr = dStr;
+                      peakSingleDayDesc = val.desc;
+                    }
+                  });
+
                   const weeksData = [
                     { name: '1st Week (Days 1–7)', spent: week1Spent, pct: week1Pct, note: 'মাসিক শুরু (Rent, Utility, Grocery)' },
                     { name: '2nd Week (Days 8–14)', spent: week2Spent, pct: week2Pct, note: 'মিড-মান্থ শপিং ও রুটিন খরচ' },
@@ -5127,17 +5149,36 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         })}
                       </div>
 
-                      {/* Top Peak Velocity Indicator HUD */}
-                      <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(236, 72, 153, 0.3)', borderRadius: '12px', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                        <div>
-                          <span style={{ fontSize: '0.72rem', color: '#f472b6', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>🔥 HIGHEST SPENDING PHASE ({targetAnalyticsMonth?.monthName})</span>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>
-                            {peakWeekName} — <span style={{ color: '#f472b6' }}>{fmtVal(peakWeekAmt)}</span>
+                      {/* Top Peak Velocity Indicator & Peak Single Day HUD Grid */}
+                      <div className={styles.grid2} style={{ gap: '12px' }}>
+                        
+                        {/* Peak Phase */}
+                        <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(236, 72, 153, 0.3)', borderRadius: '12px', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                          <div>
+                            <span style={{ fontSize: '0.72rem', color: '#f472b6', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>🔥 HIGHEST SPENDING PHASE ({targetAnalyticsMonth?.monthName})</span>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>
+                              {peakWeekName} — <span style={{ color: '#f472b6' }}>{fmtVal(peakWeekAmt)}</span>
+                            </div>
+                          </div>
+                          <div style={{ background: 'rgba(236, 72, 153, 0.15)', border: '1px solid rgba(236, 72, 153, 0.3)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.78rem', color: '#f472b6', fontWeight: 800 }}>
+                            ⚡ {Math.round((peakWeekAmt / (grandTotal4Weeks || 1)) * 100)}% Outflow
                           </div>
                         </div>
-                        <div style={{ background: 'rgba(236, 72, 153, 0.15)', border: '1px solid rgba(236, 72, 153, 0.3)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.78rem', color: '#f472b6', fontWeight: 800 }}>
-                          ⚡ {Math.round((peakWeekAmt / (grandTotal4Weeks || 1)) * 100)}% of Month Outflow
+
+                        {/* Peak Single Day */}
+                        <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(251, 191, 36, 0.3)', borderRadius: '12px', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                          <div>
+                            <span style={{ fontSize: '0.72rem', color: '#fbbf24', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>📅 PEAK SINGLE SPENDING DATE ({targetAnalyticsMonth?.monthName})</span>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>
+                              {peakSingleDayDateStr} — <span style={{ color: '#fbbf24' }}>{fmtVal(peakSingleDayAmt)}</span>
+                            </div>
+                            {peakSingleDayDesc && <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Top Expense: <strong>{peakSingleDayDesc}</strong></div>}
+                          </div>
+                          <div style={{ background: 'rgba(251, 191, 36, 0.15)', border: '1px solid rgba(251, 191, 36, 0.3)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.78rem', color: '#fbbf24', fontWeight: 800 }}>
+                            📌 Peak Single Outflow Day
+                          </div>
                         </div>
+
                       </div>
 
                       {/* 4-Week Progress Cards Grid */}

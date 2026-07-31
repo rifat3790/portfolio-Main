@@ -94,19 +94,55 @@ export async function GET(req: NextRequest) {
     const currentDailyPace = totalExpense / daysElapsed;
     const recommendedDailyCap = Math.max(0, netLiquidSavings) / daysRemaining;
 
-    // 2. Monte Carlo 3-Tier Risk Simulation Forecast
+    // 2. Calculate Peak Single Spending Date & Peak Weekday
+    let peakDateStr = 'No expense logged yet';
+    let peakAmount = 0;
+    let peakDesc = '';
+    const dayTotalsMap: Record<string, { amount: number; desc: string }> = {};
+    const weekdayTotalsMap: Record<string, number> = { Sunday: 0, Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0, Saturday: 0 };
+
+    (latestMonth.expenses || []).forEach((e: any) => {
+      const dateObj = new Date(e.date);
+      const dateKey = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+      const weekdayKey = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+
+      if (!dayTotalsMap[dateKey]) {
+        dayTotalsMap[dateKey] = { amount: 0, desc: e.description || '' };
+      }
+      dayTotalsMap[dateKey].amount += (e.amount || 0);
+      weekdayTotalsMap[weekdayKey] = (weekdayTotalsMap[weekdayKey] || 0) + (e.amount || 0);
+    });
+
+    Object.entries(dayTotalsMap).forEach(([dKey, val]) => {
+      if (val.amount > peakAmount) {
+        peakAmount = val.amount;
+        peakDateStr = dKey;
+        peakDesc = val.desc;
+      }
+    });
+
+    let peakWeekdayName = 'N/A';
+    let peakWeekdayAmount = 0;
+    Object.entries(weekdayTotalsMap).forEach(([wkDay, wkAmt]) => {
+      if (wkAmt > peakWeekdayAmount) {
+        peakWeekdayAmount = wkAmt;
+        peakWeekdayName = wkDay;
+      }
+    });
+
+    // 3. Monte Carlo 3-Tier Risk Simulation Forecast
     const monteCarloOptimistic = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * 0.8 * daysRemaining)) - activeLoans;
     const monteCarloExpected = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * daysRemaining)) - activeLoans;
     const monteCarloConservative = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * 1.25 * daysRemaining)) - activeLoans;
 
-    // 3. FIRE (Financial Independence) Roadmap & Runway Math
+    // 4. FIRE Roadmap
     const estimatedAnnualExpense = (totalExpense / Math.max(1, daysElapsed)) * 365;
-    const fireTargetNumber = estimatedAnnualExpense * 25; // 4% rule
+    const fireTargetNumber = estimatedAnnualExpense * 25;
     const fireProgressPct = fireTargetNumber > 0 ? Math.min(100, Math.max(0, (netLiquidSavings / fireTargetNumber) * 100)) : 0;
     const livingRunwayDays = currentDailyPace > 0 ? Math.round(netLiquidSavings / currentDailyPace) : 999;
     const livingRunwayMonths = (livingRunwayDays / 30).toFixed(1);
 
-    // 4. Dynamic Category Burn Rate & Over-spending Anomaly Detection
+    // 5. Category Burn Rate & Anomaly Detection
     const knownCategoriesSet = new Set(['Food', 'Rent', 'Utility', 'Gadgets', 'Server', 'Entertainment', 'Parents (Baba Ma)', 'Other']);
     const categoryTotals: Record<string, number> = {};
     (latestMonth.expenses || []).forEach((e: any) => {
@@ -133,7 +169,7 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // 5. Financial Health Index (0-100)
+    // 6. Financial Health Index (0-100)
     const savingsRate = (totalIncome + carriedOverSavings) > 0 ? (netLiquidSavings / (totalIncome + carriedOverSavings)) * 100 : 0;
     let healthScore = 60;
     if (savingsRate >= 35) healthScore += 25;
@@ -143,7 +179,6 @@ export async function GET(req: NextRequest) {
     else healthScore -= anomalies.length * 5;
     healthScore = Math.max(10, Math.min(100, healthScore));
 
-    // 6. Actionable AI Recommendations & Roadmap Direction ("কিভাবে চলা উচিত")
     const adviceRules: string[] = [];
 
     if (currentDailyPace > recommendedDailyCap) {
@@ -178,6 +213,8 @@ export async function GET(req: NextRequest) {
       netLiquidSavings,
       currentDailyPace,
       recommendedDailyCap,
+      peakSpendingDay: { date: peakDateStr, amount: peakAmount, description: peakDesc },
+      peakWeekday: { day: peakWeekdayName, amount: peakWeekdayAmount },
       healthScore,
       savingsRate,
       anomalies,
@@ -243,6 +280,42 @@ export async function POST(req: NextRequest) {
     const monteCarloExpected = carriedOverSavings + totalIncome - (totalExpense + (currentDailyPace * daysRemaining)) - activeLoans;
     const savingsRatePct = (totalIncome + carriedOverSavings) > 0 ? (netLiquidSavings / (totalIncome + carriedOverSavings)) * 100 : 0;
 
+    // Calculate Peak Single Spending Date & Peak Amount
+    let peakDateStr = 'No expense logged yet';
+    let peakAmount = 0;
+    let peakDesc = '';
+    const dayTotalsMap: Record<string, { amount: number; desc: string }> = {};
+    const weekdayTotalsMap: Record<string, number> = { Sunday: 0, Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, Friday: 0, Saturday: 0 };
+
+    (latestMonth.expenses || []).forEach((e: any) => {
+      const dateObj = new Date(e.date);
+      const dateKey = dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+      const weekdayKey = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+
+      if (!dayTotalsMap[dateKey]) {
+        dayTotalsMap[dateKey] = { amount: 0, desc: e.description || '' };
+      }
+      dayTotalsMap[dateKey].amount += (e.amount || 0);
+      weekdayTotalsMap[weekdayKey] = (weekdayTotalsMap[weekdayKey] || 0) + (e.amount || 0);
+    });
+
+    Object.entries(dayTotalsMap).forEach(([dKey, val]) => {
+      if (val.amount > peakAmount) {
+        peakAmount = val.amount;
+        peakDateStr = dKey;
+        peakDesc = val.desc;
+      }
+    });
+
+    let peakWeekdayName = 'N/A';
+    let peakWeekdayAmount = 0;
+    Object.entries(weekdayTotalsMap).forEach(([wkDay, wkAmt]) => {
+      if (wkAmt > peakWeekdayAmount) {
+        peakWeekdayAmount = wkAmt;
+        peakWeekdayName = wkDay;
+      }
+    });
+
     // Check category over-spending
     const knownCategoriesSet = new Set(['Food', 'Rent', 'Utility', 'Gadgets', 'Server', 'Entertainment', 'Parents (Baba Ma)', 'Other']);
     const categoryTotals: Record<string, number> = {};
@@ -280,7 +353,7 @@ export async function POST(req: NextRequest) {
 
     const results: Record<string, any> = {};
 
-    // 📩 Handle Dispatching based on Slot & Channel
+    // 📩 Handle Telegram Visual Dispatches with Structured HTML Monospace Tables (<pre>)
     if (channel === 'telegram' || channel === 'all') {
 
       if (slot === 'auto_create_month') {
@@ -288,9 +361,20 @@ export async function POST(req: NextRequest) {
         const bodyMsg = `${title}
 
 🎉 <b>New Month Sheet Auto-Created!</b>
-🗓️ <b>Month:</b> ${latestMonth.monthName}
+🗓️ <b>Period:</b> ${latestMonth.monthName}
 📆 <b>Total Days in Month:</b> ${daysInMonth} Days
 💰 <b>Carried Over Savings:</b> ${fmt(carriedOverSavings)}
+
+<pre>
+┌─────────────────────────┬──────────────┐
+│ METRIC LEDGER ITEM      │ VALUE        │
+├─────────────────────────┼──────────────┤
+│ Current Month           │ ${latestMonth.monthName.padEnd(12)} │
+│ Days in Month           │ ${daysInMonth.toString().padEnd(12)} │
+│ Carried Cash            │ ${fmt(carriedOverSavings).padEnd(12)} │
+│ Base Target Cap         │ ৳26,001      │
+└─────────────────────────┴──────────────┘
+</pre>
 
 ✅ সকল বাজেট লিমিট ও হিসাব সম্পূর্ণ স্বয়ংক্রিয়ভাবে ইনিশিশিয়ালাইজ করা হয়েছে।`;
 
@@ -316,11 +400,20 @@ export async function POST(req: NextRequest) {
         const bodyMsg = `${title}
 
 🗓️ <b>Closed Period:</b> ${latestMonth.monthName}
-💵 <b>Total Gross Inflow:</b> ${fmt(totalIncome)}
-💸 <b>Total Gross Outflow:</b> ${fmt(totalExpense)}
-💎 <b>Net Savings Accumulated:</b> <b>${fmt(netLiquidSavings)}</b>
-📈 <b>Savings Retention Margin:</b> ${savingsRatePct.toFixed(1)}%
-🛡️ <b>Financial Health Rating:</b> ${healthScore}/100
+
+<pre>
+┌─────────────────────────┬──────────────┐
+│ MONTH-END SUMMARY ITEM  │ AMOUNT (৳)   │
+├─────────────────────────┼──────────────┤
+│ Total Gross Inflow      │ ${fmt(totalIncome).padEnd(12)} │
+│ Total Gross Outflow     │ ${fmt(totalExpense).padEnd(12)} │
+│ Net Savings Surplus     │ ${fmt(netLiquidSavings).padEnd(12)} │
+│ Peak Single Day Date    │ ${peakDateStr.padEnd(12)} │
+│ Peak Single Day Outflow │ ${fmt(peakAmount).padEnd(12)} │
+│ Savings Margin %        │ ${(savingsRatePct.toFixed(1) + '%').padEnd(12)} │
+│ Financial Health Score  │ ${(healthScore + '/100').padEnd(12)} │
+└─────────────────────────┴──────────────┘
+</pre>
 
 💡 <b>Executive Conclusion:</b>
 মাসটি সফলভাবে সমাপ্ত হয়েছে। জমানো অর্থ পরবর্তী মাসে ক্যারি-ওভার করা হয়েছে।`;
@@ -348,11 +441,20 @@ export async function POST(req: NextRequest) {
         const bodyMsg = `${title}
 
 🗓️ <b>Period:</b> ${latestMonth.monthName}
-⚡ <b>4-Week Phase Breakdown:</b>
-• 1st Week (Days 1–7): ${fmt(week1Spent)}
-• 2nd Week (Days 8–14): ${fmt(week2Spent)}
-• 3rd Week (Days 15–21): ${fmt(week3Spent)}
-• 4th Week (Days 22–31): ${fmt(week4Spent)}
+
+<pre>
+┌─────────────────────────┬──────────────┐
+│ 4-WEEK PHASE AUDIT      │ SPENT (৳)    │
+├─────────────────────────┼──────────────┤
+│ 1st Week (Days 1–7)     │ ${fmt(week1Spent).padEnd(12)} │
+│ 2nd Week (Days 8–14)    │ ${fmt(week2Spent).padEnd(12)} │
+│ 3rd Week (Days 15–21)   │ ${fmt(week3Spent).padEnd(12)} │
+│ 4th Week (Days 22–31)   │ ${fmt(week4Spent).padEnd(12)} │
+├─────────────────────────┼──────────────┤
+│ Peak Spending Date      │ ${peakDateStr.padEnd(12)} │
+│ Peak Single Outflow     │ ${fmt(peakAmount).padEnd(12)} │
+└─────────────────────────┴──────────────┘
+</pre>
 
 💡 <b>Weekly Guidance:</b>
 সাপ্তাহিক খরচের গতি পর্যবেক্ষণ করে খরচে ভারসাম্য বজায় রাখুন।`;
@@ -380,8 +482,18 @@ export async function POST(req: NextRequest) {
         const bodyMsg = `${title}
 
 🗓️ <b>Period:</b> ${latestMonth.monthName} (Day ${daysElapsed}/${daysInMonth})
-💰 <b>Net Liquid Balance:</b> ${fmt(netLiquidSavings)}
-🎯 <b>Today's Safe Spending Cap:</b> <b>${fmt(recommendedDailyCap)} / day</b>
+
+<pre>
+┌─────────────────────────┬──────────────┐
+│ MORNING BRIEFING METRIC │ VALUE        │
+├─────────────────────────┼──────────────┤
+│ Net Liquid Balance      │ ${fmt(netLiquidSavings).padEnd(12)} │
+│ Safe Daily Cap          │ ${(fmt(recommendedDailyCap) + '/d').padEnd(12)} │
+│ Days Remaining          │ ${(daysRemaining + ' Days').padEnd(12)} │
+│ Peak Spending Date      │ ${peakDateStr.padEnd(12)} │
+│ Peak Single Outflow     │ ${fmt(peakAmount).padEnd(12)} │
+└─────────────────────────┴──────────────┘
+</pre>
 
 💡 <b>Morning Guidance:</b>
 আজকের নিরাপদ খরচ সীমা ${fmt(recommendedDailyCap)} টাকার মধ্যে বজায় রাখলে মাস শেষে সঞ্চয় লক্ষ্য অর্জন সম্ভব।`;
@@ -412,8 +524,18 @@ export async function POST(req: NextRequest) {
         const bodyMsg = `${title}
 
 🗓️ <b>Period:</b> ${latestMonth.monthName}
-⚡ <b>Current Daily Pace:</b> ${fmt(currentDailyPace)} / day
-🎯 <b>Safe Target Daily Cap:</b> ${fmt(recommendedDailyCap)} / day
+
+<pre>
+┌─────────────────────────┬──────────────┐
+│ MID-DAY PACE AUDIT      │ VALUE        │
+├─────────────────────────┼──────────────┤
+│ Current Daily Pace      │ ${(fmt(currentDailyPace) + '/d').padEnd(12)} │
+│ Safe Target Cap         │ ${(fmt(recommendedDailyCap) + '/d').padEnd(12)} │
+│ Status                  │ ${(currentDailyPace <= recommendedDailyCap ? '🟢 SAFE' : '⚠️ ELEVATED').padEnd(12)} │
+│ Peak Single Day Date    │ ${peakDateStr.padEnd(12)} │
+│ Peak Single Day Outflow │ ${fmt(peakAmount).padEnd(12)} │
+└─────────────────────────┴──────────────┘
+</pre>
 ${warnText}
 💡 <b>Mid-Day Action Direction:</b>
 ${catOverWarnings.length > 0 ? 'ক্যাটাগরি বাজেটের অতিরিক্ত খরচ হয়েছে। অপচয় ছাঁটাই করুন।' : 'সকল খাতের খরচ সীমার মধ্যে রয়েছে।'}`;
@@ -444,8 +566,17 @@ ${catOverWarnings.length > 0 ? 'ক্যাটাগরি বাজেটে�
         const bodyMsg = `${title}
 
 🗓️ <b>Period:</b> ${latestMonth.monthName}
-💰 <b>Cumulative Savings Balance:</b> ${fmt(netLiquidSavings)}
-🤝 <b>Pending Loan Outstandings:</b> <b>${fmt(activeLoans)}</b>
+
+<pre>
+┌─────────────────────────┬──────────────┐
+│ WEALTH VAULT METRIC     │ AMOUNT (৳)   │
+├─────────────────────────┼──────────────┤
+│ Liquid Savings Balance  │ ${fmt(netLiquidSavings).padEnd(12)} │
+│ Carried Over Cash       │ ${fmt(carriedOverSavings).padEnd(12)} │
+│ Pending Active Debts    │ ${fmt(activeLoans).padEnd(12)} │
+│ Peak Spending Date      │ ${peakDateStr.padEnd(12)} │
+└─────────────────────────┴──────────────┘
+</pre>
 
 💡 <b>Wealth Vault Direction:</b>
 পেন্ডিং লোন রিমাইন্ডার পাঠিয়ে পাওনা টাকা উদ্ধার নিশ্চিত করুন।`;
@@ -472,9 +603,18 @@ ${catOverWarnings.length > 0 ? 'ক্যাটাগরি বাজেটে�
         const bodyMsg = `${title}
 
 🗓️ <b>Period:</b> ${latestMonth.monthName}
-🔮 <b>Monte Carlo Expected Savings:</b> ${fmt(monteCarloExpected)}
-📊 <b>Health Rating:</b> ${healthScore}/100
-🛡️ <b>Status:</b> ${currentDailyPace <= recommendedDailyCap ? '🟢 SAFE PACING' : '⚠️ ELEVATED PACING'}
+
+<pre>
+┌─────────────────────────┬──────────────┐
+│ AI EXECUTIVE METRIC     │ VALUE        │
+├─────────────────────────┼──────────────┤
+│ Monte Carlo Expected    │ ${fmt(monteCarloExpected).padEnd(12)} │
+│ Financial Health Score  │ ${(healthScore + '/100').padEnd(12)} │
+│ Pacing Status           │ ${(currentDailyPace <= recommendedDailyCap ? '🟢 SAFE' : '⚠️ ELEVATED').padEnd(12)} │
+│ Peak Single Day Date    │ ${peakDateStr.padEnd(12)} │
+│ Peak Single Day Outflow │ ${fmt(peakAmount).padEnd(12)} │
+└─────────────────────────┴──────────────┘
+</pre>
 
 💡 <b>AI Executive Direction:</b>
 • ${currentDailyPace <= recommendedDailyCap ? 'দৈনিক খরচ নিয়ন্ত্রণে আছে। প্রস্তাবিত ক্যাপিং বজায় রাখুন।' : 'দৈনিক খরচ সীমা অতিক্রম করেছে।'}
@@ -508,12 +648,21 @@ ${catOverWarnings.length > 0 ? 'ক্যাটাগরি বাজেটে�
         const bodyMsg = `${title}
 
 🗓️ <b>Period:</b> ${latestMonth.monthName} (Day-End Closing)
-💰 <b>Day-End Net Savings:</b> ${fmt(netLiquidSavings)}
-⚡ <b>4-Week Phase Breakdown:</b>
-• 1st Week (Days 1–7): ${fmt(week1Spent)}
-• 2nd Week (Days 8–14): ${fmt(week2Spent)}
-• 3rd Week (Days 15–21): ${fmt(week3Spent)}
-• 4th Week (Days 22–31): ${fmt(week4Spent)}
+
+<pre>
+┌─────────────────────────┬──────────────┐
+│ DAY-END AUDIT ITEM      │ AMOUNT (৳)   │
+├─────────────────────────┼──────────────┤
+│ Day-End Net Savings     │ ${fmt(netLiquidSavings).padEnd(12)} │
+│ 1st Week (Days 1–7)     │ ${fmt(week1Spent).padEnd(12)} │
+│ 2nd Week (Days 8–14)    │ ${fmt(week2Spent).padEnd(12)} │
+│ 3rd Week (Days 15–21)   │ ${fmt(week3Spent).padEnd(12)} │
+│ 4th Week (Days 22–31)   │ ${fmt(week4Spent).padEnd(12)} │
+├─────────────────────────┼──────────────┤
+│ Peak Spending Date      │ ${peakDateStr.padEnd(12)} │
+│ Peak Single Day Outflow │ ${fmt(peakAmount).padEnd(12)} │
+└─────────────────────────┴──────────────┘
+</pre>
 
 💡 <b>Day-End Summary:</b>
 আজকের দিন সফলভাবে সমাপ্ত হয়েছে। শুভরাত্রি!`;
@@ -539,7 +688,7 @@ ${catOverWarnings.length > 0 ? 'ক্যাটাগরি বাজেটে�
       results.telegram = { success: true, message: `Dispatched ${slot} visual report with QuickChart infographics to Telegram successfully!` };
     }
 
-    // Send Email Notification
+    // Send Email Notification with REAL Peak Date & Peak Amount
     if (channel === 'email' || channel === 'all') {
       try {
         const emailResult = await sendWalletDailyEmailReport({
@@ -551,8 +700,8 @@ ${catOverWarnings.length > 0 ? 'ক্যাটাগরি বাজেটে�
           netSavings: netLiquidSavings,
           dailyAverage: currentDailyPace,
           recommendedDailyCap,
-          highestSpendingDay: { date: 'N/A', amount: 0, description: '' },
-          peakWeekday: { day: 'Friday', amount: 0 },
+          highestSpendingDay: { date: peakDateStr, amount: peakAmount, description: peakDesc },
+          peakWeekday: { day: peakWeekdayName, amount: peakWeekdayAmount },
           healthScore,
           savingsRatePct
         });
