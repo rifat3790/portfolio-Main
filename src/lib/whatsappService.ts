@@ -108,3 +108,59 @@ export const sendTelegramPhotoNotification = async (data: { imageUrl: string; ca
   }
   return { success: false, error: 'No Telegram Token' };
 };
+
+export const sendTelegramCustomBroadcast = async (data: {
+  text: string;
+  imageUrl?: string;
+  sendToGroup?: boolean;
+  groupChatId?: string;
+}) => {
+  const telegramBotToken = getTelegramBotToken();
+  const personalChatId = getTelegramChatId();
+  const groupChatId = data.groupChatId || process.env.TELEGRAM_GROUP_CHAT_ID;
+
+  if (!telegramBotToken) {
+    return { success: false, error: 'No Telegram Token' };
+  }
+
+  const targets = [personalChatId];
+  if (data.sendToGroup && groupChatId) {
+    targets.push(groupChatId);
+  }
+
+  const results: any[] = [];
+  for (const chatId of targets) {
+    if (!chatId) continue;
+    try {
+      if (data.imageUrl && data.imageUrl.trim()) {
+        const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendPhoto`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            photo: data.imageUrl.trim(),
+            caption: data.text,
+            parse_mode: 'HTML'
+          })
+        });
+        results.push({ chatId, ok: res.ok });
+      } else {
+        const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: data.text,
+            parse_mode: 'HTML'
+          })
+        });
+        results.push({ chatId, ok: res.ok });
+      }
+    } catch (err: any) {
+      console.error(`Telegram custom broadcast error for ${chatId}:`, err);
+      results.push({ chatId, ok: false, error: err.message });
+    }
+  }
+
+  return { success: results.some(r => r.ok), results };
+};

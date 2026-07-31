@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import WalletMonth from '@/models/WalletMonth';
 import { sendWalletDailyEmailReport } from '@/lib/emailService';
-import { sendWhatsAppNotification, sendTelegramPhotoNotification } from '@/lib/whatsappService';
+import { sendWhatsAppNotification, sendTelegramPhotoNotification, sendTelegramCustomBroadcast } from '@/lib/whatsappService';
 import { isAuthenticated } from '@/lib/auth';
 
 // Helper function to format currency
@@ -249,10 +249,31 @@ export async function POST(req: NextRequest) {
     await ensureAutoMonthCreated();
 
     const body = await req.json().catch(() => ({}));
-    const slot = body.slot || 'all'; // '9am' | '3pm' | '6pm' | '9pm' | '11pm' | 'month_end' | 'weekly_phase' | 'auto_create_month' | 'all'
+    const slot = body.slot || 'all'; // '9am' | '3pm' | '6pm' | '9pm' | '11pm' | 'month_end' | 'weekly_phase' | 'auto_create_month' | 'custom_broadcast' | 'all'
     const channel = body.channel || 'all'; // 'email' | 'telegram' | 'all'
     const recipients = body.emails || ['mdrifayethossen@gmail.com', 'rifayet.cse@gmail.com'];
     const smtpPass = body.appPassword || process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || '';
+
+    if (slot === 'custom_broadcast') {
+      const customText = body.customText || '';
+      const customImageUrl = body.customImageUrl || '';
+      const sendToGroup = !!body.sendToGroup;
+      const groupChatId = body.groupChatId || '';
+
+      const broadcastRes = await sendTelegramCustomBroadcast({
+        text: customText || '📢 <b>Executive Custom Broadcast</b>',
+        imageUrl: customImageUrl,
+        sendToGroup,
+        groupChatId
+      });
+
+      return NextResponse.json({
+        success: broadcastRes.success,
+        slot: 'custom_broadcast',
+        message: broadcastRes.success ? '🚀 Custom Broadcast dispatched to Telegram successfully!' : 'Failed to dispatch custom broadcast.',
+        results: broadcastRes
+      });
+    }
 
     const months = await WalletMonth.find({}).sort({ createdAt: 1 }).lean();
     if (!months || months.length === 0) {

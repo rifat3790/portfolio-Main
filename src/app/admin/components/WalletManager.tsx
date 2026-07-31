@@ -160,6 +160,12 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [targetCurrency, setTargetCurrency] = useState<'BDT' | 'USD' | 'EUR' | 'GBP' | 'INR' | 'CAD' | 'AED'>('BDT');
   const [convertAmount, setConvertAmount] = useState<string>('1000');
   const [netWorthTarget, setNetWorthTarget] = useState<number>(1000000);
+  // 📢 Custom Telegram Broadcast & Group Dispatch Console State
+  const [customBroadcastText, setCustomBroadcastText] = useState('');
+  const [customBroadcastImageUrl, setCustomBroadcastImageUrl] = useState('');
+  const [sendToTelegramGroup, setSendToTelegramGroup] = useState(false);
+  const [customGroupChatId, setCustomGroupChatId] = useState('');
+  const [isSendingCustomBroadcast, setIsSendingCustomBroadcast] = useState(false);
 
   // Modal states
   const [isAddMonthOpen, setIsAddMonthOpen] = useState(false);
@@ -1653,6 +1659,43 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       }
     } catch (err) {
       showToast('Error pushing AI advisory notification', 'error');
+    }
+  };
+
+  const handleSendCustomBroadcast = async () => {
+    if (!customBroadcastText.trim()) {
+      showToast('⚠️ Please enter custom message text to broadcast', 'error');
+      return;
+    }
+
+    setIsSendingCustomBroadcast(true);
+    showToast('🚀 Dispatching custom broadcast to Telegram...', 'info');
+
+    try {
+      const res = await fetch('/api/admin/wallet/ai-advisor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slot: 'custom_broadcast',
+          customText: customBroadcastText,
+          customImageUrl: customBroadcastImageUrl,
+          sendToGroup: sendToTelegramGroup,
+          groupChatId: customGroupChatId
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(sendToTelegramGroup ? '🎉 Custom Broadcast dispatched to Personal Chat & Telegram Group!' : '🎉 Custom Broadcast dispatched to Telegram Personal Chat!', 'success');
+        setCustomBroadcastText('');
+        setCustomBroadcastImageUrl('');
+      } else {
+        showToast(data.error || 'Failed to send custom broadcast', 'error');
+      }
+    } catch (err) {
+      showToast('Error sending custom broadcast', 'error');
+    } finally {
+      setIsSendingCustomBroadcast(false);
     }
   };
 
@@ -5823,6 +5866,138 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       <Zap size={16} /> 🚀 Dispatch All Notifications Now
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* 📢 CUSTOM BROADCAST & TELEGRAM GROUP DISPATCH CONSOLE */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(15, 23, 42, 0.7) 100%)', border: '1px solid rgba(59, 130, 246, 0.35)', boxShadow: '0 8px 32px rgba(59, 130, 246, 0.12)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Custom Telegram Broadcast Console</span>
+                    <h3 style={{ margin: '2px 0 0', fontSize: '1.35rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Send size={22} style={{ color: '#60a5fa' }} /> Custom Text & Photo Broadcast Engine
+                    </h3>
+                  </div>
+                  <span style={{ fontSize: '0.75rem', background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', padding: '4px 12px', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(59, 130, 246, 0.4)' }}>
+                    LIVE DISPATCHER
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  
+                  {/* Template Quick Presets */}
+                  <div>
+                    <span style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>
+                      💡 Quick Preset Message Templates:
+                    </span>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => setCustomBroadcastText(`📢 <b>EXECUTIVE ANNOUNCEMENT</b>\n\n📌 <b>Subject:</b> Urgent System Broadcast\n\n💡 <b>Details:</b> `)}
+                        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        📢 Announcement
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setCustomBroadcastText(`⚠️ <b>URGENT CAPITAL WARNING</b>\n\n🔴 <b>Alert:</b> Budget limit exceeded.\n\n💡 <b>Action Required:</b> `)}
+                        style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '4px 10px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        ⚠️ Urgency Warning
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setCustomBroadcastText(`📊 <b>FINANCIAL AUDIT DISPATCH</b>\n\n<pre>\n┌─────────────────────────┬──────────────┐\n│ SUMMARY ITEM            │ AMOUNT (৳)   │\n├─────────────────────────┼──────────────┤\n│ Total Inflow            │ ৳85,000      │\n│ Total Outflow           │ ৳24,500      │\n└─────────────────────────┴──────────────┘\n</pre>`)}
+                        style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#34d399', padding: '4px 10px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        📊 Audit Table
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Message Input */}
+                  <div>
+                    <label style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fff', display: 'block', marginBottom: '6px' }}>
+                      Custom Message Text (Supports HTML `<b>bold</b>`, `<i>italic</i>`, `<pre>table</pre>`):
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={customBroadcastText}
+                      onChange={(e) => setCustomBroadcastText(e.target.value)}
+                      placeholder="Enter custom broadcast text message here..."
+                      style={{ width: '100%', background: 'rgba(7, 8, 15, 0.7)', border: '1px solid rgba(96, 165, 250, 0.3)', borderRadius: '8px', padding: '12px', color: '#fff', fontSize: '0.85rem', fontFamily: 'monospace', outline: 'none', resize: 'vertical' }}
+                    />
+                  </div>
+
+                  {/* Optional Image URL Input */}
+                  <div>
+                    <label style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fff', display: 'block', marginBottom: '6px' }}>
+                      Optional Image URL (Infographic / Chart Photo Attachment):
+                    </label>
+                    <input
+                      type="text"
+                      value={customBroadcastImageUrl}
+                      onChange={(e) => setCustomBroadcastImageUrl(e.target.value)}
+                      placeholder="https://quickchart.io/chart?c=... or https://..."
+                      style={{ width: '100%', background: 'rgba(7, 8, 15, 0.7)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px 12px', color: '#fff', fontSize: '0.82rem', outline: 'none' }}
+                    />
+                  </div>
+
+                  {/* Telegram Group Dispatch Checkbox Toggle */}
+                  <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 800, color: sendToTelegramGroup ? '#34d399' : '#fff' }}>
+                      <input
+                        type="checkbox"
+                        checked={sendToTelegramGroup}
+                        onChange={(e) => setSendToTelegramGroup(e.target.checked)}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#10b981' }}
+                      />
+                      👥 Also Broadcast to Telegram Group Chat (Group Dispatching)
+                    </label>
+                    
+                    {sendToTelegramGroup && (
+                      <div style={{ marginTop: '4px' }}>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                          Optional Telegram Group Chat ID override (Leave blank to use default `TELEGRAM_GROUP_CHAT_ID`):
+                        </span>
+                        <input
+                          type="text"
+                          value={customGroupChatId}
+                          onChange={(e) => setCustomGroupChatId(e.target.value)}
+                          placeholder="-100xxxxxxxxx or group_chat_id"
+                          style={{ width: '100%', background: 'rgba(15, 23, 42, 0.8)', border: '1px solid rgba(52, 211, 153, 0.4)', borderRadius: '6px', padding: '8px 12px', color: '#fff', fontSize: '0.8rem', outline: 'none' }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Submit Action Button */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
+                    <button
+                      type="button"
+                      disabled={isSendingCustomBroadcast}
+                      onClick={handleSendCustomBroadcast}
+                      style={{
+                        background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '12px 24px',
+                        borderRadius: '8px',
+                        fontWeight: 900,
+                        fontSize: '0.88rem',
+                        cursor: isSendingCustomBroadcast ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        boxShadow: '0 4px 16px rgba(59, 130, 246, 0.4)'
+                      }}
+                    >
+                      <Send size={18} /> {isSendingCustomBroadcast ? '🚀 Dispatching Broadcast...' : '🚀 Dispatch Custom Broadcast Now'}
+                    </button>
+                  </div>
+
                 </div>
               </div>
 
