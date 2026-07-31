@@ -4610,6 +4610,213 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   );
                 })()}
               </div>
+
+              {/* ⚡ NEW PREMIUM FEATURE 1: Weekend vs. Weekday Impulse Spending Anomaly Detector */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(168, 85, 247, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Calendar size={20} style={{ color: '#c084fc' }} /> Weekend vs. Weekday Impulse Spending Anomaly Detector
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    BEHAVIORAL AUDIT
+                  </span>
+                </div>
+
+                {(() => {
+                  let weekdayTotal = 0;
+                  let weekendTotal = 0;
+                  const dayMap: { [day: string]: number } = { Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0 };
+                  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                  months.forEach(m => {
+                    (m.expenses || []).forEach(e => {
+                      const d = new Date(e.date);
+                      const dayIdx = d.getDay();
+                      const dayName = dayNames[dayIdx];
+                      dayMap[dayName] = (dayMap[dayName] || 0) + e.amount;
+                      
+                      // Friday (5) & Saturday (6) are weekends in Bangladesh context
+                      if (dayIdx === 5 || dayIdx === 6) {
+                        weekendTotal += e.amount;
+                      } else {
+                        weekdayTotal += e.amount;
+                      }
+                    });
+                  });
+
+                  const grandTotal = weekdayTotal + weekendTotal;
+                  const weekendPct = grandTotal > 0 ? Math.round((weekendTotal / grandTotal) * 100) : 0;
+                  const maxDayVal = Math.max(1, ...Object.values(dayMap));
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div className={styles.grid3} style={{ gap: '14px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Weekday Spend Ratio</span>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#60a5fa', marginTop: '4px' }}>{fmtVal(weekdayTotal)}</div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{grandTotal > 0 ? (100 - weekendPct) : 0}% of total expenses</span>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#c084fc', textTransform: 'uppercase', fontWeight: 700 }}>Weekend Spend Ratio</span>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#c084fc', marginTop: '4px' }}>{fmtVal(weekendTotal)}</div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{weekendPct}% of total expenses (Fri & Sat)</span>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', textTransform: 'uppercase', fontWeight: 700 }}>Weekend Impulse Index</span>
+                          <div style={{ fontSize: '1.3rem', fontWeight: 900, color: weekendPct >= 40 ? '#ef4444' : '#34d399', marginTop: '4px' }}>
+                            {weekendPct >= 40 ? '🔴 HIGH IMPULSE' : '🟢 BALANCED'}
+                          </div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{weekendPct >= 40 ? 'Weekends account for disproportionate spending' : 'Normal weekend distribution'}</span>
+                        </div>
+                      </div>
+
+                      {/* Day of Week Visual Bar Matrix */}
+                      <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e2e8f0', display: 'block', marginBottom: '12px' }}>Weekly Spending Intensity Matrix (Day by Day):</span>
+                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '90px' }}>
+                          {dayNames.map(day => {
+                            const val = dayMap[day] || 0;
+                            const hPct = (val / maxDayVal) * 100;
+                            const isWeekend = day === 'Fri' || day === 'Sat';
+
+                            return (
+                              <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
+                                <div style={{ fontSize: '0.62rem', fontWeight: 800, color: isWeekend ? '#c084fc' : 'var(--text-muted)', marginBottom: '3px' }}>
+                                  {val > 0 ? fmtVal(val) : '৳0'}
+                                </div>
+                                <div style={{ width: '100%', height: `${Math.max(8, hPct)}%`, background: isWeekend ? 'linear-gradient(180deg, #c084fc 0%, #7e22ce 100%)' : 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)', borderRadius: '4px 4px 0 0' }} />
+                                <span style={{ fontSize: '0.7rem', fontWeight: 800, color: isWeekend ? '#c084fc' : '#fff', marginTop: '6px' }}>{day}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* ⚡ NEW PREMIUM FEATURE 2: Income Diversification & Revenue Source Resilience Index */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldCheck size={20} style={{ color: '#34d399' }} /> Income Diversification & Revenue Source Resilience Index
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    REVENUE DIVERSIFICATION
+                  </span>
+                </div>
+
+                {(() => {
+                  let totalSalary = 0;
+                  let totalAddon = 0;
+                  let totalBonus = 0;
+                  let totalFreelance = 0;
+
+                  months.forEach(m => {
+                    totalSalary += m.salary || 0;
+                    totalAddon += m.addon || 0;
+                    totalBonus += m.bonus || 0;
+                    (m.incomes || []).forEach(i => {
+                      if (i.category === 'Freelance') totalFreelance += i.amount;
+                      else totalAddon += i.amount;
+                    });
+                  });
+
+                  const grandIncome = totalSalary + totalAddon + totalBonus + totalFreelance;
+                  const salaryPct = grandIncome > 0 ? Math.round((totalSalary / grandIncome) * 100) : 0;
+                  const freelancePct = grandIncome > 0 ? Math.round((totalFreelance / grandIncome) * 100) : 0;
+                  const addonPct = grandIncome > 0 ? Math.round(((totalAddon + totalBonus) / grandIncome) * 100) : 0;
+
+                  const isDiversified = salaryPct < 70 && grandIncome > 0;
+
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div className={styles.grid3} style={{ gap: '14px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Primary Salary Dependence</span>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#34d399', marginTop: '4px' }}>{salaryPct}%</div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{fmtVal(totalSalary)} lifetime salary</span>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 700 }}>Tech Freelance Inflow</span>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#818cf8', marginTop: '4px' }}>{freelancePct}%</div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{fmtVal(totalFreelance)} freelance revenue</span>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', textTransform: 'uppercase', fontWeight: 700 }}>Income Resilience Rating</span>
+                          <div style={{ fontSize: '1.3rem', fontWeight: 900, color: isDiversified ? '#34d399' : '#f59e0b', marginTop: '4px' }}>
+                            {isDiversified ? '🟢 MULTI-STREAM' : '🟡 SALARY DEPENDENT'}
+                          </div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{isDiversified ? 'Well-balanced revenue sources' : 'Over 70% reliance on primary salary'}</span>
+                        </div>
+                      </div>
+
+                      {/* Revenue Stack Progress Bar */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, color: '#e2e8f0', marginBottom: '6px' }}>
+                          <span>Lifetime Revenue Source Distribution:</span>
+                        </div>
+                        <div style={{ height: '10px', background: 'rgba(255,255,255,0.06)', borderRadius: '5px', overflow: 'hidden', display: 'flex' }}>
+                          <div title={`Salary: ${salaryPct}%`} style={{ width: `${salaryPct}%`, background: '#10b981', height: '100%' }} />
+                          <div title={`Freelance: ${freelancePct}%`} style={{ width: `${freelancePct}%`, background: '#818cf8', height: '100%' }} />
+                          <div title={`Bonus & Addons: ${addonPct}%`} style={{ width: `${addonPct}%`, background: '#f59e0b', height: '100%' }} />
+                        </div>
+                        <div style={{ display: 'flex', gap: '16px', fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '8px', flexWrap: 'wrap' }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: 8, height: 8, background: '#10b981', borderRadius: '50%' }} /> Primary Salary ({salaryPct}%)</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: 8, height: 8, background: '#818cf8', borderRadius: '50%' }} /> Tech Freelance ({freelancePct}%)</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ width: 8, height: 8, background: '#f59e0b', borderRadius: '50%' }} /> Bonus & Addons ({addonPct}%)</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* ⚡ NEW PREMIUM FEATURE 3: Monthly Savings Rate Heatmap Matrix */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(30, 27, 75, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%)', border: '1px solid rgba(129, 140, 248, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BarChart3 size={20} style={{ color: '#818cf8' }} /> Monthly Savings Margin Heatmap & Efficiency Grid
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', background: 'rgba(129, 140, 248, 0.15)', color: '#818cf8', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    HEATMAP AUDIT
+                  </span>
+                </div>
+
+                <div className={styles.grid4} style={{ gap: '12px' }}>
+                  {months.map(m => {
+                    const inc = getIncomeTotal(m);
+                    const sav = getSavings(m);
+                    const sRate = getSavingsRate(m);
+                    const isHighSavings = sRate >= 40;
+                    const isModerateSavings = sRate >= 20 && sRate < 40;
+
+                    const heatColor = isHighSavings ? '#10b981' : isModerateSavings ? '#f59e0b' : '#ef4444';
+                    const heatBg = isHighSavings ? 'rgba(16, 185, 129, 0.12)' : isModerateSavings ? 'rgba(245, 158, 11, 0.12)' : 'rgba(239, 68, 68, 0.12)';
+                    const heatBorder = isHighSavings ? 'rgba(16, 185, 129, 0.3)' : isModerateSavings ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)';
+
+                    return (
+                      <div key={m._id} style={{ background: heatBg, border: `1px solid ${heatBorder}`, borderRadius: '10px', padding: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <span style={{ fontWeight: 800, color: '#fff', fontSize: '0.85rem' }}>{m.monthName}</span>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 900, color: heatColor, background: 'rgba(0,0,0,0.3)', padding: '1px 6px', borderRadius: '4px' }}>
+                            {sRate.toFixed(0)}% SAVED
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 900, color: heatColor, marginTop: '2px' }}>
+                          {fmtVal(sav)}
+                        </div>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Gross Inflow: {fmtVal(inc)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 
@@ -5949,12 +6156,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     );
                   })()}
                 </div>
-
               </div>
-
             </div>
           )}
-
         </div>
       )}
 
