@@ -348,7 +348,7 @@ export default function WalletMobileClient() {
       </header>
 
       {/* Main Wallet Manager Container */}
-      <div style={{ padding: '12px 15px', maxWidth: '100%', boxSizing: 'border-box' }}>
+      <div style={{ padding: '10px 8px', maxWidth: '100%', boxSizing: 'border-box' }}>
         <WalletManager showToast={showToast} />
       </div>
 
