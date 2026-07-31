@@ -217,10 +217,11 @@
 .mainContent {
   padding: 40px;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   max-height: 100vh;
   width: 100%;
   box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (max-width: 1024px) {
@@ -1231,31 +1232,35 @@
 }
 
 .walletTableWrapper {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-x pan-y !important;
+  display: block !important;
   background: rgba(7, 8, 15, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 10px;
   box-sizing: border-box;
   scrollbar-width: thin;
+  margin-bottom: 12px;
 }
 
 .walletTableWrapper table {
   width: 100%;
-  min-width: 440px;
+  min-width: 520px !important;
   border-collapse: collapse;
 }
 
 @media (max-width: 600px) {
   .walletTableWrapper table {
-    min-width: 380px;
+    min-width: 500px !important;
   }
   .walletTableWrapper th,
   .walletTableWrapper td {
-    padding: 8px 5px !important;
-    font-size: 0.72rem !important;
+    padding: 10px 8px !important;
+    font-size: 0.76rem !important;
   }
 }
 

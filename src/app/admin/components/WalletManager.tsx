@@ -2763,7 +2763,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         </div>
                       ) : (
                         <div className={styles.walletTableWrapper}>
-                          <table>
+                          <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
                             <thead>
                               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
                                 <th style={{ padding: '8px' }}>Date</th>
@@ -2947,8 +2947,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           No expenses matching criteria.
                         </div>
                       ) : (
-                        <div style={{ overflowX: 'auto', background: 'rgba(7, 8, 15, 0.1)', border: '1px solid rgba(255, 255, 255, 0.02)', borderRadius: '8px' }}>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                        <div className={styles.walletTableWrapper}>
+                          <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
                             <thead>
                               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
                                 <th style={{ padding: '8px 10px' }}>Date</th>
