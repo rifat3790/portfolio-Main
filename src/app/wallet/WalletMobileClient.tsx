@@ -157,17 +157,18 @@ export default function WalletMobileClient() {
         >
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <div style={{
-              display: 'inline-flex',
-              padding: '10px',
-              borderRadius: '50%',
-              background: 'rgba(239, 68, 68, 0.1)',
-              color: '#ef4444',
-              marginBottom: '10px'
+              width: '64px',
+              height: '64px',
+              margin: '0 auto 12px',
+              borderRadius: '18px',
+              overflow: 'hidden',
+              boxShadow: '0 8px 20px rgba(99, 102, 241, 0.4)',
+              border: '1px solid rgba(255,255,255,0.15)'
             }}>
-              <Lock size={22} />
+              <img src="/wallet-icon.png" alt="Wallet App Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <h2 style={{ fontSize: '17px', fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px' }}>
-              Security Lock
+              Personal Wallet Security
             </h2>
             <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>
               Enter your Admin PIN or Password to access
@@ -284,16 +285,14 @@ export default function WalletMobileClient() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
-            width: '36px',
-            height: '36px',
+            width: '38px',
+            height: '38px',
             borderRadius: '12px',
-            background: 'linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
+            overflow: 'hidden',
+            boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
           }}>
-            <Wallet size={20} color="#ffffff" />
+            <img src="/wallet-icon.png" alt="Wallet App Icon" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
             <h1 style={{ fontSize: '15px', fontWeight: 800, color: '#f8fafc', margin: 0, lineHeight: 1.2 }}>
