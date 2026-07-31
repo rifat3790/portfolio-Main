@@ -505,6 +505,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     return { score, label: 'High Risk (Overdue / Immediate Reminder Needed)', color: '#f87171' };
   };
 
+
+
   // 📊 Excel / CSV Spreadsheet Exporter
   const exportMonthToCSV = (m: IWalletMonthData) => {
     const headers = ['Category', 'Description', 'Date', 'Amount (৳)'];
@@ -1625,21 +1627,22 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     }
   };
 
-  const handlePushAiAdvisory = async (channel: 'email' | 'telegram' | 'all') => {
-    showToast(`🚀 Pushing AI Advisory report via ${channel.toUpperCase()}...`, 'info');
+  const handlePushAiAdvisory = async (channel: 'email' | 'telegram' | 'all' = 'all', slot: '9am' | '3pm' | '6pm' | '9pm' | '11pm' | 'all' = 'all') => {
+    showToast(`🚀 Pushing ${slot.toUpperCase()} report via ${channel.toUpperCase()}...`, 'info');
     try {
       const res = await fetch('/api/admin/wallet/ai-advisor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           channel,
+          slot,
           emails: ['mdrifayethossen@gmail.com', 'rifayet.cse@gmail.com'],
           appPassword: customAppPassword
         })
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        showToast(`🎉 AI Advisory report successfully pushed via ${channel.toUpperCase()}!`, 'success');
+        showToast(`🎉 ${slot.toUpperCase()} report successfully pushed with visual charts!`, 'success');
       } else {
         if (data.error && (data.error.includes('Authentication') || data.error.includes('App Password') || data.error.includes('535'))) {
           showToast('⚠️ Gmail SMTP App Password required. Opening SMTP Setup...', 'error');
@@ -5367,66 +5370,28 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
               
               {/* Header HUD */}
               <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(129, 140, 248, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%)', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '16px' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                        🤖 ADVANCED FINANCIAL ML & EXECUTIVE ADVISORY COPILOT
+                        🤖 5-SLOT AUTOMATED DAILY DISPATCH SYSTEM
                       </span>
                       <span style={{ fontSize: '0.68rem', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '2px 8px', borderRadius: '12px', fontWeight: 800 }}>
-                        🟢 DAILY 9:00 PM BST DISPATCH ACTIVE
+                        🟢 5 SLOTS ACTIVE (9 AM, 3 PM, 6 PM, 9 PM, 11:30 PM BST)
                       </span>
                     </div>
                     <h2 style={{ margin: '4px 0 2px', fontSize: '1.8rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <Sparkles size={24} style={{ color: 'var(--accent-gold)' }} /> AI Financial Advisor & Lifestyle Guidance
                     </h2>
                     <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                      মেশিন লার্নিং, মন্টে কার্লো রিস্ক সিমুলেশন ও FIRE রোডম্যাপ ভিত্তিক সার্বক্ষণিক ফিন্যান্সিয়াল গাইডেন্স (প্রতিদিন রাত ৯:০০ টায় আপনার ইমেইল ও টেলিগ্রামে যাবে)।
+                      সারাদিনের ৫টি ভিন্ন সময়ে ইমেইল ও টেলিগ্রামে (ভিজ্যুয়াল চার্ট সহ) আপনার ফিন্যান্সিয়াল আপডেট ও গাইডেন্স পাঠানো হয়।
                     </p>
                   </div>
 
                   {/* Multi-Channel Push Action Buttons */}
                   <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     <button
-                      onClick={() => handlePushAiAdvisory('email')}
-                      style={{
-                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '0.82rem',
-                        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-                      }}
-                    >
-                      <Send size={15} /> ✉️ Email (9:00 PM)
-                    </button>
-                    <button
-                      onClick={() => handlePushAiAdvisory('telegram')}
-                      style={{
-                        background: 'linear-gradient(135deg, #0088cc 0%, #006699 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '10px 16px',
-                        borderRadius: '8px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '0.82rem',
-                        boxShadow: '0 4px 12px rgba(0, 136, 204, 0.3)'
-                      }}
-                    >
-                      <MessageCircle size={15} /> 📲 Telegram (9:00 PM)
-                    </button>
-                    <button
-                      onClick={() => handlePushAiAdvisory('all')}
+                      onClick={() => handlePushAiAdvisory('all', 'all')}
                       style={{
                         background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
                         color: '#fff',
@@ -5442,7 +5407,70 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         boxShadow: '0 4px 12px rgba(129, 140, 248, 0.3)'
                       }}
                     >
-                      <Zap size={15} /> 🚀 Push All Channels
+                      <Zap size={15} /> 🚀 Dispatch All 5 Slots Now
+                    </button>
+                  </div>
+                </div>
+
+                {/* 5 Daily Slots Interactive Test HUD Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#60a5fa' }}>🌅 9:00 AM BST</div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>Morning Kickoff</div>
+                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Daily Cap Allowance</span>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', '9am')}
+                      style={{ marginTop: '8px', width: '100%', background: 'rgba(96, 165, 250, 0.15)', color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.3)', padding: '4px', borderRadius: '6px', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Test 9 AM
+                    </button>
+                  </div>
+
+                  <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#818cf8' }}>🕒 3:00 PM BST</div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>Mid-Day Pace</div>
+                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Category Caps Warning</span>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', '3pm')}
+                      style={{ marginTop: '8px', width: '100%', background: 'rgba(129, 140, 248, 0.15)', color: '#818cf8', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '4px', borderRadius: '6px', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Test 3 PM
+                    </button>
+                  </div>
+
+                  <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#fbbf24' }}>🕕 6:00 PM BST</div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>Wealth Vault</div>
+                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Net Worth & Debt Recovery</span>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', '6pm')}
+                      style={{ marginTop: '8px', width: '100%', background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '4px', borderRadius: '6px', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Test 6 PM
+                    </button>
+                  </div>
+
+                  <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#34d399' }}>🕘 9:00 PM BST</div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>AI Copilot</div>
+                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Monte Carlo & FIRE</span>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', '9pm')}
+                      style={{ marginTop: '8px', width: '100%', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '4px', borderRadius: '6px', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Test 9 PM
+                    </button>
+                  </div>
+
+                  <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#c084fc' }}>🕛 11:30 PM BST</div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#fff', marginTop: '2px' }}>Smart Analytics</div>
+                    <span style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>Day-End Chart Infographic</span>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', '11pm')}
+                      style={{ marginTop: '8px', width: '100%', background: 'rgba(192, 132, 252, 0.15)', color: '#c084fc', border: '1px solid rgba(192, 132, 252, 0.3)', padding: '4px', borderRadius: '6px', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Test 11:30 PM
                     </button>
                   </div>
                 </div>
