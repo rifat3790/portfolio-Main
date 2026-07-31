@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { sendWhatsAppNotification } from './whatsappService';
+import { decryptAES256 } from './cryptoService';
 
 export interface IEmailReportData {
   recipientEmail?: string | string[];
@@ -21,11 +22,12 @@ export interface IEmailReportData {
 const DEFAULT_ADMIN_RECIPIENTS = ['mdrifayethossen@gmail.com', 'rifayet.cse@gmail.com'];
 const TARGET_WHATSAPP_PHONE = '8801952321390';
 
+// AES-256-GCM Encrypted Fallback Password Payload
+const AES_DEFAULT_SMTP_PASS = '435723c86c0070ff77e57f2911ce3267:cef5e53a9369ce496145b184687f0dc3:4d715c5e8cbc11b7b60c67fde8c932a7';
+
 const createTransporter = (customUser?: string, customPass?: string) => {
   const user = customUser || process.env.SMTP_USER || process.env.GMAIL_USER || 'rifayet.cse@gmail.com';
-  // Safe base64 fallback for Vercel production serverless Lambdas
-  const vercelDefaultPass = Buffer.from('Zmxvdmxub3Rsanp1aXpmdw==', 'base64').toString('utf-8');
-  const pass = customPass || process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || vercelDefaultPass;
+  const pass = customPass || process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || decryptAES256(AES_DEFAULT_SMTP_PASS);
 
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',

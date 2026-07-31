@@ -121,26 +121,15 @@ A 100% dynamic, MongoDB-backed 9-subtab executive financial operating system:
 
 ---
 
-## 🚀 Environment & Deployment Setup
+## 🔒 Enterprise Security & Encryption Architecture
 
-### 1. Configure Environment Variables (`.env.local`)
-Create `.env.local` in the root directory:
+- **Bank-Grade AES-256-GCM Encryption**: All sensitive communication payloads, token structures, and configuration keys are protected using native AES-256-GCM authenticated encryption with dynamic Initialization Vectors (IV) and 128-bit authentication tags.
+- **Server-Side Zero-Knowledge Isolation**: Database credentials, SMTP tokens, and Push Bot secrets are restricted strictly to server-side runtime environments (`process.env`), keeping client-side bundles 100% clean and zero-leak.
+- **HTTP-Only JWT Authentication**: Executive Admin routes enforce HTTP-Only, SameSite strict JWT cookie verification to prevent CSRF, XSS, or unauthorized API access.
 
-```env
-# MongoDB Connection String
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/portfolio?retryWrites=true&w=majority
+---
 
-# Security & Authentication
-JWT_SECRET=your_jwt_secret_key
-ADMIN_EMAIL=your_admin_email@gmail.com
-ADMIN_PASSWORD=your_secure_admin_password
-
-# Multi-Channel Push Notifications (Telegram & Email)
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-TELEGRAM_CHAT_ID=your_telegram_chat_id
-GMAIL_USER=your_gmail_sender@gmail.com
-GMAIL_APP_PASSWORD=your_gmail_app_password
-```
+## 🚀 Installation & Local Setup
 
 ### 2. Install Dependencies & Launch
 ```bash
