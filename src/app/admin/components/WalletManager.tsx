@@ -3570,11 +3570,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           background: '#07070b',
                           border: '1px solid rgba(255,255,255,0.08)',
                           borderRadius: '6px',
-                          padding: '6px 12px',
-                          fontSize: '0.78rem',
-                          color: '#fff',
-                          width: '100%',
-                          maxWidth: '200px'
+                          padding: '6px 12px'
                         }}
                       />
                     </div>
@@ -3586,192 +3582,244 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         <p style={{ margin: 0, fontSize: '0.85rem' }}>No loans logged for this month. Click &quot;Log New Loan&quot; to record money given.</p>
                       </div>
                     ) : (
-                      <div className={styles.walletTableWrapper}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
-                          <thead>
-                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)', background: 'rgba(15, 23, 42, 0.5)' }}>
-                              <th style={{ padding: '10px 12px' }}>Person Name (কাকে দেওয়া)</th>
-                              <th style={{ padding: '10px 12px' }}>Amount (৳)</th>
-                              <th style={{ padding: '10px 12px' }}>Date Given</th>
-                              <th style={{ padding: '10px 12px' }}>Target Due Date</th>
-                              <th style={{ padding: '10px 12px' }}>Status</th>
-                              <th style={{ padding: '10px 12px', textAlign: 'right' }}>Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {activeMonth.loans
-                              .filter(loan => {
-                                const matchesSt = loanFilterStatus === 'All' || loan.status === loanFilterStatus;
-                                const matchesQ = loan.personName.toLowerCase().includes(loanSearchQuery.toLowerCase()) || (loan.notes || '').toLowerCase().includes(loanSearchQuery.toLowerCase());
-                                return matchesSt && matchesQ;
-                              })
-                              .map((loan) => {
-                                const isPending = loan.status === 'Pending';
-                                return (
-                                  <tr key={loan._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s' }}>
-                                    <td style={{ padding: '12px' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isPending ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isPending ? '#fbbf24' : '#10b981', fontWeight: 800, fontSize: '0.85rem' }}>
-                                          {loan.personName.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div>
-                                          <div style={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                            {loan.personName}
-                                            {loan.isCarriedOver && (
-                                              <span style={{ fontSize: '0.64rem', background: 'rgba(129, 140, 248, 0.15)', color: '#a5b4fc', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
-                                                🔄 Carried Over {loan.originalMonthName ? `(${loan.originalMonthName})` : ''}
-                                              </span>
-                                            )}
+                      <>
+                        {/* Desktop Table View */}
+                        <div className={`${styles.walletTableWrapper} ${styles.desktopTableOnly}`}>
+                          <table style={{ width: '100%', minWidth: '580px', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
+                            <thead>
+                              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)', background: 'rgba(15, 23, 42, 0.5)' }}>
+                                <th style={{ padding: '10px 12px' }}>Person Name (কাকে দেওয়া)</th>
+                                <th style={{ padding: '10px 12px' }}>Amount (৳)</th>
+                                <th style={{ padding: '10px 12px' }}>Date Given</th>
+                                <th style={{ padding: '10px 12px' }}>Target Due Date</th>
+                                <th style={{ padding: '10px 12px' }}>Status</th>
+                                <th style={{ padding: '10px 12px', textAlign: 'right' }}>Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {activeMonth.loans
+                                .filter(loan => {
+                                  const matchesSt = loanFilterStatus === 'All' || loan.status === loanFilterStatus;
+                                  const matchesQ = loan.personName.toLowerCase().includes(loanSearchQuery.toLowerCase()) || (loan.notes || '').toLowerCase().includes(loanSearchQuery.toLowerCase());
+                                  return matchesSt && matchesQ;
+                                })
+                                .map((loan) => {
+                                  const isPending = loan.status === 'Pending';
+                                  return (
+                                    <tr key={loan._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s' }}>
+                                      <td style={{ padding: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isPending ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isPending ? '#fbbf24' : '#10b981', fontWeight: 800, fontSize: '0.85rem' }}>
+                                            {loan.personName.charAt(0).toUpperCase()}
                                           </div>
-                                          {loan.notes && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{loan.notes}</div>}
+                                          <div>
+                                            <div style={{ fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                              {loan.personName}
+                                              {loan.isCarriedOver && (
+                                                <span style={{ fontSize: '0.64rem', background: 'rgba(129, 140, 248, 0.15)', color: '#a5b4fc', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
+                                                  🔄 Carried Over {loan.originalMonthName ? `(${loan.originalMonthName})` : ''}
+                                                </span>
+                                              )}
+                                            </div>
+                                            {loan.notes && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{loan.notes}</div>}
+                                          </div>
+                                        </div>
+                                      </td>
+
+                                      <td style={{ padding: '12px', fontWeight: 800, fontSize: '0.95rem', color: isPending ? '#fbbf24' : '#10b981' }}>
+                                        {fmtVal(loan.amount)}
+                                      </td>
+
+                                      <td style={{ padding: '12px', color: 'var(--text-secondary)' }}>
+                                        {new Date(loan.date).toLocaleDateString()}
+                                      </td>
+
+                                      <td style={{ padding: '12px', color: 'var(--text-secondary)' }}>
+                                        <div>{loan.dueDate ? new Date(loan.dueDate).toLocaleDateString() : 'N/A'}</div>
+                                      </td>
+
+                                      <td style={{ padding: '12px' }}>
+                                        {isPending ? (
+                                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                                            <Clock size={12} /> Pending (ধারে আছে)
+                                          </span>
+                                        ) : (
+                                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                                            <CheckCircle2 size={12} /> Returned ({loan.returnedDate ? new Date(loan.returnedDate).toLocaleDateString() : 'Yes'})
+                                          </span>
+                                        )}
+                                      </td>
+
+                                      <td style={{ padding: '12px', textAlign: 'right' }}>
+                                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                                          <button
+                                            onClick={() => handleToggleLoanStatus(loan)}
+                                            style={{
+                                              background: isPending ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'rgba(255,255,255,0.06)',
+                                              border: '1px solid',
+                                              borderColor: isPending ? '#10b981' : 'rgba(255,255,255,0.1)',
+                                              color: isPending ? '#fff' : 'var(--text-secondary)',
+                                              padding: '6px 12px',
+                                              borderRadius: '6px',
+                                              fontSize: '0.75rem',
+                                              fontWeight: 700,
+                                              cursor: 'pointer',
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '5px'
+                                            }}
+                                          >
+                                            {isPending ? <><CheckCircle2 size={13} /> ফেরত পেয়েছি</> : <><RefreshCw size={13} /> Mark Pending</>}
+                                          </button>
+
+                                          {isPending && (
+                                            <button
+                                              onClick={() => handleOpenWhatsApp(loan)}
+                                              style={{
+                                                background: 'rgba(34, 197, 94, 0.15)',
+                                                border: '1px solid rgba(34, 197, 94, 0.3)',
+                                                color: '#22c55e',
+                                                padding: '6px 10px',
+                                                borderRadius: '6px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 700,
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px'
+                                              }}
+                                            >
+                                              <MessageCircle size={13} /> WhatsApp
+                                            </button>
+                                          )}
+
+                                          <button
+                                            onClick={() => openEditLoanModal(loan)}
+                                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
+                                          >
+                                            <Edit size={14} />
+                                          </button>
+                                          <button
+                                            onClick={() => handleDeleteLoan(loan._id!)}
+                                            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                                          >
+                                            <Trash2 size={14} />
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Mobile Touch Card List View */}
+                        <div className={styles.mobileLedgerList}>
+                          {activeMonth.loans
+                            .filter(loan => {
+                              const matchesSt = loanFilterStatus === 'All' || loan.status === loanFilterStatus;
+                              const matchesQ = loan.personName.toLowerCase().includes(loanSearchQuery.toLowerCase()) || (loan.notes || '').toLowerCase().includes(loanSearchQuery.toLowerCase());
+                              return matchesSt && matchesQ;
+                            })
+                            .map((loan) => {
+                              const isPending = loan.status === 'Pending';
+                              return (
+                                <div
+                                  key={loan._id}
+                                  style={{
+                                    background: 'rgba(15, 23, 42, 0.6)',
+                                    border: `1px solid ${isPending ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+                                    borderRadius: '12px',
+                                    padding: '12px 14px',
+                                    marginBottom: '10px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '10px',
+                                  }}
+                                >
+                                  {/* Top header row */}
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: isPending ? 'rgba(245, 158, 11, 0.2)' : 'rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isPending ? '#fbbf24' : '#10b981', fontWeight: 800, fontSize: '0.85rem' }}>
+                                        {loan.personName.charAt(0).toUpperCase()}
+                                      </div>
+                                      <div>
+                                        <div style={{ fontWeight: 800, color: '#fff', fontSize: '0.92rem' }}>
+                                          {loan.personName}
+                                        </div>
+                                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                                          Given: {new Date(loan.date).toLocaleDateString()} {loan.dueDate ? `• Due: ${new Date(loan.dueDate).toLocaleDateString()}` : ''}
                                         </div>
                                       </div>
-                                    </td>
+                                    </div>
 
-                                    <td style={{ padding: '12px', fontWeight: 800, fontSize: '0.95rem', color: isPending ? '#fbbf24' : '#10b981' }}>
+                                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: isPending ? '#fbbf24' : '#10b981' }}>
                                       {fmtVal(loan.amount)}
-                                    </td>
+                                    </div>
+                                  </div>
 
-                                    <td style={{ padding: '12px', color: 'var(--text-secondary)' }}>
-                                      {new Date(loan.date).toLocaleDateString()}
-                                    </td>
+                                  {/* Status and Action Buttons */}
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                                    <button
+                                      onClick={() => handleToggleLoanStatus(loan)}
+                                      style={{
+                                        background: isPending ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'rgba(255,255,255,0.08)',
+                                        border: 'none',
+                                        color: '#fff',
+                                        padding: '6px 12px',
+                                        borderRadius: '8px',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 700,
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                      }}
+                                    >
+                                      {isPending ? <><CheckCircle2 size={13} /> ফেরত পেয়েছি</> : <><RefreshCw size={13} /> Mark Pending</>}
+                                    </button>
 
-                                    <td style={{ padding: '12px', color: 'var(--text-secondary)' }}>
-                                      <div>{loan.dueDate ? new Date(loan.dueDate).toLocaleDateString() : 'N/A'}</div>
-                                      {(() => {
-                                        if (!loan.dueDate || !isPending) return null;
-                                        const due = new Date(loan.dueDate);
-                                        const now = new Date();
-                                        due.setHours(0,0,0,0);
-                                        now.setHours(0,0,0,0);
-                                        const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-                                        if (diffDays < 0) {
-                                          return <span style={{ color: '#ef4444', fontWeight: 800, fontSize: '0.68rem', background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(239,68,68,0.3)', display: 'inline-block', marginTop: '2px' }}>🔴 Overdue ({Math.abs(diffDays)}d)</span>;
-                                        }
-                                        if (diffDays === 0) {
-                                          return <span style={{ color: '#f59e0b', fontWeight: 800, fontSize: '0.68rem', background: 'rgba(245,158,11,0.15)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(245,158,11,0.3)', display: 'inline-block', marginTop: '2px' }}>⚠️ Due Today!</span>;
-                                        }
-                                        return <span style={{ color: '#818cf8', fontWeight: 700, fontSize: '0.68rem', background: 'rgba(129,140,248,0.12)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(129,140,248,0.2)', display: 'inline-block', marginTop: '2px' }}>⌛ {diffDays} days left</span>;
-                                      })()}
-                                    </td>
-
-                                    <td style={{ padding: '12px' }}>
-                                      {isPending ? (
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                                          <Clock size={12} /> Pending (ধারে আছে)
-                                        </span>
-                                      ) : (
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                                          <CheckCircle2 size={12} /> Returned ({loan.returnedDate ? new Date(loan.returnedDate).toLocaleDateString() : 'Yes'})
-                                        </span>
-                                      )}
-                                    </td>
-
-                                    <td style={{ padding: '12px', textAlign: 'right' }}>
-                                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', alignItems: 'center' }}>
-                                        {/* TOGGLE RETURN BUTTON */}
+                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                      {isPending && (
                                         <button
-                                          onClick={() => handleToggleLoanStatus(loan)}
+                                          onClick={() => handleOpenWhatsApp(loan)}
                                           style={{
-                                            background: isPending ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'rgba(255,255,255,0.06)',
-                                            border: '1px solid',
-                                            borderColor: isPending ? '#10b981' : 'rgba(255,255,255,0.1)',
-                                            color: isPending ? '#fff' : 'var(--text-secondary)',
-                                            padding: '6px 12px',
+                                            background: 'rgba(34, 197, 94, 0.15)',
+                                            border: '1px solid rgba(34, 197, 94, 0.3)',
+                                            color: '#22c55e',
+                                            padding: '5px 8px',
                                             borderRadius: '6px',
-                                            fontSize: '0.75rem',
+                                            fontSize: '0.72rem',
                                             fontWeight: 700,
                                             cursor: 'pointer',
-                                            display: 'inline-flex',
+                                            display: 'flex',
                                             alignItems: 'center',
-                                            gap: '5px',
-                                            boxShadow: isPending ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none'
+                                            gap: '4px'
                                           }}
-                                          title={isPending ? 'Click to mark as returned and add money back to Main Balance' : 'Click to revert back to Pending status'}
                                         >
-                                          {isPending ? (
-                                            <>
-                                              <CheckCircle2 size={13} /> ফেরত পেয়েছি
-                                            </>
-                                          ) : (
-                                            <>
-                                              <RefreshCw size={13} /> Mark Pending
-                                            </>
-                                          )}
+                                          <MessageCircle size={12} /> WhatsApp
                                         </button>
-
-                                        {/* WhatsApp Direct Action Button */}
-                                        {isPending && (
-                                          <button
-                                            onClick={() => handleOpenWhatsApp(loan)}
-                                            style={{
-                                              background: 'rgba(34, 197, 94, 0.15)',
-                                              border: '1px solid rgba(34, 197, 94, 0.3)',
-                                              color: '#4ade80',
-                                              padding: '6px 10px',
-                                              borderRadius: '6px',
-                                              fontSize: '0.75rem',
-                                              cursor: 'pointer',
-                                              display: 'inline-flex',
-                                              alignItems: 'center',
-                                              gap: '4px',
-                                              fontWeight: 600
-                                            }}
-                                            title="Open WhatsApp directly with payment reminder"
-                                          >
-                                            <MessageCircle size={12} /> WhatsApp
-                                          </button>
-                                        )}
-
-                                        {/* Copy Text Reminder Button */}
-                                        {isPending && (
-                                          <button
-                                            onClick={() => handleCopyReminder(loan)}
-                                            style={{
-                                              background: 'rgba(59, 130, 246, 0.15)',
-                                              border: '1px solid rgba(59, 130, 246, 0.3)',
-                                              color: '#60a5fa',
-                                              padding: '6px 10px',
-                                              borderRadius: '6px',
-                                              fontSize: '0.75rem',
-                                              cursor: 'pointer',
-                                              display: 'inline-flex',
-                                              alignItems: 'center',
-                                              gap: '4px',
-                                              fontWeight: 600
-                                            }}
-                                            title="Copy polite payment reminder message text"
-                                          >
-                                            <Copy size={12} /> Copy
-                                          </button>
-                                        )}
-
-                                        {/* Edit Loan */}
-                                        <button
-                                          onClick={() => openEditLoanModal(loan)}
-                                          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
-                                          title="Edit Loan details"
-                                        >
-                                          <Edit size={14} />
-                                        </button>
-
-                                        {/* Delete Loan */}
-                                        <button
-                                          onClick={() => handleDeleteLoan(loan._id!)}
-                                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
-                                          title="Delete Loan record"
-                                        >
-                                          <Trash2 size={14} />
-                                        </button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                          </tbody>
-                        </table>
-                      </div>
+                                      )}
+                                      <button
+                                        onClick={() => openEditLoanModal(loan)}
+                                        style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#818cf8', padding: '5px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                                      >
+                                        <Edit size={12} /> Edit
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteLoan(loan._id!)}
+                                        style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '5px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                                      >
+                                        <Trash2 size={12} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </>
                     )}
                   </div>
 
