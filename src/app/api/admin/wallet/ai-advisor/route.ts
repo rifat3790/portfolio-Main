@@ -57,9 +57,10 @@ export async function GET(req: NextRequest) {
     const livingRunwayMonths = (livingRunwayDays / 30).toFixed(1);
 
     // 4. Dynamic Category Burn Rate & Over-spending Anomaly Detection
+    const knownCategoriesSet = new Set(['Food', 'Rent', 'Utility', 'Gadgets', 'Server', 'Entertainment', 'Parents (Baba Ma)', 'Other']);
     const categoryTotals: Record<string, number> = {};
     (latestMonth.expenses || []).forEach((e: any) => {
-      const cat = e.category || 'Other';
+      const cat = knownCategoriesSet.has(e.category) ? e.category : 'Utility';
       categoryTotals[cat] = (categoryTotals[cat] || 0) + (e.amount || 0);
     });
 
@@ -187,9 +188,10 @@ export async function POST(req: NextRequest) {
     const savingsRatePct = (totalIncome + carriedOverSavings) > 0 ? (netLiquidSavings / (totalIncome + carriedOverSavings)) * 100 : 0;
 
     // Check individual category budget over-spending warnings
+    const knownCategoriesSet = new Set(['Food', 'Rent', 'Utility', 'Gadgets', 'Server', 'Entertainment', 'Parents (Baba Ma)', 'Other']);
     const categoryTotals: Record<string, number> = {};
     (latestMonth.expenses || []).forEach((e: any) => {
-      const cat = e.category || 'Other';
+      const cat = knownCategoriesSet.has(e.category) ? e.category : 'Utility';
       categoryTotals[cat] = (categoryTotals[cat] || 0) + (e.amount || 0);
     });
 

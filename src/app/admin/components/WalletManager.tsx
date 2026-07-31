@@ -2960,24 +2960,26 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                     {(() => {
                       const currentBudgets = activeMonth.categoryBudgets || categoryBudgets;
+                      const knownCategoriesSet = new Set(categoriesList);
                       
-                      // 1. Dynamic Auto-Discovery of All Categories (from active expenses + stored budgets + default categories)
-                      const expenseCategories = (activeMonth.expenses || []).map(e => e.category || 'Other');
-                      const storedCategories = Object.keys(currentBudgets);
-                      const allDiscoveredCategories = Array.from(new Set([...categoriesList, ...expenseCategories, ...storedCategories])).filter(Boolean);
+                      // Map all expense amounts: if expense category is not in main 8 categories, map it into Utility
+                      const categorySpentMap: Record<string, number> = {};
+                      categoriesList.forEach(c => { categorySpentMap[c] = 0; });
 
-                      // 2. Compute accurate total month expense directly from getExpenseTotal(activeMonth)
+                      (activeMonth.expenses || []).forEach(e => {
+                        const targetCat = knownCategoriesSet.has(e.category) ? e.category : 'Utility';
+                        categorySpentMap[targetCat] = (categorySpentMap[targetCat] || 0) + (e.amount || 0);
+                      });
+
                       const actualTotalMonthExpense = getExpenseTotal(activeMonth);
                       
                       let totalTarget = 0;
-                      let totalTrackedSpent = 0;
                       const catOverList: { cat: string; spent: number; limit: number; excess: number }[] = [];
 
-                      const categoryDataList = allDiscoveredCategories.map((cat) => {
-                        const limit = currentBudgets[cat] || 5000;
-                        const spent = (activeMonth.expenses || []).filter(e => e.category === cat).reduce((sum, e) => sum + e.amount, 0);
+                      const categoryDataList = categoriesList.map((cat) => {
+                        const limit = currentBudgets[cat] ?? (cat === 'Gadgets' ? 1 : 5000);
+                        const spent = categorySpentMap[cat] || 0;
                         totalTarget += limit;
-                        totalTrackedSpent += spent;
                         if (spent > limit) {
                           catOverList.push({ cat, spent, limit, excess: spent - limit });
                         }
@@ -3009,7 +3011,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                                 <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--accent-gold)', marginTop: '4px' }}>
                                   {fmtVal(totalTarget)}
                                 </div>
-                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Auto-discovered {allDiscoveredCategories.length} active sectors</span>
+                                <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Strict sum of 8 main sector caps</span>
                               </div>
 
                               {/* Card 2: Total Month-to-Date Expense */}
@@ -3068,7 +3070,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                           </div>
 
-                          {/* 💎 DYNAMIC AUTO-GENERATED SECTOR CARDS GRID */}
+                          {/* 💎 8 CORE SECTOR CARDS GRID */}
                           <div className={styles.grid4} style={{ gap: '14px' }}>
                             {categoryDataList.map(({ cat, spent, limit, pctOfLimit, pctOfTotalExpense, isOver, excessAmt }) => {
                               const isWarning = pctOfLimit >= 80 && !isOver;
