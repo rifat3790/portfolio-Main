@@ -2762,56 +2762,110 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           No individual incomes logged. (Primary Base Salary: ৳{activeMonth.salary.toLocaleString()})
                         </div>
                       ) : (
-                        <div className={styles.walletTableWrapper}>
-                          <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
-                            <thead>
-                              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
-                                <th style={{ padding: '8px' }}>Date</th>
-                                <th style={{ padding: '8px' }}>Category</th>
-                                <th style={{ padding: '8px' }}>Description</th>
-                                <th style={{ padding: '8px', textAlign: 'right' }}>Amount</th>
-                                <th style={{ padding: '8px', textAlign: 'right' }}>Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {sortedIncomes.map((inc) => (
-                                <tr key={inc._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                                  <td style={{ padding: '8px', color: 'var(--text-secondary)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(76, 175, 80, 0.08)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(76, 175, 80, 0.15)', color: '#4caf50' }}>
-                                      <Calendar size={11} style={{ opacity: 0.8 }} />
-                                      {formatItemDate(inc.date)}
-                                    </span>
-                                  </td>
-                                  <td style={{ padding: '8px' }}>
-                                    <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, background: 'rgba(76, 175, 80, 0.15)', color: '#4caf50' }}>
+                        <>
+                          {/* Desktop Table View */}
+                          <div className={`${styles.walletTableWrapper} ${styles.desktopTableOnly}`}>
+                            <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                              <thead>
+                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
+                                  <th style={{ padding: '8px' }}>Date</th>
+                                  <th style={{ padding: '8px' }}>Category</th>
+                                  <th style={{ padding: '8px' }}>Description</th>
+                                  <th style={{ padding: '8px', textAlign: 'right' }}>Amount</th>
+                                  <th style={{ padding: '8px', textAlign: 'right' }}>Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {sortedIncomes.map((inc) => (
+                                  <tr key={inc._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                    <td style={{ padding: '8px', color: 'var(--text-secondary)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(76, 175, 80, 0.08)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(76, 175, 80, 0.15)', color: '#4caf50' }}>
+                                        <Calendar size={11} style={{ opacity: 0.8 }} />
+                                        {formatItemDate(inc.date)}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: '8px' }}>
+                                      <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, background: 'rgba(76, 175, 80, 0.15)', color: '#4caf50' }}>
+                                        {inc.category}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: '8px', color: '#fff', wordBreak: 'break-word' }}>{inc.description}</td>
+                                    <td style={{ padding: '8px', textAlign: 'right', fontWeight: 700, color: '#4caf50' }}>৳{inc.amount.toLocaleString()}</td>
+                                    <td style={{ padding: '8px', textAlign: 'right' }}>
+                                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                                        <button
+                                          type="button"
+                                          onClick={() => openEditIncomeItemModal(inc)}
+                                          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
+                                        >
+                                          <Edit size={12} />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => inc._id && handleDeleteIncome(inc._id)}
+                                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
+                                        >
+                                          <Trash2 size={12} />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Mobile Touch Card List View */}
+                          <div className={styles.mobileLedgerList}>
+                            {sortedIncomes.map((inc) => (
+                              <div
+                                key={inc._id}
+                                style={{
+                                  background: 'rgba(15, 23, 42, 0.6)',
+                                  border: '1px solid rgba(76, 175, 80, 0.2)',
+                                  borderRadius: '12px',
+                                  padding: '12px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '8px',
+                                }}
+                              >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                    <span style={{ padding: '3px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(76, 175, 80, 0.15)', color: '#4caf50' }}>
                                       {inc.category}
                                     </span>
-                                  </td>
-                                  <td style={{ padding: '8px', color: '#fff', wordBreak: 'break-word' }}>{inc.description}</td>
-                                  <td style={{ padding: '8px', textAlign: 'right', fontWeight: 700, color: '#4caf50' }}>৳{inc.amount.toLocaleString()}</td>
-                                  <td style={{ padding: '8px', textAlign: 'right' }}>
-                                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
-                                      <button
-                                        type="button"
-                                        onClick={() => openEditIncomeItemModal(inc)}
-                                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
-                                      >
-                                        <Edit size={12} />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => inc._id && handleDeleteIncome(inc._id)}
-                                        style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
-                                      >
-                                        <Trash2 size={12} />
-                                      </button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <Calendar size={11} /> {formatItemDate(inc.date)}
+                                    </span>
+                                  </div>
+                                  <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#4caf50' }}>
+                                    +৳{inc.amount.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '6px' }}>
+                                  <span style={{ fontSize: '0.88rem', color: '#fff', fontWeight: 600 }}>{inc.description}</span>
+                                  <div style={{ display: 'flex', gap: '6px' }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => openEditIncomeItemModal(inc)}
+                                      style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#818cf8', padding: '4px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                                    >
+                                      <Edit size={12} /> Edit
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => inc._id && handleDeleteIncome(inc._id)}
+                                      style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '4px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                    >
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </>
                       )}
                     </div>
 
@@ -2947,59 +3001,137 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           No expenses matching criteria.
                         </div>
                       ) : (
-                        <div className={styles.walletTableWrapper}>
-                          <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
-                            <thead>
-                              <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
-                                <th style={{ padding: '8px 10px' }}>Date</th>
-                                <th style={{ padding: '8px 10px' }}>Category</th>
-                                <th style={{ padding: '8px 10px' }}>Description</th>
-                                <th style={{ padding: '8px 10px', textAlign: 'right' }}>Amount</th>
-                                <th style={{ padding: '8px 10px', textAlign: 'right' }}>Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {sortedExpenses.map((exp) => {
-                                const isToday = exp.date && new Date(exp.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
-                                return (
-                                  <tr key={exp._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                                    <td style={{ padding: '8px 10px', color: 'var(--text-secondary)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: isToday ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.03)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)', color: isToday ? 'var(--accent-gold)' : 'var(--text-secondary)', fontWeight: isToday ? 700 : 400 }}>
-                                        <Calendar size={11} style={{ opacity: 0.8 }} />
-                                        {formatItemDate(exp.date)}
-                                      </span>
-                                    </td>
-                                    <td style={{ padding: '8px 10px' }}>
-                                      <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, background: `${categoryColors[exp.category] || '#607d8b'}20`, color: categoryColors[exp.category] || '#607d8b' }}>
+                        <>
+                          {/* Desktop Table View */}
+                          <div className={`${styles.walletTableWrapper} ${styles.desktopTableOnly}`}>
+                            <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                              <thead>
+                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
+                                  <th style={{ padding: '8px 10px' }}>Date</th>
+                                  <th style={{ padding: '8px 10px' }}>Category</th>
+                                  <th style={{ padding: '8px 10px' }}>Description</th>
+                                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>Amount</th>
+                                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {sortedExpenses.map((exp) => {
+                                  const isToday = exp.date && new Date(exp.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
+                                  return (
+                                    <tr key={exp._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                      <td style={{ padding: '8px 10px', color: 'var(--text-secondary)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: isToday ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.03)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)', color: isToday ? 'var(--accent-gold)' : 'var(--text-secondary)', fontWeight: isToday ? 700 : 400 }}>
+                                          <Calendar size={11} style={{ opacity: 0.8 }} />
+                                          {formatItemDate(exp.date)}
+                                        </span>
+                                      </td>
+                                      <td style={{ padding: '8px 10px' }}>
+                                        <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, background: `${categoryColors[exp.category] || '#607d8b'}20`, color: categoryColors[exp.category] || '#607d8b' }}>
+                                          {exp.category}
+                                        </span>
+                                      </td>
+                                      <td style={{ padding: '8px 10px', color: '#fff', wordBreak: 'break-word' }}>{exp.description}</td>
+                                      <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 700, color: '#ff6b6b' }}>৳{exp.amount.toLocaleString()}</td>
+                                      <td style={{ padding: '8px 10px', textAlign: 'right' }}>
+                                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                                          <button
+                                            type="button"
+                                            onClick={() => openEditExpenseModal(exp)}
+                                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
+                                          >
+                                            <Edit size={12} />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => exp._id && handleDeleteExpense(exp._id)}
+                                            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
+                                          >
+                                            <Trash2 size={12} />
+                                          </button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Mobile Touch Card List View */}
+                          <div className={styles.mobileLedgerList}>
+                            {sortedExpenses.map((exp) => {
+                              const isToday = exp.date && new Date(exp.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
+                              return (
+                                <div
+                                  key={exp._id}
+                                  style={{
+                                    background: 'rgba(15, 23, 42, 0.6)',
+                                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                                    borderRadius: '12px',
+                                    padding: '12px 14px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '8px',
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                      <span style={{
+                                        padding: '3px 8px',
+                                        borderRadius: '6px',
+                                        fontSize: '0.72rem',
+                                        fontWeight: 700,
+                                        background: `${categoryColors[exp.category] || '#607d8b'}25`,
+                                        color: categoryColors[exp.category] || '#607d8b',
+                                        border: `1px solid ${categoryColors[exp.category] || '#607d8b'}40`
+                                      }}>
                                         {exp.category}
                                       </span>
-                                    </td>
-                                    <td style={{ padding: '8px 10px', color: '#fff', wordBreak: 'break-word' }}>{exp.description}</td>
-                                    <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 700, color: '#ff6b6b' }}>৳{exp.amount.toLocaleString()}</td>
-                                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>
-                                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                                      <span style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        background: isToday ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.04)',
+                                        padding: '3px 8px',
+                                        borderRadius: '6px',
+                                        fontSize: '0.72rem',
+                                        color: isToday ? 'var(--accent-gold)' : 'var(--text-secondary)'
+                                      }}>
+                                        <Calendar size={11} /> {formatItemDate(exp.date)}
+                                      </span>
+                                    </div>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#ff6b6b' }}>
+                                        ৳{exp.amount.toLocaleString()}
+                                      </span>
+                                      <div style={{ display: 'flex', gap: '6px' }}>
                                         <button
                                           type="button"
                                           onClick={() => openEditExpenseModal(exp)}
-                                          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
+                                          style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#818cf8', cursor: 'pointer', padding: '5px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem', fontWeight: 700 }}
                                         >
-                                          <Edit size={12} />
+                                          <Edit size={12} /> Edit
                                         </button>
                                         <button
                                           type="button"
                                           onClick={() => exp._id && handleDeleteExpense(exp._id)}
-                                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
+                                          style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', cursor: 'pointer', padding: '5px 8px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem', fontWeight: 700 }}
                                         >
                                           <Trash2 size={12} />
                                         </button>
                                       </div>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
+                                    </div>
+                                  </div>
+
+                                  <div style={{ fontSize: '0.88rem', color: '#f8fafc', fontWeight: 600, wordBreak: 'break-word', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '6px' }}>
+                                    {exp.description}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </>
                       )}
                     </div>
 

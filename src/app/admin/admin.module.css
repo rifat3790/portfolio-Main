@@ -1335,7 +1335,26 @@
   transition: filter 0.2s ease;
 }
 
+/* Mobile Card List vs Desktop Table Display */
+.desktopTableOnly {
+  display: block;
+}
+
+.mobileLedgerList {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .desktopTableOnly {
+    display: none !important;
+  }
+  .mobileLedgerList {
+    display: flex !important;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
   .analyticsGrid,
   .wealthGrid,
   .toolsGrid {
