@@ -13,6 +13,47 @@ const generateQuickChartUrl = (config: any) => {
   return `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(config))}&bkg=0b0f19&w=550&h=320&devicePixelRatio=2`;
 };
 
+// 📅 Auto-create new month sheet if missing on 1st of month
+async function ensureAutoMonthCreated() {
+  const now = new Date();
+  const currentMonthName = now.toLocaleString('en-US', { month: 'long', year: 'numeric' }); // e.g. "August 2026"
+  const existing = await WalletMonth.findOne({ monthName: currentMonthName });
+
+  if (!existing) {
+    const previousMonths = await WalletMonth.find({}).sort({ createdAt: 1 }).lean();
+    let carriedOver = 0;
+    if (previousMonths && previousMonths.length > 0) {
+      const prev = previousMonths[previousMonths.length - 1];
+      const prevInc = (prev.salary || 0) + (prev.addon || 0) + (prev.bonus || 0) +
+        (prev.incomes || []).reduce((a: number, i: any) => a + (i.amount || 0), 0);
+      const prevExp = (prev.expenses || []).reduce((a: number, e: any) => a + (e.amount || 0), 0);
+      const prevLoans = (prev.loans || []).filter((l: any) => l.status === 'Pending').reduce((a: number, l: any) => a + (l.amount || 0), 0);
+      carriedOver = Math.max(0, (prev.carriedOverSavings || 0) + prevInc - prevExp - prevLoans);
+    }
+
+    const newMonth = await WalletMonth.create({
+      monthName: currentMonthName,
+      salary: 0,
+      addon: 0,
+      bonus: 0,
+      carriedOverSavings: carriedOver,
+      categoryBudgets: {
+        Food: 4500, Rent: 4000, Utility: 1000, Gadgets: 1, Server: 500, Entertainment: 500, 'Parents (Baba Ma)': 15000, Other: 500
+      },
+      expenses: [],
+      incomes: [],
+      loans: [],
+      savingsGoals: [],
+      recurringBills: [],
+      assets: []
+    });
+
+    return { created: true, monthName: currentMonthName, carriedOver };
+  }
+
+  return { created: false, monthName: currentMonthName, month: existing };
+}
+
 export async function GET(req: NextRequest) {
   try {
     if (!isAuthenticated(req)) {
@@ -20,6 +61,10 @@ export async function GET(req: NextRequest) {
     }
 
     await dbConnect();
+    
+    // Auto-create missing month if new month started
+    const autoMonthStatus = await ensureAutoMonthCreated();
+
     const months = await WalletMonth.find({}).sort({ createdAt: 1 }).lean();
     if (!months || months.length === 0) {
       return NextResponse.json({ error: 'No wallet data available for AI analysis.' }, { status: 400 });
@@ -140,13 +185,14 @@ export async function GET(req: NextRequest) {
       livingRunwayMonths,
       fireTargetNumber,
       fireProgressPct,
+      autoMonthStatus,
       monteCarlo: {
         optimistic: monteCarloOptimistic,
         expected: monteCarloExpected,
         conservative: monteCarloConservative,
       },
       adviceRules,
-      scheduledTimeNotice: '5-Slot Automated Daily Dispatch System Active (9:00 AM, 3:00 PM, 6:00 PM, 9:00 PM, 11:30 PM BST)'
+      scheduledTimeNotice: '5-Slot Automated Daily Dispatch & Auto-Month Creation Active'
     });
   } catch (error: any) {
     console.error('Error computing AI Advisor data:', error);
@@ -161,8 +207,12 @@ export async function POST(req: NextRequest) {
     }
 
     await dbConnect();
+    
+    // Auto-create month sheet if missing
+    await ensureAutoMonthCreated();
+
     const body = await req.json().catch(() => ({}));
-    const slot = body.slot || 'all'; // '9am' | '3pm' | '6pm' | '9pm' | '11pm' | 'all'
+    const slot = body.slot || 'all'; // '9am' | '3pm' | '6pm' | '9pm' | '11pm' | 'month_end' | 'weekly_phase' | 'auto_create_month' | 'all'
     const channel = body.channel || 'all'; // 'email' | 'telegram' | 'all'
     const recipients = body.emails || ['mdrifayethossen@gmail.com', 'rifayet.cse@gmail.com'];
     const smtpPass = body.appPassword || process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || '';
@@ -230,10 +280,102 @@ export async function POST(req: NextRequest) {
 
     const results: Record<string, any> = {};
 
-    // Generate Custom Telegram Visual Infographic Image & Text based on Slot
+    // 📩 Handle Dispatching based on Slot & Channel
     if (channel === 'telegram' || channel === 'all') {
 
-      if (slot === '9am' || slot === 'all') {
+      if (slot === 'auto_create_month') {
+        const title = `📅 <b>AUTOMATED NEW MONTH CREATION ALERT</b>`;
+        const bodyMsg = `${title}
+
+🎉 <b>New Month Sheet Auto-Created!</b>
+🗓️ <b>Month:</b> ${latestMonth.monthName}
+📆 <b>Total Days in Month:</b> ${daysInMonth} Days
+💰 <b>Carried Over Savings:</b> ${fmt(carriedOverSavings)}
+
+✅ সকল বাজেট লিমিট ও হিসাব সম্পূর্ণ স্বয়ংক্রিয়ভাবে ইনিশিশিয়ালাইজ করা হয়েছে।`;
+
+        const chartUrl = generateQuickChartUrl({
+          type: 'doughnut',
+          data: {
+            labels: ['Carried Over Cash', 'Target Budget Cap'],
+            datasets: [{
+              data: [Math.max(0, carriedOverSavings), 26001],
+              backgroundColor: ['#10b981', '#818cf8']
+            }]
+          },
+          options: {
+            title: { display: true, text: `Auto-Created Month: ${latestMonth.monthName}`, fontColor: '#fff' }
+          }
+        });
+
+        await sendTelegramPhotoNotification({ imageUrl: chartUrl, caption: bodyMsg });
+      }
+
+      if (slot === 'month_end' || slot === 'all') {
+        const title = `🏁 <b>MONTH-END EXECUTIVE CLOSING REPORT</b>`;
+        const bodyMsg = `${title}
+
+🗓️ <b>Closed Period:</b> ${latestMonth.monthName}
+💵 <b>Total Gross Inflow:</b> ${fmt(totalIncome)}
+💸 <b>Total Gross Outflow:</b> ${fmt(totalExpense)}
+💎 <b>Net Savings Accumulated:</b> <b>${fmt(netLiquidSavings)}</b>
+📈 <b>Savings Retention Margin:</b> ${savingsRatePct.toFixed(1)}%
+🛡️ <b>Financial Health Rating:</b> ${healthScore}/100
+
+💡 <b>Executive Conclusion:</b>
+মাসটি সফলভাবে সমাপ্ত হয়েছে। জমানো অর্থ পরবর্তী মাসে ক্যারি-ওভার করা হয়েছে।`;
+
+        const chartUrl = generateQuickChartUrl({
+          type: 'bar',
+          data: {
+            labels: ['Gross Inflow', 'Total Outflow', 'Net Savings'],
+            datasets: [{
+              label: 'Month-End Summary (৳)',
+              data: [totalIncome, totalExpense, Math.max(0, netLiquidSavings)],
+              backgroundColor: ['#34d399', '#f87171', '#60a5fa']
+            }]
+          },
+          options: {
+            title: { display: true, text: `Month-End Financial Audit (${latestMonth.monthName})`, fontColor: '#fff' }
+          }
+        });
+
+        await sendTelegramPhotoNotification({ imageUrl: chartUrl, caption: bodyMsg });
+      }
+
+      if (slot === 'weekly_phase' || slot === 'all') {
+        const title = `📊 <b>WEEKLY PHASE VELOCITY DISPATCH</b>`;
+        const bodyMsg = `${title}
+
+🗓️ <b>Period:</b> ${latestMonth.monthName}
+⚡ <b>4-Week Phase Breakdown:</b>
+• 1st Week (Days 1–7): ${fmt(week1Spent)}
+• 2nd Week (Days 8–14): ${fmt(week2Spent)}
+• 3rd Week (Days 15–21): ${fmt(week3Spent)}
+• 4th Week (Days 22–31): ${fmt(week4Spent)}
+
+💡 <b>Weekly Guidance:</b>
+সাপ্তাহিক খরচের গতি পর্যবেক্ষণ করে খরচে ভারসাম্য বজায় রাখুন।`;
+
+        const chartUrl = generateQuickChartUrl({
+          type: 'bar',
+          data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4+'],
+            datasets: [{
+              label: 'Weekly Outflow (৳)',
+              data: [week1Spent, week2Spent, week3Spent, week4Spent],
+              backgroundColor: ['#60a5fa', '#818cf8', '#fbbf24', '#f472b6']
+            }]
+          },
+          options: {
+            title: { display: true, text: `Weekly Phase Velocity (${latestMonth.monthName})`, fontColor: '#fff' }
+          }
+        });
+
+        await sendTelegramPhotoNotification({ imageUrl: chartUrl, caption: bodyMsg });
+      }
+
+      if (slot === '9am') {
         const title = `🌅 <b>MORNING FINANCIAL KICKOFF (9:00 AM BST)</b>`;
         const bodyMsg = `${title}
 
@@ -244,7 +386,6 @@ export async function POST(req: NextRequest) {
 💡 <b>Morning Guidance:</b>
 আজকের নিরাপদ খরচ সীমা ${fmt(recommendedDailyCap)} টাকার মধ্যে বজায় রাখলে মাস শেষে সঞ্চয় লক্ষ্য অর্জন সম্ভব।`;
 
-        // Chart for 9am: Progress Gauge
         const chartUrl = generateQuickChartUrl({
           type: 'gauge',
           data: {
@@ -262,7 +403,7 @@ export async function POST(req: NextRequest) {
         await sendTelegramPhotoNotification({ imageUrl: chartUrl, caption: bodyMsg });
       }
 
-      if (slot === '3pm' || slot === 'all') {
+      if (slot === '3pm') {
         const title = `🕒 <b>MID-DAY PACE & CATEGORY AUDIT (3:00 PM BST)</b>`;
         const warnText = catOverWarnings.length > 0
           ? `\n🚨 <b>OVER-SPENDING WARNING ALERTS:</b>\n${catOverWarnings.join('\n')}\n`
@@ -277,7 +418,6 @@ ${warnText}
 💡 <b>Mid-Day Action Direction:</b>
 ${catOverWarnings.length > 0 ? 'ক্যাটাগরি বাজেটের অতিরিক্ত খরচ হয়েছে। অপচয় ছাঁটাই করুন।' : 'সকল খাতের খরচ সীমার মধ্যে রয়েছে।'}`;
 
-        // Chart for 3pm: Category Limits vs Actual
         const labels = Object.keys(categoryBudgets).slice(0, 6);
         const limitVals = labels.map(l => categoryBudgets[l] || 0);
         const spentVals = labels.map(l => categoryTotals[l] || 0);
@@ -299,7 +439,7 @@ ${catOverWarnings.length > 0 ? 'ক্যাটাগরি বাজেটে�
         await sendTelegramPhotoNotification({ imageUrl: chartUrl, caption: bodyMsg });
       }
 
-      if (slot === '6pm' || slot === 'all') {
+      if (slot === '6pm') {
         const title = `🕕 <b>WEALTH VAULT & LOAN RECOVERY (6:00 PM BST)</b>`;
         const bodyMsg = `${title}
 
@@ -327,7 +467,7 @@ ${catOverWarnings.length > 0 ? 'ক্যাটাগরি বাজেটে�
         await sendTelegramPhotoNotification({ imageUrl: chartUrl, caption: bodyMsg });
       }
 
-      if (slot === '9pm' || slot === 'all') {
+      if (slot === '9pm') {
         const title = `🤖 <b>AI EXECUTIVE COPILOT & LIFESTYLE GUIDANCE (9:00 PM BST)</b>`;
         const bodyMsg = `${title}
 
@@ -363,7 +503,7 @@ ${catOverWarnings.length > 0 ? 'ক্যাটাগরি বাজেটে�
         await sendTelegramPhotoNotification({ imageUrl: chartUrl, caption: bodyMsg });
       }
 
-      if (slot === '11pm' || slot === 'all') {
+      if (slot === '11pm') {
         const title = `📊 <b>DAY-END CLOSING AUDIT & SMART ANALYTICS (11:30 PM BST)</b>`;
         const bodyMsg = `${title}
 

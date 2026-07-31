@@ -6,7 +6,7 @@ import {
   HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check, AlertTriangle,
   Target, Zap, ArrowUpDown, ShieldAlert, Sparkles, Eye, EyeOff, CreditCard, ShieldCheck, PiggyBank, Flame,
   TrendingDown, Lock, Award, Tag, CopyCheck, Share2, Gauge, FilePlus, Sliders, Activity, Compass, Filter,
-  BarChart3, Coins, Globe, Building2, Laptop, DollarSign, Briefcase, ArrowRightLeft, Save
+  BarChart3, Coins, Globe, Building2, Laptop, DollarSign, Briefcase, ArrowRightLeft, Save, Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../admin.module.css';
@@ -87,7 +87,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [months, setMonths] = useState<IWalletMonthData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonthId, setSelectedMonthId] = useState<string>('');
-  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'daily_intel' | 'goals_debts' | 'ai_advisor'>('single');
+  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'daily_intel' | 'goals_debts' | 'ai_advisor' | 'dispatch_center'>('single');
   const [selectedWeeklyAnalyticsMonthId, setSelectedWeeklyAnalyticsMonthId] = useState<string>('');
   
   // Search & Filter State
@@ -1627,7 +1627,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     }
   };
 
-  const handlePushAiAdvisory = async (channel: 'email' | 'telegram' | 'all' = 'all', slot: '9am' | '3pm' | '6pm' | '9pm' | '11pm' | 'all' = 'all') => {
+  const handlePushAiAdvisory = async (channel: 'email' | 'telegram' | 'all' = 'all', slot: '9am' | '3pm' | '6pm' | '9pm' | '11pm' | 'month_end' | 'weekly_phase' | 'auto_create_month' | 'all' = 'all') => {
     showToast(`🚀 Pushing ${slot.toUpperCase()} report via ${channel.toUpperCase()}...`, 'info');
     try {
       const res = await fetch('/api/admin/wallet/ai-advisor', {
@@ -2223,6 +2223,27 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
               }}
             >
               <Sparkles size={16} style={{ color: 'var(--accent-gold)' }} /> 🤖 AI Executive Copilot
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('dispatch_center')}
+              style={{
+                background: walletSubTab === 'dispatch_center' ? 'linear-gradient(135deg, rgba(236, 72, 153, 0.25) 0%, rgba(147, 51, 234, 0.25) 100%)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'dispatch_center' ? '#f472b6' : 'var(--glass-border-light)',
+                color: walletSubTab === 'dispatch_center' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: walletSubTab === 'dispatch_center' ? '0 4px 14px rgba(236, 72, 153, 0.3)' : 'none'
+              }}
+            >
+              <Bell size={16} style={{ color: '#f472b6' }} /> 🔔 Dispatch Center
             </button>
 
             <button
@@ -5713,6 +5734,206 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   </div>
                 );
               })()}
+
+            </div>
+          )}
+
+          {walletSubTab === 'dispatch_center' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              {/* 🔔 DISPATCH COMMAND CENTER EXECUTIVE HEADER */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(147, 51, 234, 0.12) 50%, rgba(15, 23, 42, 0.7) 100%)', border: '1px solid rgba(236, 72, 153, 0.35)', boxShadow: '0 8px 32px rgba(236, 72, 153, 0.15)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        🔔 DISPATCH COMMAND CENTER & AUTO-MONTH LIFECYCLE ENGINE
+                      </span>
+                      <span style={{ fontSize: '0.68rem', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '2px 10px', borderRadius: '12px', fontWeight: 800 }}>
+                        🟢 ALL ENGINES ONLINE & ACTIVE
+                      </span>
+                    </div>
+                    <h2 style={{ margin: '4px 0 2px', fontSize: '1.9rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <Bell size={26} style={{ color: '#f472b6' }} /> Notifications & Auto-Lifecycle Hub
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                      নতুন মাসের ১ তারিখে অটোমেটিক মান্থ ক্রিয়েশন, মাস-শেষের ইনফোগ্রাফিক ফটো রিপোর্ট, ৫টি দৈনিক নোটিফিকেশন স্লট ও লাইভ টেস্টিং সেন্ডবক্স।
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', 'all')}
+                      style={{
+                        background: 'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '10px 18px',
+                        borderRadius: '8px',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontSize: '0.84rem',
+                        boxShadow: '0 4px 14px rgba(236, 72, 153, 0.35)'
+                      }}
+                    >
+                      <Zap size={16} /> 🚀 Dispatch All Notifications Now
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 1: 📅 1ST-OF-MONTH AUTO-CREATION & MONTH-END ENGINE */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Automated Lifecycle Manager</span>
+                    <h3 style={{ margin: '2px 0 0', fontSize: '1.3rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Calendar size={20} style={{ color: '#34d399' }} /> 1st-of-Month Auto-Creation & Month-End Closing Engine
+                    </h3>
+                  </div>
+                  <span style={{ fontSize: '0.75rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '4px 12px', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    MONTHLY AUTOMATION
+                  </span>
+                </div>
+
+                <div className={styles.grid2} style={{ gap: '14px' }}>
+                  
+                  {/* Card 1: Auto-Month Creation Status */}
+                  <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#60a5fa' }}>📅 New Month Auto-Creation Rule</span>
+                      <span style={{ fontSize: '0.65rem', background: 'rgba(96, 165, 250, 0.2)', color: '#60a5fa', padding: '2px 6px', borderRadius: '4px', fontWeight: 900 }}>1st of Every Month</span>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.5 }}>
+                      নতুন মাসের ১ তারিখ এলেই সিস্টেম স্বয়ংক্রিয়ভাবে চলতি মাসের নাম ও বছর (যেমন: <strong>August 2026</strong>) দিয়ে ডাটাবেজে রেকর্ড তৈরি করবে এবং আগের মাসের অবশিষ্ট ক্যাশ ক্যারি-ওভার করবে।
+                    </p>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', 'auto_create_month')}
+                      style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      📅 Test Auto-Create Next Month Sheet Now
+                    </button>
+                  </div>
+
+                  {/* Card 2: Month-End Executive Closing Dispatch */}
+                  <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#f472b6' }}>🏁 Month-End Closing Dispatch</span>
+                      <span style={{ fontSize: '0.65rem', background: 'rgba(244, 114, 182, 0.2)', color: '#f472b6', padding: '2px 6px', borderRadius: '4px', fontWeight: 900 }}>Image + Email Text</span>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 12px', lineHeight: 1.5 }}>
+                      মাস শেষের দিনে স্বয়ংক্রিয়ভাবে চলতি মাসের মোট ইনকাম, খরচ, জমানো টাকা ও সর্বোচ্চ খরচের খাতের ভিজ্যুয়াল চার্ট ইমেজ টেলিগ্রামে এবং ডিটেইলস সম্বলিত রিপোর্ট ইমেইলে চলে যাবে।
+                    </p>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', 'month_end')}
+                      style={{ background: 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      🏁 Test Month-End Executive Closing Dispatch
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* SECTION 2: 📊 WEEKLY PHASE DISPATCHES & 5 DAILY STAGGERED SLOTS */}
+              <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(129, 140, 248, 0.25)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Staggered Schedule Matrix</span>
+                    <h3 style={{ margin: '2px 0 0', fontSize: '1.3rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Activity size={20} style={{ color: '#818cf8' }} /> Weekly Phase & Daily 5-Slot Staggered Notifications
+                    </h3>
+                  </div>
+                  <span style={{ fontSize: '0.75rem', background: 'rgba(129, 140, 248, 0.15)', color: '#818cf8', padding: '4px 12px', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                    AUTOMATED TIMERS ACTIVE
+                  </span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                  
+                  {/* Slot 1: 9:00 AM */}
+                  <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(96, 165, 250, 0.3)' }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#60a5fa' }}>🌅 9:00 AM BST</div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>Morning Kickoff</div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '4px 0 10px' }}>Daily Cap Allowance & Safe Pacing</p>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', '9am')}
+                      style={{ width: '100%', background: 'rgba(96, 165, 250, 0.2)', color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.4)', padding: '6px', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                      Test 9:00 AM
+                    </button>
+                  </div>
+
+                  {/* Slot 2: 3:00 PM */}
+                  <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#818cf8' }}>🕒 3:00 PM BST</div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>Mid-Day Pace</div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '4px 0 10px' }}>Category Budget Over-Spending Alert</p>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', '3pm')}
+                      style={{ width: '100%', background: 'rgba(129, 140, 248, 0.2)', color: '#818cf8', border: '1px solid rgba(129, 140, 248, 0.4)', padding: '6px', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                      Test 3:00 PM
+                    </button>
+                  </div>
+
+                  {/* Slot 3: 6:00 PM */}
+                  <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#fbbf24' }}>🕕 6:00 PM BST</div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>Wealth Vault</div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '4px 0 10px' }}>Net Worth & Pending Debt Recovery</p>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', '6pm')}
+                      style={{ width: '100%', background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.4)', padding: '6px', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                      Test 6:00 PM
+                    </button>
+                  </div>
+
+                  {/* Slot 4: 9:00 PM */}
+                  <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#34d399' }}>🕘 9:00 PM BST</div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>AI Executive Copilot</div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '4px 0 10px' }}>Monte Carlo & FIRE Lifestyle Guidance</p>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', '9pm')}
+                      style={{ width: '100%', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '6px', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                      Test 9:00 PM
+                    </button>
+                  </div>
+
+                  {/* Slot 5: 11:30 PM */}
+                  <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(192, 132, 252, 0.3)' }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#c084fc' }}>🕛 11:30 PM BST</div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>Day-End Closing Audit</div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '4px 0 10px' }}>Smart Analytics & PNG Chart Infographic</p>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', '11pm')}
+                      style={{ width: '100%', background: 'rgba(192, 132, 252, 0.2)', color: '#c084fc', border: '1px solid rgba(192, 132, 252, 0.4)', padding: '6px', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                      Test 11:30 PM
+                    </button>
+                  </div>
+
+                  {/* Weekly Phase Button */}
+                  <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(236, 72, 153, 0.3)' }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#f472b6' }}>📊 WEEKLY AUDIT</div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>Weekly Phase Report</div>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: '4px 0 10px' }}>4-Week Phase Velocity Chart</p>
+                    <button
+                      onClick={() => handlePushAiAdvisory('all', 'weekly_phase')}
+                      style={{ width: '100%', background: 'rgba(236, 72, 153, 0.2)', color: '#f472b6', border: '1px solid rgba(236, 72, 153, 0.4)', padding: '6px', borderRadius: '6px', fontSize: '0.74rem', fontWeight: 800, cursor: 'pointer' }}
+                    >
+                      Test Weekly Report
+                    </button>
+                  </div>
+
+                </div>
+              </div>
 
             </div>
           )}
