@@ -111,14 +111,14 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
   // Category Budget Limits & Over-spending Alert State
   const [categoryBudgets, setCategoryBudgets] = useState<{ [cat: string]: number }>({
-    Food: 6000,
-    Rent: 5000,
-    Utility: 3000,
-    Gadgets: 5000,
-    Server: 2000,
-    Entertainment: 2000,
-    'Parents (Baba Ma)': 5000,
-    Other: 3000
+    Food: 4500,
+    Rent: 4000,
+    Utility: 1000,
+    Gadgets: 1,
+    Server: 500,
+    Entertainment: 500,
+    'Parents (Baba Ma)': 15000,
+    Other: 500
   });
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
 

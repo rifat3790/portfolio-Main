@@ -357,6 +357,8 @@ export async function POST(req: NextRequest) {
     if (channel === 'telegram' || channel === 'all') {
 
       if (slot === 'auto_create_month') {
+        const totalTargetCap = Object.values(categoryBudgets).reduce((acc, val) => acc + (val || 0), 0);
+
         const title = `📅 <b>AUTOMATED NEW MONTH CREATION ALERT</b>`;
         const bodyMsg = `${title}
 
@@ -372,7 +374,7 @@ export async function POST(req: NextRequest) {
 │ Current Month           │ ${latestMonth.monthName.padEnd(12)} │
 │ Days in Month           │ ${daysInMonth.toString().padEnd(12)} │
 │ Carried Cash            │ ${fmt(carriedOverSavings).padEnd(12)} │
-│ Base Target Cap         │ ৳26,001      │
+│ Base Target Cap         │ ${fmt(totalTargetCap).padEnd(12)} │
 └─────────────────────────┴──────────────┘
 </pre>
 
@@ -383,7 +385,7 @@ export async function POST(req: NextRequest) {
           data: {
             labels: ['Carried Over Cash', 'Target Budget Cap'],
             datasets: [{
-              data: [Math.max(0, carriedOverSavings), 26001],
+              data: [Math.max(0, carriedOverSavings), totalTargetCap],
               backgroundColor: ['#10b981', '#818cf8']
             }]
           },
