@@ -88,6 +88,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [loading, setLoading] = useState(true);
   const [selectedMonthId, setSelectedMonthId] = useState<string>('');
   const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'daily_intel' | 'goals_debts' | 'ai_advisor'>('single');
+  const [selectedWeeklyAnalyticsMonthId, setSelectedWeeklyAnalyticsMonthId] = useState<string>('');
   
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -4401,6 +4402,129 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     </div>
                   );
                 })()}
+
+                {/* 🌐 GLOBAL FEATURE 1: Global Portfolio Net Worth Accumulation & Capital Coverage HUD */}
+                <div style={{ marginTop: '24px', background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.6) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '16px', padding: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <span style={{ fontSize: '0.72rem', color: '#34d399', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '1px' }}>Global Capital Allocation Radar</span>
+                      <h3 style={{ margin: '4px 0 0', fontSize: '1.4rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Globe size={22} style={{ color: '#34d399' }} /> Global Portfolio Capital Allocation & Asset Reserve HUD
+                      </h3>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '4px 12px', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                      GLOBAL CAPITAL AUDIT
+                    </span>
+                  </div>
+
+                  <div className={styles.grid4} style={{ gap: '12px' }}>
+                    {(() => {
+                      const totalAssetsVal = assets.reduce((acc, a) => acc + (a.value || 0), 0);
+                      const pendingLoansTotal = months.flatMap(m => m.loans || []).filter(l => l.status === 'Pending').reduce((acc, l) => acc + (l.amount || 0), 0);
+                      const netWorthPortfolio = globalTotalSavings + totalAssetsVal - pendingLoansTotal;
+                      const coverageRatio = pendingLoansTotal > 0 ? (totalAssetsVal / pendingLoansTotal).toFixed(1) : 'MAX';
+
+                      return (
+                        <>
+                          <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Total Global Net Worth</span>
+                            <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#34d399', marginTop: '4px' }}>{fmtVal(netWorthPortfolio)}</div>
+                            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Liquid Savings + Assets - Pending Debts</span>
+                          </div>
+
+                          <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Lifetime Gross Inflow</span>
+                            <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#60a5fa', marginTop: '4px' }}>{fmtVal(globalTotalIncome)}</div>
+                            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>All salaries, bonuses & freelance</span>
+                          </div>
+
+                          <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Asset Coverage Ratio</span>
+                            <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#fbbf24', marginTop: '4px' }}>{coverageRatio}x</div>
+                            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Asset value vs pending debt liabilities</span>
+                          </div>
+
+                          <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', fontWeight: 700 }}>Lifetime Net Margin</span>
+                            <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#c084fc', marginTop: '4px' }}>
+                              {globalTotalIncome > 0 ? ((globalTotalSavings / globalTotalIncome) * 100).toFixed(1) : 0}%
+                            </div>
+                            <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Overall wealth retention efficiency</span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* 🌐 GLOBAL FEATURE 2: Global Lifetime Monthly Performance Matrix Table */}
+                <div style={{ marginTop: '24px', background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <span style={{ fontSize: '0.72rem', color: '#818cf8', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '1px' }}>Global Performance Ledger</span>
+                      <h3 style={{ margin: '4px 0 0', fontSize: '1.3rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Building2 size={20} style={{ color: '#818cf8' }} /> Global Monthly Performance & Financial Health Matrix Table
+                      </h3>
+                    </div>
+                    <span style={{ fontSize: '0.75rem', background: 'rgba(129, 140, 248, 0.15)', color: '#818cf8', padding: '4px 12px', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                      ALL {months.length} PERIODS AUDITED
+                    </span>
+                  </div>
+
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.83rem', textAlign: 'left' }}>
+                      <thead>
+                        <tr style={{ background: 'rgba(7, 8, 15, 0.6)', borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)' }}>
+                          <th style={{ padding: '12px 14px', fontWeight: 800 }}>Period Sheet</th>
+                          <th style={{ padding: '12px 14px', fontWeight: 800 }}>Gross Inflow</th>
+                          <th style={{ padding: '12px 14px', fontWeight: 800 }}>Total Outflow</th>
+                          <th style={{ padding: '12px 14px', fontWeight: 800 }}>Net Savings</th>
+                          <th style={{ padding: '12px 14px', fontWeight: 800 }}>Savings Margin</th>
+                          <th style={{ padding: '12px 14px', fontWeight: 800 }}>Health Status</th>
+                          <th style={{ padding: '12px 14px', fontWeight: 800, textAlign: 'right' }}>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {months.map(m => {
+                          const inc = getIncomeTotal(m);
+                          const exp = getExpenseTotal(m);
+                          const sav = getSavings(m);
+                          const sRate = getSavingsRate(m);
+                          const isHigh = sRate >= 40;
+                          const isMod = sRate >= 20 && sRate < 40;
+                          const statusBadge = isHigh ? '🟢 HIGH ACCUMULATION' : isMod ? '🟡 MODERATE PACING' : '🔴 HIGH BURN';
+                          const statusColor = isHigh ? '#34d399' : isMod ? '#fbbf24' : '#f87171';
+
+                          return (
+                            <tr key={m._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s ease' }}>
+                              <td style={{ padding: '12px 14px', fontWeight: 800, color: '#fff' }}>{m.monthName}</td>
+                              <td style={{ padding: '12px 14px', color: '#34d399', fontWeight: 700 }}>{fmtVal(inc)}</td>
+                              <td style={{ padding: '12px 14px', color: '#f87171', fontWeight: 700 }}>{fmtVal(exp)}</td>
+                              <td style={{ padding: '12px 14px', color: sav >= 0 ? '#60a5fa' : '#f87171', fontWeight: 900 }}>{fmtVal(sav)}</td>
+                              <td style={{ padding: '12px 14px', color: statusColor, fontWeight: 800 }}>{sRate.toFixed(1)}%</td>
+                              <td style={{ padding: '12px 14px' }}>
+                                <span style={{ fontSize: '0.68rem', fontWeight: 800, color: statusColor, background: 'rgba(0,0,0,0.3)', padding: '3px 8px', borderRadius: '4px', border: `1px solid ${statusColor}44` }}>
+                                  {statusBadge}
+                                </span>
+                              </td>
+                              <td style={{ padding: '12px 14px', textAlign: 'right' }}>
+                                <button
+                                  onClick={() => {
+                                    setSelectedWeeklyAnalyticsMonthId(m._id);
+                                    setWalletSubTab('analytics');
+                                  }}
+                                  style={{ background: 'rgba(129, 140, 248, 0.15)', color: '#818cf8', border: '1px solid rgba(129, 140, 248, 0.3)', padding: '4px 10px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}
+                                >
+                                  👁️ Audit Analytics
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -4829,22 +4953,44 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     const isHighSavings = sRate >= 40;
                     const isModerateSavings = sRate >= 20 && sRate < 40;
 
+                    const runningMonth = months[months.length - 1];
+                    const activeAnalyticsId = selectedWeeklyAnalyticsMonthId || runningMonth?._id || activeMonth?._id;
+                    const isSelected = activeAnalyticsId === m._id;
+
                     const heatColor = isHighSavings ? '#10b981' : isModerateSavings ? '#f59e0b' : '#ef4444';
                     const heatBg = isHighSavings ? 'rgba(16, 185, 129, 0.12)' : isModerateSavings ? 'rgba(245, 158, 11, 0.12)' : 'rgba(239, 68, 68, 0.12)';
-                    const heatBorder = isHighSavings ? 'rgba(16, 185, 129, 0.3)' : isModerateSavings ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)';
+                    const heatBorder = isSelected ? '#fbbf24' : isHighSavings ? 'rgba(16, 185, 129, 0.3)' : isModerateSavings ? 'rgba(245, 158, 11, 0.3)' : 'rgba(239, 68, 68, 0.3)';
 
                     return (
-                      <div key={m._id} style={{ background: heatBg, border: `1px solid ${heatBorder}`, borderRadius: '10px', padding: '12px' }}>
+                      <div
+                        key={m._id}
+                        onClick={() => setSelectedWeeklyAnalyticsMonthId(m._id)}
+                        style={{
+                          background: heatBg,
+                          border: isSelected ? '2px solid #fbbf24' : `1px solid ${heatBorder}`,
+                          borderRadius: '12px',
+                          padding: '12px',
+                          cursor: 'pointer',
+                          boxShadow: isSelected ? '0 0 20px rgba(251, 191, 36, 0.35)' : 'none',
+                          transition: 'all 0.3s ease',
+                          position: 'relative'
+                        }}
+                      >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                          <span style={{ fontWeight: 800, color: '#fff', fontSize: '0.85rem' }}>{m.monthName}</span>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 900, color: heatColor, background: 'rgba(0,0,0,0.3)', padding: '1px 6px', borderRadius: '4px' }}>
+                          <span style={{ fontWeight: 800, color: '#fff', fontSize: '0.85rem' }}>
+                            {m.monthName}
+                          </span>
+                          <span style={{ fontSize: '0.68rem', fontWeight: 900, color: heatColor, background: 'rgba(0,0,0,0.3)', padding: '1px 6px', borderRadius: '4px' }}>
                             {sRate.toFixed(0)}% SAVED
                           </span>
                         </div>
                         <div style={{ fontSize: '1.1rem', fontWeight: 900, color: heatColor, marginTop: '2px' }}>
                           {fmtVal(sav)}
                         </div>
-                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Gross Inflow: {fmtVal(inc)}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Gross Inflow: {fmtVal(inc)}</span>
+                          {isSelected && <span style={{ fontSize: '0.62rem', background: '#fbbf24', color: '#000', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>👁️ ACTIVE AUDIT</span>}
+                        </div>
                       </div>
                     );
                   })}
@@ -4853,29 +4999,22 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
               {/* ⚡ NEW ULTRA-PREMIUM FEATURE 4: 4-Week Monthly Phase Breakdown & Peak Spending Velocity Detector */}
               <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(236, 72, 153, 0.25)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Activity size={20} style={{ color: '#f472b6' }} /> 4-Week Monthly Phase Breakdown & Peak Spending Velocity Detector
-                  </h3>
-                  <span style={{ fontSize: '0.72rem', background: 'rgba(236, 72, 153, 0.15)', color: '#f472b6', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
-                    4-WEEK PHASE AUDIT
-                  </span>
-                </div>
-
                 {(() => {
+                  const runningMonth = months[months.length - 1];
+                  const activeAnalyticsId = selectedWeeklyAnalyticsMonthId || runningMonth?._id || activeMonth?._id;
+                  const targetAnalyticsMonth = months.find(m => m._id === activeAnalyticsId) || runningMonth || activeMonth;
+
                   let week1Spent = 0; // Days 1 to 7
                   let week2Spent = 0; // Days 8 to 14
                   let week3Spent = 0; // Days 15 to 21
                   let week4Spent = 0; // Days 22+
 
-                  months.forEach(m => {
-                    (m.expenses || []).forEach(e => {
-                      const dayOfMonth = new Date(e.date).getDate();
-                      if (dayOfMonth <= 7) week1Spent += e.amount;
-                      else if (dayOfMonth <= 14) week2Spent += e.amount;
-                      else if (dayOfMonth <= 21) week3Spent += e.amount;
-                      else week4Spent += e.amount;
-                    });
+                  (targetAnalyticsMonth?.expenses || []).forEach(e => {
+                    const dayOfMonth = new Date(e.date).getDate();
+                    if (dayOfMonth <= 7) week1Spent += e.amount;
+                    else if (dayOfMonth <= 14) week2Spent += e.amount;
+                    else if (dayOfMonth <= 21) week3Spent += e.amount;
+                    else week4Spent += e.amount;
                   });
 
                   const grandTotal4Weeks = week1Spent + week2Spent + week3Spent + week4Spent;
@@ -4913,16 +5052,65 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                       
+                      {/* Header with Title and Month Pills Selector */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Activity size={20} style={{ color: '#f472b6' }} /> 4-Week Monthly Phase Breakdown ({targetAnalyticsMonth?.monthName || 'Running Month'})
+                          </h3>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                            Showing weekly phase distribution for <strong>{targetAnalyticsMonth?.monthName}</strong>. Click any month pill below to switch.
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '0.72rem', background: 'rgba(236, 72, 153, 0.15)', color: '#f472b6', padding: '3px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                          4-WEEK PHASE AUDIT
+                        </span>
+                      </div>
+
+                      {/* Month Filter Selector Pills */}
+                      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        {months.map(m => {
+                          const isSel = (targetAnalyticsMonth?._id === m._id);
+                          const isRunning = (runningMonth?._id === m._id);
+
+                          return (
+                            <button
+                              key={m._id}
+                              onClick={() => setSelectedWeeklyAnalyticsMonthId(m._id)}
+                              style={{
+                                background: isSel ? 'linear-gradient(135deg, #ec4899 0%, #be185d 100%)' : 'rgba(15, 23, 42, 0.6)',
+                                color: '#fff',
+                                border: isSel ? '1px solid #f472b6' : '1px solid rgba(255,255,255,0.08)',
+                                padding: '6px 14px',
+                                borderRadius: '20px',
+                                fontSize: '0.78rem',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.2s ease',
+                                boxShadow: isSel ? '0 4px 12px rgba(236, 72, 153, 0.35)' : 'none'
+                              }}
+                            >
+                              {m.monthName}
+                              {isRunning && <span style={{ fontSize: '0.6rem', background: '#10b981', color: '#fff', padding: '1px 5px', borderRadius: '4px', fontWeight: 900 }}>RUNNING</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+
                       {/* Top Peak Velocity Indicator HUD */}
                       <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(236, 72, 153, 0.3)', borderRadius: '12px', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                         <div>
-                          <span style={{ fontSize: '0.72rem', color: '#f472b6', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>🔥 HIGHEST SPENDING PHASE</span>
+                          <span style={{ fontSize: '0.72rem', color: '#f472b6', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>🔥 HIGHEST SPENDING PHASE ({targetAnalyticsMonth?.monthName})</span>
                           <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', marginTop: '2px' }}>
                             {peakWeekName} — <span style={{ color: '#f472b6' }}>{fmtVal(peakWeekAmt)}</span>
                           </div>
                         </div>
                         <div style={{ background: 'rgba(236, 72, 153, 0.15)', border: '1px solid rgba(236, 72, 153, 0.3)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.78rem', color: '#f472b6', fontWeight: 800 }}>
-                          ⚡ {Math.round((peakWeekAmt / (grandTotal4Weeks || 1)) * 100)}% of Total Outflow
+                          ⚡ {Math.round((peakWeekAmt / (grandTotal4Weeks || 1)) * 100)}% of Month Outflow
                         </div>
                       </div>
 
