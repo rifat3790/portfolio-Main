@@ -313,6 +313,17 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     return (m.loans || []).reduce((acc, curr) => acc + (curr.amount || 0), 0);
   };
 
+  const getGlobalPendingLoans = (allMonths: IWalletMonthData[]) => {
+    if (!allMonths || allMonths.length === 0) return [];
+    // The latest month sheet holds the up-to-date active pending loans (both original and carried over)
+    const latestMonth = allMonths[allMonths.length - 1];
+    return (latestMonth.loans || []).filter(l => l.status === 'Pending');
+  };
+
+  const getGlobalActiveLoansTotal = (allMonths: IWalletMonthData[]) => {
+    return getGlobalPendingLoans(allMonths).reduce((acc, l) => acc + (l.amount || 0), 0);
+  };
+
   // Fresh Monthly Cashflow Savings (This Month's Income - This Month's Expenses)
   const getGrossSavings = (m: IWalletMonthData) => getIncomeTotal(m) - getExpenseTotal(m);
 
@@ -334,7 +345,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const globalTotalIncome = months.reduce((acc, m) => acc + getIncomeTotal(m), 0);
   const globalTotalSpent = months.reduce((acc, m) => acc + getExpenseTotal(m), 0);
   // Active pending loans in current portfolio (from latest active month sheet to prevent double-counting carried-over pending loans)
-  const globalActiveLoans = months.length > 0 ? getActiveLoansTotal(months[months.length - 1]) : 0;
+  const globalActiveLoans = getGlobalActiveLoansTotal(months);
   // Total returned loans recovered
   const globalReturnedLoans = months.reduce((acc, m) => {
     // Count unique returned loans per month (excluding carried over duplicates if status was already returned)
@@ -4810,7 +4821,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   <div className={styles.grid4} style={{ gap: '12px' }}>
                     {(() => {
                       const totalAssetsVal = assets.reduce((acc, a) => acc + (a.value || 0), 0);
-                      const pendingLoansTotal = months.flatMap(m => m.loans || []).filter(l => l.status === 'Pending').reduce((acc, l) => acc + (l.amount || 0), 0);
+                      const pendingLoansTotal = getGlobalActiveLoansTotal(months);
                       const netWorthPortfolio = globalTotalSavings + totalAssetsVal - pendingLoansTotal;
                       const coverageRatio = pendingLoansTotal > 0 ? (totalAssetsVal / pendingLoansTotal).toFixed(1) : 'MAX';
 
@@ -4941,7 +4952,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     else if (avgSavingsRate >= 20) score += 20;
                     else if (avgSavingsRate >= 10) score += 10;
                     
-                    const pendingLoansCount = months.flatMap(m => m.loans || []).filter(l => l.status === 'Pending').length;
+                    const pendingLoansCount = getGlobalPendingLoans(months).length;
                     if (pendingLoansCount === 0) score += 20;
                     else if (pendingLoansCount <= 2) score += 10;
 
@@ -5064,8 +5075,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 </div>
 
                 {(() => {
-                  const pendingLoans = months.flatMap(m => m.loans || []).filter(l => l.status === 'Pending');
-                  const totalPendingAmount = pendingLoans.reduce((acc, l) => acc + l.amount, 0);
+                  const pendingLoans = getGlobalPendingLoans(months);
+                  const totalPendingAmount = getGlobalActiveLoansTotal(months);
                   const totalIncomeVal = months.reduce((acc, m) => acc + getIncomeTotal(m), 0);
                   const dtiRatio = totalIncomeVal > 0 ? (totalPendingAmount / totalIncomeVal) * 100 : 0;
                   const isSafeDti = dtiRatio <= 20;
@@ -5643,7 +5654,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       {(() => {
                         const lifetimeSavings = months.reduce((acc, m) => acc + (getIncomeTotal(m) - getExpenseTotal(m)), 0);
                         const totalAssetsVal = assets.reduce((acc, a) => acc + a.value, 0);
-                        const totalPendingLoans = months.flatMap(m => m.loans || []).filter(l => l.status === 'Pending').reduce((acc, l) => acc + l.amount, 0);
+                        const totalPendingLoans = getGlobalActiveLoansTotal(months);
                         const netWorth = lifetimeSavings + totalAssetsVal - totalPendingLoans;
                         return fmtVal(netWorth);
                       })()}
@@ -5681,7 +5692,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                   <div>
                     <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>Pending Loan Liabilities</span>
                     <div style={{ fontSize: '1rem', fontWeight: 700, color: '#ef4444' }}>
-                      {fmtVal(months.flatMap(m => m.loans || []).filter(l => l.status === 'Pending').reduce((acc, l) => acc + l.amount, 0))}
+                      {fmtVal(getGlobalActiveLoansTotal(months))}
                     </div>
                   </div>
                 </div>
