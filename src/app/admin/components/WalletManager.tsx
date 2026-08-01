@@ -210,15 +210,20 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [incDate, setIncDate] = useState('');
   const [editingIncomeId, setEditingIncomeId] = useState<string>('');
 
-  const fetchMonths = async () => {
+  const fetchMonths = async (targetIdToSelect?: string) => {
     setLoading(true);
     try {
       const res = await fetch('/api/admin/wallet');
       if (res.ok) {
-        const data = await res.json();
+        const data: IWalletMonthData[] = await res.json();
         setMonths(data);
-        if (data.length > 0 && !selectedMonthId) {
-          setSelectedMonthId(data[data.length - 1]._id); // default to latest month
+        if (data.length > 0) {
+          if (targetIdToSelect) {
+            setSelectedMonthId(targetIdToSelect);
+          } else if (!selectedMonthId || !data.some(m => m._id === selectedMonthId)) {
+            // Default to latest month sheet (newest created)
+            setSelectedMonthId(data[data.length - 1]._id);
+          }
         }
       } else {
         showToast('Failed to load wallet data', 'error');
@@ -2337,8 +2342,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
               <div className={styles.walletCard} style={{ padding: '12px' }}>
                 <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '14px', paddingLeft: '8px' }}>Months Sheets</div>
                 <div className={styles.monthsListContainer}>
-                  {months.map((m) => {
+                  {[...months].reverse().map((m, idx) => {
                     const isSelected = m._id === selectedMonthId;
+                    const isLatest = idx === 0;
                     const monthTotalInc = getIncomeTotal(m);
                     return (
                       <button
@@ -2360,10 +2366,27 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '4px',
-                          transition: 'all 0.25s ease'
+                          transition: 'all 0.25s ease',
+                          position: 'relative'
                         }}
                       >
-                        <span style={{ fontWeight: isSelected ? 700 : 500, fontSize: '0.9rem' }}>{m.monthName}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                          <span style={{ fontWeight: isSelected ? 700 : 500, fontSize: '0.9rem' }}>{m.monthName}</span>
+                          {isLatest && (
+                            <span style={{
+                              fontSize: '0.62rem',
+                              fontWeight: 700,
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              background: 'rgba(52, 211, 153, 0.15)',
+                              color: '#34d399',
+                              border: '1px solid rgba(52, 211, 153, 0.3)',
+                              letterSpacing: '0.5px'
+                            }}>
+                              ACTIVE
+                            </span>
+                          )}
+                        </div>
                         <span style={{ fontSize: '0.72rem', color: isSelected ? 'var(--accent-gold)' : 'var(--text-muted)' }}>
                           Earned: ৳{monthTotalInc.toLocaleString()}
                         </span>

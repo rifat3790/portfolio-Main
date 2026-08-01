@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/check-issues",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/daily-telegram",
+      "schedule": "0 14 * * *"
     }
   ]
 }

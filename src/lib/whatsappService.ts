@@ -9,8 +9,8 @@ export interface IWhatsAppMessageData {
 const AES_DEFAULT_BOT_TOKEN = 'b1d347c55eb33b968af63bc6f2be0614:3701929998acfe685170026330a07674:63f8cacd6ffcabbf1ff4a6a86eb51ca2b9c94506560949d8af280815fec18e053b14e45334eeeb5d5403e51c4c1b';
 const AES_DEFAULT_CHAT_ID = '231dc0bd2c150066885028a460cea1c1:6cd2eb5c72e0f3dafafd51326711b792:a23060a048262116da92';
 
-const getTelegramBotToken = () => process.env.TELEGRAM_BOT_TOKEN || decryptAES256(AES_DEFAULT_BOT_TOKEN);
-const getTelegramChatId = () => process.env.TELEGRAM_CHAT_ID || decryptAES256(AES_DEFAULT_CHAT_ID);
+const getTelegramBotToken = () => (process.env.TELEGRAM_BOT_TOKEN || decryptAES256(AES_DEFAULT_BOT_TOKEN))?.trim();
+const getTelegramChatId = () => (process.env.TELEGRAM_CHAT_ID || decryptAES256(AES_DEFAULT_CHAT_ID))?.trim();
 
 export const sendWhatsAppNotification = async (data: IWhatsAppMessageData) => {
   const rawPhone = data.phone || '8801952321390';
@@ -18,13 +18,15 @@ export const sendWhatsAppNotification = async (data: IWhatsAppMessageData) => {
   const formattedPhone = cleanPhone.startsWith('88') ? cleanPhone : `88${cleanPhone}`;
   const messageText = data.message;
 
+  let telegramSuccess = false;
+
   // 1. Telegram Bot Instant Push (100% Guaranteed & Secured with AES-256)
   const telegramBotToken = getTelegramBotToken();
   const telegramChatId = getTelegramChatId();
 
   if (telegramBotToken && telegramChatId) {
     try {
-      await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+      const res = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -33,6 +35,12 @@ export const sendWhatsAppNotification = async (data: IWhatsAppMessageData) => {
           parse_mode: 'HTML'
         })
       });
+      if (!res.ok) {
+        const errBody = await res.text().catch(() => '');
+        console.error(`Telegram push failed [${res.status}]:`, errBody);
+      } else {
+        telegramSuccess = true;
+      }
     } catch (err) {
       console.error('Telegram push error:', err);
     }
