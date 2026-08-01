@@ -72,29 +72,8 @@ export async function checkAndNotifyNewIssues(records: Record<string, string>[],
       await ProjectIssue.insertMany(newRecordsToSave, { ordered: false }).catch(() => {});
     }
 
-    // Send Telegram Bot notifications for new / updated issue entries
-    for (const r of notificationsToSend) {
-      const noteStr = r['Note for Operation'] || '';
-      const { memberName, teamName } = parseOperationNote(noteStr);
-
-      const memberLine = memberName ? `👨‍💻 <b>Assigned Member:</b> ${escapeHtml(memberName)}\n` : '';
-      const teamLine = teamName ? `🛡️ <b>Assigned Team:</b> ${escapeHtml(teamName)}\n` : '';
-      const rawNoteLine = (!memberName && noteStr) ? `📝 <b>Operation Note:</b> ${escapeHtml(noteStr)}\n` : '';
-
-      const msg = `🚨 <b>NEW SHOPIFY PROJECT ISSUE DETECTED!</b>
-
-📅 <b>Date:</b> ${escapeHtml(r['Date'] || 'N/A')}
-👤 <b>Profile Name:</b> ${escapeHtml(r['Profile Name'] || 'N/A')}
-💼 <b>Client's Name:</b> ${escapeHtml(r["Client's Name"] || 'N/A')}
-👥 <b>Team:</b> ${escapeHtml(r['Team'] || 'Shopify Team')}
-⚠️ <b>Special Notes:</b> ${escapeHtml(r['Special Notes'] || 'N/A')}
-📌 <b>Status:</b> ${escapeHtml(r['Status'] || 'Open')}
-${memberLine}${teamLine}${rawNoteLine}
-🔗 <b>Conversation Link:</b> ${r['Conversation Page URL'] ? `<a href="${r['Conversation Page URL']}">View Fiverr Inbox</a>` : 'N/A'}`;
-
-      await sendWhatsAppNotification({ message: msg });
-    }
-
+    // Issue sheet notifications are disabled per user configuration.
+    // Issue records are saved to MongoDB quietly without sending Telegram push alerts.
     return { newCount: notificationsToSend.length };
   } catch (err) {
     console.error('Error checking and notifying new project issues:', err);

@@ -1,12 +1,28 @@
 {
   "crons": [
     {
-      "path": "/api/cron/check-issues",
-      "schedule": "0 0 * * *"
+      "path": "/api/cron/dispatch?slot=9am",
+      "schedule": "0 3 * * *"
     },
     {
-      "path": "/api/cron/daily-telegram",
-      "schedule": "0 14 * * *"
+      "path": "/api/cron/dispatch?slot=3pm",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/dispatch?slot=6pm",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/dispatch?slot=9pm",
+      "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/dispatch?slot=11pm",
+      "schedule": "30 17 * * *"
+    },
+    {
+      "path": "/api/cron/dispatch?slot=weekly_phase",
+      "schedule": "0 14 * * 0"
     }
   ]
 }
