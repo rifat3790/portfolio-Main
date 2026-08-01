@@ -23,6 +23,7 @@ export async function ensureCurrentMonthCreated() {
   let inheritedDailyCap = 2000;
   let inheritedCategoryBudgets: Record<string, number> = {
     Food: 4500,
+    Travel: 500,
     Rent: 4000,
     Utility: 1000,
     Gadgets: 1,

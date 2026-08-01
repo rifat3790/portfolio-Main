@@ -117,6 +117,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   // Category Budget Limits & Over-spending Alert State
   const [categoryBudgets, setCategoryBudgets] = useState<{ [cat: string]: number }>({
     Food: 4500,
+    Travel: 500,
     Rent: 4000,
     Utility: 1000,
     Gadgets: 1,
@@ -363,9 +364,10 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const globalSavingsRate = globalTotalIncome > 0 ? (globalGrossSavings / globalTotalIncome) * 100 : 0;
 
   // Expense Categories mapping & colors
-  const categoriesList = ['Food', 'Rent', 'Utility', 'Gadgets', 'Server', 'Entertainment', 'Parents (Baba Ma)', 'Other'];
+  const categoriesList = ['Food', 'Travel', 'Rent', 'Utility', 'Gadgets', 'Server', 'Entertainment', 'Parents (Baba Ma)', 'Other'];
   const categoryColors: { [key: string]: string } = {
     Food: '#ff9800',
+    Travel: '#00bcd4',
     Rent: '#4caf50',
     Utility: '#2196f3',
     Gadgets: '#9c27b0',
@@ -1952,7 +1954,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   // ⚡ Quick Expense Presets
   const quickExpensePresets = [
     { name: 'Nasta / Snack', amount: 150, category: 'Food' },
-    { name: 'Travel / Transport', amount: 60, category: 'Utility' },
+    { name: 'Travel / Transport', amount: 80, category: 'Travel' },
     { name: 'Mess Deposit', amount: 500, category: 'Food' },
     { name: 'Wi-Fi / Internet', amount: 1000, category: 'Utility' },
     { name: 'Tea / Coffee', amount: 30, category: 'Food' },
@@ -2760,26 +2762,30 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                     </div>
                   </div>
 
-                  {/* 2-Column Ledger Tables Grid */}
-                  <div className={styles.grid2}>
+                  {/* 2-Column Ledger Tables Grid (Hyper-Responsive & Premium Glassmorphic Layout) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
                     
-                    {/* Left Column: Incomes Ledger */}
-                    <div className={styles.walletCard} style={{ background: 'rgba(7, 8, 15, 0.15)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-                        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <TrendingUp size={16} style={{ color: '#4caf50' }} /> Incomes Ledger
-                        </h3>
-                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    {/* Left Column: Incomes Ledger Card */}
+                    <div style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(15, 23, 42, 0.65) 100%)', border: '1px solid rgba(52, 211, 153, 0.25)', borderRadius: '16px', padding: '20px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cash Inflows</span>
+                          <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '2px 0 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <TrendingUp size={18} style={{ color: '#34d399' }} /> Incomes Ledger
+                          </h3>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                           <select
                             value={incSortBy}
                             onChange={e => setIncSortBy(e.target.value as any)}
                             style={{
-                              padding: '4px 8px',
-                              background: 'rgba(7,8,15,0.4)',
-                              border: '1px solid rgba(255,255,255,0.06)',
-                              borderRadius: '6px',
-                              color: 'var(--text-secondary)',
-                              fontSize: '0.72rem'
+                              padding: '5px 10px',
+                              background: 'rgba(7, 8, 15, 0.5)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              borderRadius: '8px',
+                              color: '#fff',
+                              fontSize: '0.75rem',
+                              fontWeight: 600
                             }}
                           >
                             <option value="date_desc">Date (Newest)</option>
@@ -2796,60 +2802,60 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                               setIncDate(new Date().toISOString().split('T')[0]);
                               setIsAddIncomeOpen(true);
                             }}
-                            style={{ background: 'rgba(76, 175, 80, 0.1)', border: '1px solid rgba(76, 175, 80, 0.2)', color: '#4caf50', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
+                            style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '8px', fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }}
                           >
-                            <Plus size={12} /> Log Income
+                            <Plus size={14} /> Log Income
                           </button>
                         </div>
                       </div>
 
                       {(!activeMonth.incomes || activeMonth.incomes.length === 0) ? (
-                        <div style={{ textAlign: 'center', padding: '24px 10px', color: 'var(--text-secondary)', background: 'rgba(7, 8, 15, 0.1)', border: '1px dashed rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem' }}>
-                          No individual incomes logged. (Primary Base Salary: ৳{activeMonth.salary.toLocaleString()})
+                        <div style={{ textAlign: 'center', padding: '28px 14px', color: 'var(--text-secondary)', background: 'rgba(7, 8, 15, 0.3)', border: '1px dashed rgba(52, 211, 153, 0.2)', borderRadius: '12px', fontSize: '0.82rem' }}>
+                          No individual incomes logged. (Base Salary: ৳{activeMonth.salary.toLocaleString()})
                         </div>
                       ) : (
                         <>
                           {/* Desktop Table View */}
                           <div className={`${styles.walletTableWrapper} ${styles.desktopTableOnly}`}>
-                            <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                            <table style={{ width: '100%', minWidth: '450px', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
                               <thead>
-                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
-                                  <th style={{ padding: '8px' }}>Date</th>
-                                  <th style={{ padding: '8px' }}>Category</th>
-                                  <th style={{ padding: '8px' }}>Description</th>
-                                  <th style={{ padding: '8px', textAlign: 'right' }}>Amount</th>
-                                  <th style={{ padding: '8px', textAlign: 'right' }}>Actions</th>
+                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)' }}>
+                                  <th style={{ padding: '10px 8px' }}>Date</th>
+                                  <th style={{ padding: '10px 8px' }}>Category</th>
+                                  <th style={{ padding: '10px 8px' }}>Description</th>
+                                  <th style={{ padding: '10px 8px', textAlign: 'right' }}>Amount</th>
+                                  <th style={{ padding: '10px 8px', textAlign: 'right' }}>Actions</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {sortedIncomes.map((inc) => (
-                                  <tr key={inc._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                                    <td style={{ padding: '8px', color: 'var(--text-secondary)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(76, 175, 80, 0.08)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(76, 175, 80, 0.15)', color: '#4caf50' }}>
+                                  <tr key={inc._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                    <td style={{ padding: '10px 8px', color: 'var(--text-secondary)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(52, 211, 153, 0.1)', padding: '3px 7px', borderRadius: '6px', border: '1px solid rgba(52, 211, 153, 0.2)', color: '#34d399', fontWeight: 600 }}>
                                         <Calendar size={11} style={{ opacity: 0.8 }} />
                                         {formatItemDate(inc.date)}
                                       </span>
                                     </td>
-                                    <td style={{ padding: '8px' }}>
-                                      <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, background: 'rgba(76, 175, 80, 0.15)', color: '#4caf50' }}>
+                                    <td style={{ padding: '10px 8px' }}>
+                                      <span style={{ display: 'inline-flex', padding: '3px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 700, background: 'rgba(52, 211, 153, 0.15)', color: '#34d399' }}>
                                         {inc.category}
                                       </span>
                                     </td>
-                                    <td style={{ padding: '8px', color: '#fff', wordBreak: 'break-word' }}>{inc.description}</td>
-                                    <td style={{ padding: '8px', textAlign: 'right', fontWeight: 700, color: '#4caf50' }}>৳{inc.amount.toLocaleString()}</td>
-                                    <td style={{ padding: '8px', textAlign: 'right' }}>
-                                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                                    <td style={{ padding: '10px 8px', color: '#fff', wordBreak: 'break-word', fontWeight: 600 }}>{inc.description}</td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 800, color: '#34d399' }}>+৳{inc.amount.toLocaleString()}</td>
+                                    <td style={{ padding: '10px 8px', textAlign: 'right' }}>
+                                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                                         <button
                                           type="button"
                                           onClick={() => openEditIncomeItemModal(inc)}
-                                          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
+                                          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px 6px', borderRadius: '4px' }}
                                         >
                                           <Edit size={12} />
                                         </button>
                                         <button
                                           type="button"
                                           onClick={() => inc._id && handleDeleteIncome(inc._id)}
-                                          style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
+                                          style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', cursor: 'pointer', padding: '4px 6px', borderRadius: '4px' }}
                                         >
                                           <Trash2 size={12} />
                                         </button>
@@ -2867,42 +2873,42 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                               <div
                                 key={inc._id}
                                 style={{
-                                  background: 'rgba(15, 23, 42, 0.6)',
-                                  border: '1px solid rgba(76, 175, 80, 0.2)',
+                                  background: 'rgba(7, 8, 15, 0.6)',
+                                  border: '1px solid rgba(52, 211, 153, 0.25)',
                                   borderRadius: '12px',
-                                  padding: '12px',
+                                  padding: '14px',
                                   display: 'flex',
                                   flexDirection: 'column',
-                                  gap: '8px',
+                                  gap: '10px',
                                 }}
                               >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                                    <span style={{ padding: '3px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, background: 'rgba(76, 175, 80, 0.15)', color: '#4caf50' }}>
+                                    <span style={{ padding: '3px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 800, background: 'rgba(52, 211, 153, 0.15)', color: '#34d399' }}>
                                       {inc.category}
                                     </span>
                                     <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                       <Calendar size={11} /> {formatItemDate(inc.date)}
                                     </span>
                                   </div>
-                                  <span style={{ fontSize: '1.05rem', fontWeight: 800, color: '#4caf50' }}>
+                                  <span style={{ fontSize: '1.1rem', fontWeight: 900, color: '#34d399' }}>
                                     +৳{inc.amount.toLocaleString()}
                                   </span>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '6px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '8px' }}>
                                   <span style={{ fontSize: '0.88rem', color: '#fff', fontWeight: 600 }}>{inc.description}</span>
                                   <div style={{ display: 'flex', gap: '6px' }}>
                                     <button
                                       type="button"
                                       onClick={() => openEditIncomeItemModal(inc)}
-                                      style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#818cf8', padding: '4px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}
+                                      style={{ background: 'rgba(129, 140, 248, 0.15)', border: '1px solid rgba(129, 140, 248, 0.3)', color: '#818cf8', padding: '5px 10px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                                     >
                                       <Edit size={12} /> Edit
                                     </button>
                                     <button
                                       type="button"
                                       onClick={() => inc._id && handleDeleteIncome(inc._id)}
-                                      style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', padding: '4px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                                      style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', padding: '5px 10px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                                     >
                                       <Trash2 size={12} />
                                     </button>
@@ -2915,12 +2921,15 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       )}
                     </div>
 
-                    {/* Right Column: Expenses Ledger */}
-                    <div style={{ background: 'rgba(7, 8, 15, 0.15)', border: '1px solid rgba(255, 255, 255, 0.03)', borderRadius: '12px', padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
-                        <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <PieChart size={16} style={{ color: '#ff6b6b' }} /> Expenses Ledger
-                        </h3>
+                    {/* Right Column: Expenses Ledger Card */}
+                    <div style={{ background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.65) 100%)', border: '1px solid rgba(248, 113, 113, 0.25)', borderRadius: '16px', padding: '20px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <span style={{ fontSize: '0.68rem', fontWeight: 800, color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cash Outflows</span>
+                          <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '2px 0 0', color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <PieChart size={18} style={{ color: '#f87171' }} /> Expenses Ledger
+                          </h3>
+                        </div>
                         <button
                           onClick={() => {
                             setExpDesc('');
@@ -2930,30 +2939,31 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                             setExpDate(new Date().toISOString().split('T')[0]);
                             setIsAddExpenseOpen(true);
                           }}
-                          style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ff6b6b', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
+                          style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '8px', fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)' }}
                         >
-                          <Plus size={12} /> Log Expense
+                          <Plus size={14} /> Log Expense
                         </button>
                       </div>
 
-                      {/* ⚡ 1-Click Quick Expense Logger Chips */}
-                      <div style={{ marginBottom: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          <Zap size={11} style={{ color: 'var(--accent-gold)' }} /> Quick Log:
+                      {/* ⚡ Quick Expense Logger Chips (Scrollable Bar) */}
+                      <div style={{ marginBottom: '16px', display: 'flex', gap: '6px', alignItems: 'center', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'thin' }}>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 800, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Zap size={12} style={{ color: 'var(--accent-gold)' }} /> Quick Log:
                         </span>
                         {quickExpensePresets.map((preset, idx) => (
                           <button
                             key={idx}
                             onClick={() => handleQuickPresetClick(preset)}
                             style={{
-                              background: 'rgba(255,255,255,0.03)',
-                              border: '1px solid rgba(255,255,255,0.07)',
-                              color: '#cbd5e1',
-                              padding: '3px 8px',
-                              borderRadius: '12px',
-                              fontSize: '0.7rem',
-                              fontWeight: 600,
+                              background: 'rgba(7, 8, 15, 0.5)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              color: '#e2e8f0',
+                              padding: '4px 10px',
+                              borderRadius: '20px',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
                               cursor: 'pointer',
+                              whiteSpace: 'nowrap',
                               transition: 'all 0.2s ease',
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -2962,10 +2972,12 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                             onMouseEnter={(e) => {
                               e.currentTarget.style.borderColor = 'var(--accent-gold)';
                               e.currentTarget.style.color = '#fff';
+                              e.currentTarget.style.background = 'rgba(245, 158, 11, 0.15)';
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
-                              e.currentTarget.style.color = '#cbd5e1';
+                              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                              e.currentTarget.style.color = '#e2e8f0';
+                              e.currentTarget.style.background = 'rgba(7, 8, 15, 0.5)';
                             }}
                           >
                             + {preset.name} (৳{preset.amount})
@@ -2973,20 +2985,18 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         ))}
                       </div>
 
-                      {/* Filter & Instant Search & Sorting */}
-                      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                      {/* Filter & Instant Search & Sorting Controls Grid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px', marginBottom: '16px' }}>
                         <input
                           type="text"
                           placeholder="Search expenses..."
                           value={searchQuery}
                           onChange={e => setSearchQuery(e.target.value)}
                           style={{
-                            flex: 1,
-                            minWidth: '110px',
                             padding: '6px 10px',
-                            background: 'rgba(7,8,15,0.4)',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                            borderRadius: '6px',
+                            background: 'rgba(7, 8, 15, 0.5)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '8px',
                             color: '#fff',
                             fontSize: '0.75rem'
                           }}
@@ -2996,9 +3006,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           onChange={e => setExpenseDateRange(e.target.value as any)}
                           style={{
                             padding: '6px 10px',
-                            background: 'rgba(7,8,15,0.4)',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                            borderRadius: '6px',
+                            background: 'rgba(7, 8, 15, 0.5)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '8px',
                             color: '#fff',
                             fontSize: '0.75rem'
                           }}
@@ -3012,9 +3022,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           onChange={e => setSelectedCategoryFilter(e.target.value)}
                           style={{
                             padding: '6px 10px',
-                            background: 'rgba(7,8,15,0.4)',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                            borderRadius: '6px',
+                            background: 'rgba(7, 8, 15, 0.5)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '8px',
                             color: '#fff',
                             fontSize: '0.75rem'
                           }}
@@ -3027,9 +3037,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           onChange={e => setExpSortBy(e.target.value as any)}
                           style={{
                             padding: '6px 10px',
-                            background: 'rgba(7,8,15,0.4)',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                            borderRadius: '6px',
+                            background: 'rgba(7, 8, 15, 0.5)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            borderRadius: '8px',
                             color: '#fff',
                             fontSize: '0.75rem'
                           }}
@@ -3043,54 +3053,55 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
                       {/* Expenses Table */}
                       {sortedExpenses.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '24px 10px', color: 'var(--text-secondary)', background: 'rgba(7, 8, 15, 0.1)', border: '1px dashed rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.8rem' }}>
+                        <div style={{ textAlign: 'center', padding: '28px 14px', color: 'var(--text-secondary)', background: 'rgba(7, 8, 15, 0.3)', border: '1px dashed rgba(248, 113, 113, 0.2)', borderRadius: '12px', fontSize: '0.82rem' }}>
                           No expenses matching criteria.
                         </div>
                       ) : (
                         <>
                           {/* Desktop Table View */}
                           <div className={`${styles.walletTableWrapper} ${styles.desktopTableOnly}`}>
-                            <table style={{ width: '100%', minWidth: '500px', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                            <table style={{ width: '100%', minWidth: '480px', borderCollapse: 'collapse', fontSize: '0.82rem', textAlign: 'left' }}>
                               <thead>
-                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
-                                  <th style={{ padding: '8px 10px' }}>Date</th>
-                                  <th style={{ padding: '8px 10px' }}>Category</th>
-                                  <th style={{ padding: '8px 10px' }}>Description</th>
-                                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>Amount</th>
-                                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>Actions</th>
+                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-secondary)' }}>
+                                  <th style={{ padding: '10px 8px' }}>Date</th>
+                                  <th style={{ padding: '10px 8px' }}>Category</th>
+                                  <th style={{ padding: '10px 8px' }}>Description</th>
+                                  <th style={{ padding: '10px 8px', textAlign: 'right' }}>Amount</th>
+                                  <th style={{ padding: '10px 8px', textAlign: 'right' }}>Actions</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {sortedExpenses.map((exp) => {
                                   const isToday = exp.date && new Date(exp.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
+                                  const catColor = categoryColors[exp.category] || '#607d8b';
                                   return (
-                                    <tr key={exp._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                                      <td style={{ padding: '8px 10px', color: 'var(--text-secondary)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: isToday ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.03)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.05)', color: isToday ? 'var(--accent-gold)' : 'var(--text-secondary)', fontWeight: isToday ? 700 : 400 }}>
+                                    <tr key={exp._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                                      <td style={{ padding: '10px 8px', color: 'var(--text-secondary)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: isToday ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.03)', padding: '3px 7px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)', color: isToday ? 'var(--accent-gold)' : 'var(--text-secondary)', fontWeight: isToday ? 700 : 400 }}>
                                           <Calendar size={11} style={{ opacity: 0.8 }} />
                                           {formatItemDate(exp.date)}
                                         </span>
                                       </td>
-                                      <td style={{ padding: '8px 10px' }}>
-                                        <span style={{ display: 'inline-flex', padding: '2px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: 700, background: `${categoryColors[exp.category] || '#607d8b'}20`, color: categoryColors[exp.category] || '#607d8b' }}>
+                                      <td style={{ padding: '10px 8px' }}>
+                                        <span style={{ display: 'inline-flex', padding: '3px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, background: `${catColor}20`, color: catColor, border: `1px solid ${catColor}40` }}>
                                           {exp.category}
                                         </span>
                                       </td>
-                                      <td style={{ padding: '8px 10px', color: '#fff', wordBreak: 'break-word' }}>{exp.description}</td>
-                                      <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 700, color: '#ff6b6b' }}>৳{exp.amount.toLocaleString()}</td>
-                                      <td style={{ padding: '8px 10px', textAlign: 'right' }}>
-                                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                                      <td style={{ padding: '10px 8px', color: '#fff', wordBreak: 'break-word', fontWeight: 600 }}>{exp.description}</td>
+                                      <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 800, color: '#f87171' }}>৳{exp.amount.toLocaleString()}</td>
+                                      <td style={{ padding: '10px 8px', textAlign: 'right' }}>
+                                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                                           <button
                                             type="button"
                                             onClick={() => openEditExpenseModal(exp)}
-                                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
+                                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px 6px', borderRadius: '4px' }}
                                           >
                                             <Edit size={12} />
                                           </button>
                                           <button
                                             type="button"
                                             onClick={() => exp._id && handleDeleteExpense(exp._id)}
-                                            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
+                                            style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', cursor: 'pointer', padding: '4px 6px', borderRadius: '4px' }}
                                           >
                                             <Trash2 size={12} />
                                           </button>
@@ -3107,17 +3118,18 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           <div className={styles.mobileLedgerList}>
                             {sortedExpenses.map((exp) => {
                               const isToday = exp.date && new Date(exp.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0];
+                              const catColor = categoryColors[exp.category] || '#607d8b';
                               return (
                                 <div
                                   key={exp._id}
                                   style={{
-                                    background: 'rgba(15, 23, 42, 0.6)',
-                                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                                    background: 'rgba(7, 8, 15, 0.6)',
+                                    border: `1px solid ${catColor}35`,
                                     borderRadius: '12px',
-                                    padding: '12px 14px',
+                                    padding: '14px',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: '8px',
+                                    gap: '10px',
                                   }}
                                 >
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -3126,10 +3138,10 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                                         padding: '3px 8px',
                                         borderRadius: '6px',
                                         fontSize: '0.72rem',
-                                        fontWeight: 700,
-                                        background: `${categoryColors[exp.category] || '#607d8b'}25`,
-                                        color: categoryColors[exp.category] || '#607d8b',
-                                        border: `1px solid ${categoryColors[exp.category] || '#607d8b'}40`
+                                        fontWeight: 800,
+                                        background: `${catColor}20`,
+                                        color: catColor,
+                                        border: `1px solid ${catColor}40`
                                       }}>
                                         {exp.category}
                                       </span>
