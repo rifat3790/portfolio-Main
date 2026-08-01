@@ -333,8 +333,14 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   // Global calculations
   const globalTotalIncome = months.reduce((acc, m) => acc + getIncomeTotal(m), 0);
   const globalTotalSpent = months.reduce((acc, m) => acc + getExpenseTotal(m), 0);
-  const globalActiveLoans = months.reduce((acc, m) => acc + getActiveLoansTotal(m), 0);
-  const globalReturnedLoans = months.reduce((acc, m) => acc + getReturnedLoansTotal(m), 0);
+  // Active pending loans in current portfolio (from latest active month sheet to prevent double-counting carried-over pending loans)
+  const globalActiveLoans = months.length > 0 ? getActiveLoansTotal(months[months.length - 1]) : 0;
+  // Total returned loans recovered
+  const globalReturnedLoans = months.reduce((acc, m) => {
+    // Count unique returned loans per month (excluding carried over duplicates if status was already returned)
+    const returnedInMonth = (m.loans || []).filter(l => l.status === 'Returned');
+    return acc + returnedInMonth.reduce((sum, l) => sum + (l.amount || 0), 0);
+  }, 0);
   const globalGrossSavings = globalTotalIncome - globalTotalSpent;
   const globalTotalSavings = months.length > 0 ? getSavings(months[months.length - 1]) : 0;
   const globalNetBalance = globalTotalSavings;
@@ -3905,6 +3911,92 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 );
               })()}
 
+              {/* 🛡️ DYNAMIC FINANCIAL RUNWAY & LIFETIME OUTLAY ENGINE */}
+              {months.length > 0 && (() => {
+                const avgMoSpent = globalTotalSpent / Math.max(1, months.length);
+                const avgMoInc = globalTotalIncome / Math.max(1, months.length);
+                const latestNetBal = months.length > 0 ? getNetBalance(months[months.length - 1]) : 0;
+                const runwayMos = avgMoSpent > 0 ? (latestNetBal / avgMoSpent).toFixed(1) : '∞';
+
+                // Compute Category All-Time Outlay Breakdown dynamically
+                const catTotals: Record<string, number> = {};
+                categoriesList.forEach(cat => { catTotals[cat] = 0; });
+                months.forEach(m => {
+                  (m.expenses || []).forEach(e => {
+                    const cat = e.category || 'Other';
+                    catTotals[cat] = (catTotals[cat] || 0) + (e.amount || 0);
+                  });
+                });
+                const maxCatSpent = Math.max(1, ...Object.values(catTotals));
+
+                return (
+                  <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(15, 23, 42, 0.7) 100%)', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                      <div>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dynamic Capital Analytics</span>
+                        <h3 style={{ margin: '2px 0 0', fontSize: '1.3rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Zap size={20} style={{ color: '#818cf8' }} /> Financial Runway & Lifetime Outlay Engine
+                        </h3>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', background: 'rgba(52, 211, 153, 0.15)', color: '#34d399', padding: '4px 12px', borderRadius: '20px', fontWeight: 800, border: '1px solid rgba(52, 211, 153, 0.3)' }}>
+                        🛡️ {runwayMos} Months Runway
+                      </span>
+                    </div>
+
+                    <div className={styles.grid4} style={{ gap: '12px', marginBottom: '20px' }}>
+                      <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Total Lifetime Inflow</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#34d399', marginTop: '2px' }}>{fmtVal(globalTotalIncome)}</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Avg {fmtVal(avgMoInc)}/mo</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Total Lifetime Outflow</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#f87171', marginTop: '2px' }}>{fmtVal(globalTotalSpent)}</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>Avg {fmtVal(avgMoSpent)}/mo</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Lifetime Gross Savings</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#818cf8', marginTop: '2px' }}>{fmtVal(globalGrossSavings)}</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>{globalSavingsRate.toFixed(1)}% Overall Rate</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Zero-Income Runway</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fbbf24', marginTop: '2px' }}>{runwayMos} Months</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>At {fmtVal(avgMoSpent)}/mo burn</div>
+                      </div>
+                    </div>
+
+                    {/* Dynamic All-Time Category Outlay Progress Bars */}
+                    <div>
+                      <span style={{ fontSize: '0.76rem', fontWeight: 800, color: '#fff', display: 'block', marginBottom: '10px' }}>
+                        📊 Dynamic All-Time Category Outlay Matrix:
+                      </span>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
+                        {Object.entries(catTotals).map(([cat, total]) => {
+                          const pct = globalTotalSpent > 0 ? ((total / globalTotalSpent) * 100).toFixed(1) : '0';
+                          const barWidth = Math.min(100, Math.round((total / maxCatSpent) * 100));
+                          const catColor = categoryColors[cat] || '#818cf8';
+                          return (
+                            <div key={cat} style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 700, color: '#fff', marginBottom: '4px' }}>
+                                <span>{cat}</span>
+                                <span style={{ color: catColor }}>{fmtVal(total)} ({pct}%)</span>
+                              </div>
+                              <div style={{ height: '5px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${barWidth}%`, background: catColor, borderRadius: '3px' }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* 🚀 DYNAMIC SEASONALITY & WEALTH MOMENTUM ALGORITHM RADAR */}
               {months.length > 0 && (() => {
                 const sortedByDate = [...months].sort((a, b) => new Date(a.monthName).getTime() - new Date(b.monthName).getTime());
@@ -4128,6 +4220,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                         <th style={{ padding: '12px 16px', textAlign: 'right' }}>Total Spent</th>
                         <th style={{ padding: '12px 16px', textAlign: 'right' }}>Savings</th>
                         <th style={{ padding: '12px 16px', textAlign: 'right' }}>Savings Rate</th>
+                        <th style={{ padding: '12px 16px', textAlign: 'right' }}>MoM Growth</th>
                         <th style={{ padding: '12px 16px', textAlign: 'right' }}>Health Score</th>
                         <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
                       </tr>
@@ -4148,6 +4241,14 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                           const rate = getSavingsRate(m).toFixed(0);
                           const health = getHealthScore(m);
                           const hInfo = getHealthGrade(health);
+
+                          // Calculate dynamic MoM growth compared to previous month in chronological order
+                          const mIdx = months.findIndex(item => item._id === m._id);
+                          const prevM = mIdx > 0 ? months[mIdx - 1] : null;
+                          const prevInc = prevM ? getIncomeTotal(prevM) : 0;
+                          const momPct = prevInc > 0 ? (((totalInc - prevInc) / prevInc) * 100) : 0;
+                          const isMomUp = momPct >= 0;
+
                           return (
                             <tr key={m._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                               <td style={{ padding: '12px 16px', fontWeight: 700, color: '#fff' }}>
@@ -4169,6 +4270,24 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                               <td style={{ padding: '12px 16px', textAlign: 'right', color: '#f44336' }}>{fmtVal(totalExp)}</td>
                               <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: '#2196f3' }}>{fmtVal(netSav)}</td>
                               <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 700, color: 'var(--accent-gold)' }}>{totalInc > 0 ? rate : '0'}%</td>
+                              <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                                {prevM ? (
+                                  <span style={{
+                                    display: 'inline-block',
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 800,
+                                    background: isMomUp ? 'rgba(52, 211, 153, 0.15)' : 'rgba(248, 113, 113, 0.15)',
+                                    color: isMomUp ? '#34d399' : '#f87171',
+                                    border: `1px solid ${isMomUp ? 'rgba(52, 211, 153, 0.3)' : 'rgba(248, 113, 113, 0.3)'}`
+                                  }}>
+                                    {isMomUp ? `+${momPct.toFixed(1)}% 📈` : `${momPct.toFixed(1)}% 📉`}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Baseline</span>
+                                )}
+                              </td>
                               <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                                 <span style={{ display: 'inline-block', padding: '2px 6px', borderRadius: '4px', background: `${hInfo.color}15`, color: hInfo.color, border: `1px solid ${hInfo.color}35`, fontSize: '0.75rem', fontWeight: 700 }}>
                                   {health} ({hInfo.grade})
