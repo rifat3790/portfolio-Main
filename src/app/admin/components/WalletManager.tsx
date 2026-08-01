@@ -87,12 +87,17 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [months, setMonths] = useState<IWalletMonthData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonthId, setSelectedMonthId] = useState<string>('');
-  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'daily_intel' | 'goals_debts' | 'ai_advisor' | 'dispatch_center'>('single');
+  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'daily_intel' | 'capital_matrix' | 'ai_advisor' | 'dispatch_center'>('single');
   const [selectedWeeklyAnalyticsMonthId, setSelectedWeeklyAnalyticsMonthId] = useState<string>('');
   
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
+
+  // 🛡️ Sovereign Capital Matrix Sandbox State
+  const [sandboxIncAdjust, setSandboxIncAdjust] = useState<number>(0);
+  const [sandboxExpCut, setSandboxExpCut] = useState<number>(0);
+  const [sandboxMajorPurchase, setSandboxMajorPurchase] = useState<number>(0);
 
   // Daily Pace & Email State
   const [targetDailyCap, setTargetDailyCap] = useState<number>(2000);
@@ -2332,12 +2337,12 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
             </button>
 
             <button
-              onClick={() => setWalletSubTab('goals_debts')}
+              onClick={() => setWalletSubTab('capital_matrix')}
               style={{
-                background: walletSubTab === 'goals_debts' ? 'rgba(236, 72, 153, 0.15)' : 'transparent',
+                background: walletSubTab === 'capital_matrix' ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(99, 102, 241, 0.25) 100%)' : 'transparent',
                 border: '1px solid',
-                borderColor: walletSubTab === 'goals_debts' ? '#f472b6' : 'var(--glass-border-light)',
-                color: walletSubTab === 'goals_debts' ? '#ffffff' : 'var(--text-secondary)',
+                borderColor: walletSubTab === 'capital_matrix' ? '#34d399' : 'var(--glass-border-light)',
+                color: walletSubTab === 'capital_matrix' ? '#ffffff' : 'var(--text-secondary)',
                 padding: '10px 20px',
                 borderRadius: '8px',
                 fontWeight: 600,
@@ -2345,10 +2350,11 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '8px',
+                boxShadow: walletSubTab === 'capital_matrix' ? '0 4px 14px rgba(16, 185, 129, 0.3)' : 'none'
               }}
             >
-              <Target size={16} style={{ color: '#f472b6' }} /> Goals & Debt Audit
+              <ShieldAlert size={16} style={{ color: '#34d399' }} /> Sovereign Capital Matrix
             </button>
           </div>
 
@@ -7240,102 +7246,274 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
 
 
 
-          {walletSubTab === 'goals_debts' && (
+          {walletSubTab === 'capital_matrix' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               
-              {/* Header Hero Card */}
-              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.12) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(244, 114, 182, 0.25)' }}>
+              {/* 👑 EXECUTIVE HERO CARD */}
+              <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(99, 102, 241, 0.15) 50%, rgba(15, 23, 42, 0.8) 100%)', border: '1px solid rgba(52, 211, 153, 0.3)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                   <div>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#f472b6', textTransform: 'uppercase', letterSpacing: '1px' }}>Goals & Loan Management Command</span>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '1.2px' }}>
+                      Sovereign Wealth Command & Capital Intelligence
+                    </span>
                     <h2 style={{ margin: '4px 0 0', fontSize: '1.8rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Target size={24} style={{ color: '#f472b6' }} /> Savings Milestones & Active Loans Audit
+                      <ShieldAlert size={26} style={{ color: '#34d399' }} /> Sovereign Capital Matrix & Stress-Testing Engine
                     </h2>
+                    <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: '#cbd5e1' }}>
+                      Real-time Black-Swan scenario modeling, capital efficiency drag calculations, and interactive wealth scenario sandbox.
+                    </p>
                   </div>
-                  <button
-                    onClick={() => setIsAddLoanOpen(true)}
-                    style={{ background: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    + Record New Loan
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <span style={{ background: 'rgba(52, 211, 153, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399', padding: '6px 14px', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 800 }}>
+                      ⚡ LIVE ALGORITHMIC HUD
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Grid: Savings Goals & Loans */}
-              <div className={styles.toolsGrid}>
-                
-                {/* Active Savings Goals Card */}
-                <div className={styles.walletCard}>
-                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <PiggyBank size={20} style={{ color: '#f472b6' }} /> Target Savings Goals
-                  </h3>
+              {/* 🛡️ MODULE 1: MACROECONOMIC BLACK-SWAN STRESS SIMULATOR */}
+              {months.length > 0 && (() => {
+                const latestMonth = months[months.length - 1];
+                const netBalance = getNetBalance(latestMonth);
+                const avgMonthlyExp = globalTotalSpent / Math.max(1, months.length);
+                const avgMonthlyInc = globalTotalIncome / Math.max(1, months.length);
 
-                  {savingsGoals.length === 0 ? (
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No active savings goals added yet.</div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                      {savingsGoals.map(g => {
-                        const pct = Math.min(100, (g.current / (g.target || 1)) * 100);
-                        return (
-                          <div key={g.id || g.name} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '14px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px' }}>
-                              <span style={{ color: '#fff' }}>{g.name}</span>
-                              <span style={{ color: '#f472b6' }}>{pct.toFixed(0)}% Completed</span>
-                            </div>
-                            <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden', marginBottom: '8px' }}>
-                              <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #ec4899, #8b5cf6)', borderRadius: '4px' }} />
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                              <span>Saved: <strong style={{ color: '#34d399' }}>{fmtVal(g.current)}</strong></span>
-                              <span>Target: <strong>{fmtVal(g.target)}</strong></span>
-                            </div>
-                          </div>
-                        );
-                      })}
+                // Scenario A: 0 Income Runway
+                const zeroIncRunwayMonths = avgMonthlyExp > 0 ? (netBalance / avgMonthlyExp).toFixed(1) : '∞';
+
+                // Scenario B: 25% Inflation Spike on Monthly Expenses
+                const inflatedExp = avgMonthlyExp * 1.25;
+                const inflatedSavings = Math.max(0, avgMonthlyInc - inflatedExp);
+                const inflatedSavingsRate = avgMonthlyInc > 0 ? ((inflatedSavings / avgMonthlyInc) * 100).toFixed(1) : '0';
+
+                // Scenario C: 15% Currency Depreciation (BDT -> USD)
+                const usdRate = 120; // 1 USD = 120 BDT
+                const liquidUsd = (netBalance / usdRate).toFixed(2);
+                const devaluedUsd = ((netBalance * 0.85) / usdRate).toFixed(2);
+                const fxLossBdt = netBalance * 0.15;
+
+                return (
+                  <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(129, 140, 248, 0.25)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Flame size={20} style={{ color: '#f87171' }} /> Black-Swan Macroeconomic Stress Simulator
+                      </h3>
+                      <span style={{ fontSize: '0.72rem', background: 'rgba(248, 113, 113, 0.15)', color: '#f87171', padding: '3px 10px', borderRadius: '4px', fontWeight: 800 }}>
+                        REAL-TIME RISK ENGINE
+                      </span>
                     </div>
-                  )}
-                </div>
 
-                {/* Active Loans & Debt Tracker Card */}
-                <div className={styles.walletCard}>
-                  <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <PiggyBank size={20} style={{ color: 'var(--accent-gold)' }} /> Active Loans Audit (ধার/ঋণ)
-                  </h3>
-
-                  {(() => {
-                    const currentMonthData = activeMonth || months[0];
-                    const activeLoans = currentMonthData ? currentMonthData.loans || [] : [];
-                    if (activeLoans.length === 0) {
-                      return <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>No active loans registered for this period.</div>;
-                    }
-                    return (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {activeLoans.map((l: IWalletLoan) => (
-                          <div key={l._id || l.personName} style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>{l.personName}</div>
-                              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                                Due: {l.dueDate ? new Date(l.dueDate).toISOString().split('T')[0] : 'No deadline'} | Status: <span style={{ color: l.status === 'Returned' ? '#34d399' : '#f59e0b', fontWeight: 700 }}>{l.status}</span>
-                              </div>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '1.05rem', fontWeight: 900, color: 'var(--accent-gold)' }}>{fmtVal(l.amount)}</div>
-                              <a
-                                href={`https://wa.me/8801952321390?text=${encodeURIComponent(`Hello ${l.personName}, friendly reminder regarding loan balance of ৳${l.amount}.`)}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ fontSize: '0.7rem', color: '#34d399', textDecoration: 'none', fontWeight: 700 }}
-                              >
-                                📲 WhatsApp Reminder
-                              </a>
-                            </div>
-                          </div>
-                        ))}
+                    <div className={styles.grid3} style={{ gap: '14px' }}>
+                      {/* Stress Card A */}
+                      <div style={{ background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '16px' }}>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#f87171', textTransform: 'uppercase' }}>
+                          Scenario A: 0 Revenue Cessation
+                        </div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff', marginTop: '4px' }}>
+                          {zeroIncRunwayMonths} Months
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#cbd5e1', marginTop: '6px' }}>
+                          Zero income survival time based on current burn rate ({fmtVal(avgMonthlyExp)}/mo).
+                        </div>
+                        <div style={{ marginTop: '10px', display: 'inline-block', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, background: Number(zeroIncRunwayMonths) >= 6 ? 'rgba(52, 211, 153, 0.2)' : 'rgba(248, 113, 113, 0.2)', color: Number(zeroIncRunwayMonths) >= 6 ? '#34d399' : '#f87171' }}>
+                          {Number(zeroIncRunwayMonths) >= 6 ? '🛡️ Safe Capital Buffer' : '⚠️ Low Runway Warning'}
+                        </div>
                       </div>
-                    );
-                  })()}
-                </div>
-              </div>
+
+                      {/* Stress Card B */}
+                      <div style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '12px', padding: '16px' }}>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase' }}>
+                          Scenario B: +25% Inflation Spike
+                        </div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff', marginTop: '4px' }}>
+                          {inflatedSavingsRate}% Rate
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#cbd5e1', marginTop: '6px' }}>
+                          New monthly burn surges to {fmtVal(inflatedExp)}/mo. Savings compresses to {fmtVal(inflatedSavings)}/mo.
+                        </div>
+                        <div style={{ marginTop: '10px', display: 'inline-block', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24' }}>
+                          🔥 Inflation Resilient
+                        </div>
+                      </div>
+
+                      {/* Stress Card C */}
+                      <div style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(129, 140, 248, 0.3)', borderRadius: '12px', padding: '16px' }}>
+                        <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#818cf8', textTransform: 'uppercase' }}>
+                          Scenario C: -15% Currency FX Devaluation
+                        </div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fff', marginTop: '4px' }}>
+                          ${devaluedUsd} USD
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#cbd5e1', marginTop: '6px' }}>
+                          Current value: ${liquidUsd} USD. Direct FX purchasing power loss: -{fmtVal(fxLossBdt)}.
+                        </div>
+                        <div style={{ marginTop: '10px', display: 'inline-block', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 800, background: 'rgba(129, 140, 248, 0.2)', color: '#818cf8' }}>
+                          🌐 Hard Currency Hedging
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 💡 MODULE 2: CAPITAL EFFICIENCY & OPPORTUNITY COST MATRIX */}
+              {months.length > 0 && (() => {
+                const latestMonth = months[months.length - 1];
+                const netBalance = getNetBalance(latestMonth);
+                const assetsVal = assets.reduce((acc, a) => acc + a.value, 0);
+                const totalWealth = netBalance + assetsVal;
+
+                // Compounding Opportunity Cost vs 10% APY
+                const year1Compounding = totalWealth * Math.pow(1.10, 1);
+                const year3Compounding = totalWealth * Math.pow(1.10, 3);
+                const year5Compounding = totalWealth * Math.pow(1.10, 5);
+                const year5Gain = year5Compounding - totalWealth;
+
+                return (
+                  <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.5) 100%)', border: '1px solid rgba(52, 211, 153, 0.25)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <TrendingUp size={20} style={{ color: '#34d399' }} /> Capital Efficiency & 10% APY Compounding Benchmark
+                      </h3>
+                      <span style={{ fontSize: '0.72rem', background: 'rgba(52, 211, 153, 0.15)', color: '#34d399', padding: '3px 10px', borderRadius: '4px', fontWeight: 800 }}>
+                        YIELD ACCELERATOR
+                      </span>
+                    </div>
+
+                    <div className={styles.grid3} style={{ gap: '12px', marginBottom: '16px' }}>
+                      <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>1-Year 10% APY Compound</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#34d399', marginTop: '2px' }}>{fmtVal(year1Compounding)}</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>+{fmtVal(year1Compounding - totalWealth)} projected yield</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>3-Year 10% APY Compound</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#60a5fa', marginTop: '2px' }}>{fmtVal(year3Compounding)}</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>+{fmtVal(year3Compounding - totalWealth)} projected yield</div>
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>5-Year 10% APY Compound</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#c084fc', marginTop: '2px' }}>{fmtVal(year5Compounding)}</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '2px' }}>+{fmtVal(year5Gain)} projected yield</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 🎛️ MODULE 3: INTERACTIVE FINANCIAL FREEDOM SCENARIO SANDBOX */}
+              {months.length > 0 && (() => {
+                const baseInc = globalTotalIncome / Math.max(1, months.length);
+                const baseExp = globalTotalSpent / Math.max(1, months.length);
+
+                const simulatedInc = baseInc + sandboxIncAdjust;
+                const simulatedExp = baseExp * (1 - sandboxExpCut / 100);
+                const simulatedMonthlySavings = Math.max(0, simulatedInc - simulatedExp);
+                const simulatedSavingsRate = simulatedInc > 0 ? ((simulatedMonthlySavings / simulatedInc) * 100).toFixed(1) : '0';
+
+                const latestMonth = months[months.length - 1];
+                const baseNetBal = getNetBalance(latestMonth);
+                const postPurchaseBal = Math.max(0, baseNetBal - sandboxMajorPurchase);
+                const simulatedYear1Net = postPurchaseBal + (simulatedMonthlySavings * 12);
+                const simulatedYear3Net = postPurchaseBal + (simulatedMonthlySavings * 36);
+
+                return (
+                  <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(15, 23, 42, 0.7) 100%)', border: '1px solid rgba(129, 140, 248, 0.3)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                      <div>
+                        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          Interactive Decision Simulator
+                        </span>
+                        <h3 style={{ margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Zap size={22} style={{ color: 'var(--accent-gold)' }} /> Interactive Wealth Projections Sandbox
+                        </h3>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSandboxIncAdjust(0);
+                          setSandboxExpCut(0);
+                          setSandboxMajorPurchase(0);
+                        }}
+                        style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 700 }}
+                      >
+                        Reset Controls
+                      </button>
+                    </div>
+
+                    {/* Controls Grid */}
+                    <div className={styles.grid3} style={{ gap: '16px', marginBottom: '20px' }}>
+                      <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span>Side-Gig / Income Boost:</span>
+                          <span style={{ color: '#34d399' }}>+{fmtVal(sandboxIncAdjust)}/mo</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="50000"
+                          step="1000"
+                          value={sandboxIncAdjust}
+                          onChange={(e) => setSandboxIncAdjust(Number(e.target.value))}
+                          style={{ width: '100%', accentColor: '#34d399', cursor: 'pointer' }}
+                        />
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span>Expense Cut Target:</span>
+                          <span style={{ color: '#fbbf24' }}>-{sandboxExpCut}%</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="50"
+                          step="5"
+                          value={sandboxExpCut}
+                          onChange={(e) => setSandboxExpCut(Number(e.target.value))}
+                          style={{ width: '100%', accentColor: '#fbbf24', cursor: 'pointer' }}
+                        />
+                      </div>
+
+                      <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                          <span>Major Asset Outflow:</span>
+                          <span style={{ color: '#f87171' }}>{fmtVal(sandboxMajorPurchase)}</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="150000"
+                          step="5000"
+                          value={sandboxMajorPurchase}
+                          onChange={(e) => setSandboxMajorPurchase(Number(e.target.value))}
+                          style={{ width: '100%', accentColor: '#f87171', cursor: 'pointer' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Simulated Results Banner */}
+                    <div style={{ background: 'rgba(7, 8, 15, 0.7)', borderRadius: '10px', padding: '16px', border: '1px solid rgba(129, 140, 248, 0.2)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+                      <div>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Simulated Monthly Savings</span>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#34d399', marginTop: '2px' }}>{fmtVal(simulatedMonthlySavings)}</div>
+                        <div style={{ fontSize: '0.68rem', color: '#34d399', marginTop: '2px' }}>{simulatedSavingsRate}% Rate</div>
+                      </div>
+
+                      <div>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Simulated 1-Year Liquidity</span>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#60a5fa', marginTop: '2px' }}>{fmtVal(simulatedYear1Net)}</div>
+                      </div>
+
+                      <div>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Simulated 3-Year Liquidity</span>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#c084fc', marginTop: '2px' }}>{fmtVal(simulatedYear3Net)}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
