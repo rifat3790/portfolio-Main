@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import { MapPin, Mail, Phone, Clock, ChevronRight, ChevronUp } from 'lucide-react';
@@ -52,7 +52,7 @@ export default function Footer({ siteSettings }: FooterProps) {
               </div>
             </div>
             <p className={styles.footerBioText}>
-              Building bespoke, high-performance web applications and high-converting Shopify stores that drive real business results.
+              Refayet Hossen (Rifayet Hossen) — Premier Shopify Developer & Full Stack Web Engineer building high-converting Shopify stores, custom e-commerce websites, and new website builds.
             </p>
 
             <div className={styles.footerSocialRow}>
@@ -120,7 +120,7 @@ export default function Footer({ siteSettings }: FooterProps) {
               <h4 className={styles.footerColTitle}>Services</h4>
             </div>
             <div className={styles.footerLinksList}>
-              {['Shopify Development', 'Full Stack Development', 'UI/UX Design', 'SEO Optimization', 'Performance Optimization', 'API Integration', 'Maintenance & Support', 'Consulting'].map(svc => (
+              {['Shopify Store Development', 'E-Commerce Websites', 'New Website Build', 'Full Stack Development', 'Core Web Vitals & SEO', 'Shopify Liquid Themes', 'API Integration', 'Maintenance & Support'].map(svc => (
                 <a key={svc} href="#services" className={styles.footerLinkItem}>{svc}</a>
               ))}
             </div>
@@ -133,14 +133,13 @@ export default function Footer({ siteSettings }: FooterProps) {
               <h4 className={styles.footerColTitle}>Resources</h4>
             </div>
             <div className={styles.footerLinksList}>
-              <a href="#projects" className={styles.footerLinkItem}>Portfolio</a>
-              <a href="#projects" className={styles.footerLinkItem}>Case Studies</a>
-              <a href="#blogs" className={styles.footerLinkItem}>Blog & Insights</a>
-              <a href="#skills" className={styles.footerLinkItem}>Tools & Tech</a>
-              <a href="#about" className={styles.footerLinkItem}>FAQ</a>
-              <a href="#about" className={styles.footerLinkItem}>Documentation</a>
-              <a href="#contact" className={styles.footerLinkItem}>Support</a>
-              <a href="#contact" className={styles.footerLinkItem}>Hire Me</a>
+              <a href="#projects" className={styles.footerLinkItem}>Featured Projects</a>
+              <a href="#services" className={styles.footerLinkItem}>E-Commerce Solutions</a>
+              <a href="#blogs" className={styles.footerLinkItem}>Blog & Tutorials</a>
+              <a href="#skills" className={styles.footerLinkItem}>Tech Stack</a>
+              <a href="#faq" className={styles.footerLinkItem}>SEO & FAQ</a>
+              <a href="#about" className={styles.footerLinkItem}>About Refayet</a>
+              <a href="#contact" className={styles.footerLinkItem}>Hire Shopify Developer</a>
             </div>
           </div>
 

@@ -193,6 +193,13 @@ export interface ISetting {
   aboutValue3Desc?: string;
   aboutValue4Title?: string;
   aboutValue4Desc?: string;
+  // SEO & Webmaster Settings
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
+  canonicalUrl?: string;
+  googleSiteVerification?: string;
+  ogImageUrl?: string;
 }
 
 export interface HomeClientProps {

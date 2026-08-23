@@ -107,6 +107,13 @@ export interface ISetting extends Document {
   aboutValue3Desc?: string;
   aboutValue4Title?: string;
   aboutValue4Desc?: string;
+  // SEO & Webmaster Settings
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
+  canonicalUrl?: string;
+  googleSiteVerification?: string;
+  ogImageUrl?: string;
 }
 
 const NavbarLinkSchema = new Schema<INavbarLink>({
@@ -224,6 +231,13 @@ const SettingSchema = new Schema<ISetting>({
   aboutValue3Desc: { type: String, default: 'Future-proof modular structures tailored for high-scale enterprise operations.' },
   aboutValue4Title: { type: String, default: 'Client-Centric' },
   aboutValue4Desc: { type: String, default: 'Partnering closely to solve real-world problems and drive conversion rates.' },
+  // SEO & Webmaster Configuration
+  seoTitle: { type: String, default: 'Refayet Hossen (Rifayet Hossen) | Best Shopify Developer & Full Stack Web Developer' },
+  seoDescription: { type: String, default: 'Refayet Hossen (also known as Rifayet Hossen) is a premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist building high-converting Shopify stores, custom e-commerce websites, and modern web applications.' },
+  seoKeywords: { type: String, default: 'Rifayet Hossen, Refayet Hossen, Best shopify developer, Shopify developer, Shopify expert, Web developer, Full stack developer, e-commerce website, ecommerce website, e-commerce store, ecommerce store, New website build, developer, engineer, Shopify liquid developer, Next.js developer, React developer, MERN stack developer' },
+  canonicalUrl: { type: String, default: 'https://rifat-portfolio-brown.vercel.app' },
+  googleSiteVerification: { type: String, default: '' },
+  ogImageUrl: { type: String, default: '' },
 }, { timestamps: true });
 
 if (mongoose.models.Setting) {

@@ -15,6 +15,7 @@ import Experience from './sections/Experience/Experience';
 import Skills from './sections/Skills/Skills';
 import Testimonials from './sections/Testimonials/Testimonials';
 import Blogs from './sections/Blogs/Blogs';
+import FAQ from './sections/FAQ/FAQ';
 import Contact from './sections/Contact/Contact';
 import Footer from './sections/Footer/Footer';
 
@@ -132,6 +133,9 @@ export default function HomeClient({
         siteSettings={siteSettings}
         initialBlogs={initialBlogs}
       />
+
+      {/* Frequently Asked Questions (SEO & SERP Rich Snippet Engine) */}
+      <FAQ siteSettings={siteSettings} />
 
       {/* Contact */}
       <Contact siteSettings={siteSettings} />

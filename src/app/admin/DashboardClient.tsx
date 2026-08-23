@@ -39,7 +39,8 @@ import {
   Download,
   Eye,
   Menu,
-  ArrowLeft
+  ArrowLeft,
+  Search
 } from 'lucide-react';
 import styles from './admin.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -89,7 +90,7 @@ const compressImage = (base64Str: string, maxWidth: number, maxHeight: number, q
   });
 };
 
-type Tab = 'chat' | 'messages' | 'projects' | 'skills' | 'testimonials' | 'blogs' | 'services' | 'experiences' | 'newsletter' | 'hero-settings' | 'about-settings' | 'brand-settings' | 'wallet' | 'team-tracker';
+type Tab = 'chat' | 'messages' | 'projects' | 'skills' | 'testimonials' | 'blogs' | 'services' | 'experiences' | 'newsletter' | 'hero-settings' | 'about-settings' | 'brand-settings' | 'seo-settings' | 'wallet' | 'team-tracker';
 
 export default function DashboardClient() {
   const [activeTab, setActiveTab] = useState<Tab>('chat');
@@ -250,6 +251,14 @@ export default function DashboardClient() {
             </button>
 
             <button
+              onClick={() => selectTab('seo-settings')}
+              className={`${styles.navItem} ${activeTab === 'seo-settings' ? styles.navItemActive : ''}`}
+            >
+              <Search size={18} style={{ color: '#818cf8' }} />
+              <span style={{ color: activeTab === 'seo-settings' ? 'inherit' : '#818cf8', fontWeight: 600 }}>Google SEO & Search</span>
+            </button>
+
+            <button
               onClick={() => selectTab('newsletter')}
               className={`${styles.navItem} ${activeTab === 'newsletter' ? styles.navItemActive : ''}`}
             >
@@ -299,6 +308,7 @@ export default function DashboardClient() {
           {activeTab === 'hero-settings' && <HeroSettingsManager showToast={showToast} />}
           {activeTab === 'about-settings' && <AboutSettingsManager showToast={showToast} />}
           {activeTab === 'brand-settings' && <BrandSettingsManager showToast={showToast} />}
+          {activeTab === 'seo-settings' && <SeoSettingsManager showToast={showToast} />}
           {activeTab === 'wallet' && <WalletManager showToast={showToast} />}
           {activeTab === 'team-tracker' && <TeamTrackerManager showToast={showToast} />}
         </main>
@@ -4358,6 +4368,235 @@ function NewsletterManager({ showToast }: { showToast: (message: string, type?: 
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function SeoSettingsManager({ showToast }: { showToast: (message: string, type?: 'success' | 'error' | 'info') => void }) {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [seoTitle, setSeoTitle] = useState('');
+  const [seoDescription, setSeoDescription] = useState('');
+  const [seoKeywords, setSeoKeywords] = useState('');
+  const [canonicalUrl, setCanonicalUrl] = useState('https://rifat-portfolio-brown.vercel.app');
+  const [googleSiteVerification, setGoogleSiteVerification] = useState('');
+  const [ogImageUrl, setOgImageUrl] = useState('');
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/admin/settings');
+      if (res.ok) {
+        const data = await res.json();
+        setSeoTitle(data.seoTitle || 'Refayet Hossen (Rifayet Hossen) | Best Shopify Developer & Full Stack Web Developer');
+        setSeoDescription(data.seoDescription || 'Refayet Hossen (also known as Rifayet Hossen) is a premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist building high-converting Shopify stores, custom e-commerce websites, and modern web applications.');
+        setSeoKeywords(data.seoKeywords || 'Rifayet Hossen, Refayet Hossen, Best shopify developer, Shopify developer, Shopify expert, Web developer, Full stack developer, e-commerce website, ecommerce website, e-commerce store, ecommerce store, New website build, developer, engineer, Shopify liquid developer, Next.js developer, React developer, MERN stack developer');
+        setCanonicalUrl(data.canonicalUrl || 'https://rifat-portfolio-brown.vercel.app');
+        setGoogleSiteVerification(data.googleSiteVerification || '');
+        setOgImageUrl(data.ogImageUrl || '');
+      }
+    } catch (err) {
+      console.error('Error loading SEO settings:', err);
+      showToast('Failed to load SEO settings.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = {
+        seoTitle,
+        seoDescription,
+        seoKeywords,
+        canonicalUrl: canonicalUrl.replace(/\/$/, ''),
+        googleSiteVerification,
+        ogImageUrl,
+      };
+
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        showToast('Google SEO settings saved & cache invalidated successfully!', 'success');
+      } else {
+        showToast('Failed to save SEO settings.', 'error');
+      }
+    } catch (err) {
+      console.error('Error saving SEO settings:', err);
+      showToast('Network error saving SEO settings.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div className={styles.emptyState}><h3>Connecting SEO & Google Search Console Settings...</h3></div>;
+  }
+
+  const cleanUrl = (canonicalUrl || 'https://rifat-portfolio-brown.vercel.app').replace(/\/$/, '');
+
+  return (
+    <div>
+      <div className={styles.contentHeader}>
+        <div>
+          <h1 className={styles.contentTitle}>Google SEO & Search Console Manager</h1>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginTop: '4px' }}>
+            Configure meta tags, target keyword lists, canonical URLs, and Google Search Console tokens to rank on Google&apos;s 1st page.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <a
+            href={`${cleanUrl}/sitemap.xml`}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-premium btn-premium-outline"
+            style={{ fontSize: '0.82rem', padding: '10px 18px', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <ExternalLink size={14} /> View sitemap.xml
+          </a>
+          <a
+            href={`${cleanUrl}/robots.txt`}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-premium btn-premium-outline"
+            style={{ fontSize: '0.82rem', padding: '10px 18px', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <ExternalLink size={14} /> View robots.txt
+          </a>
+        </div>
+      </div>
+
+      <div style={{ background: '#171923', border: '1px solid rgba(129, 140, 248, 0.25)', borderRadius: '12px', padding: '20px 24px', marginBottom: '28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#4285f4' }} />
+          <span style={{ fontSize: '0.78rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>
+            Google Search Snippet Preview (SERP Simulation)
+          </span>
+        </div>
+        <div style={{ maxWidth: '640px', fontFamily: 'Arial, sans-serif' }}>
+          <div style={{ fontSize: '0.82rem', color: '#bdc1c6', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <img src="/icon.png" alt="favicon" style={{ width: '16px', height: '16px', borderRadius: '50%' }} />
+            <span>{cleanUrl}</span>
+          </div>
+          <div style={{ fontSize: '1.25rem', color: '#8ab4f8', fontWeight: 400, cursor: 'pointer', lineHeight: 1.3, marginBottom: '4px' }}>
+            {seoTitle || 'Refayet Hossen (Rifayet Hossen) | Best Shopify Developer & Full Stack Web Developer'}
+          </div>
+          <div style={{ fontSize: '0.88rem', color: '#bdc1c6', lineHeight: 1.45 }}>
+            {seoDescription || 'Refayet Hossen (also known as Rifayet Hossen) is a premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist building high-converting Shopify stores, custom e-commerce websites, and modern web applications.'}
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className={styles.formGrid} style={{ background: 'var(--bg-secondary)', padding: '32px', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>
+          CORE META TAGS & KEYWORDS
+        </h3>
+
+        <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+          <label className={styles.label}>
+            Google SEO Meta Title (50 - 60 chars recommended)
+          </label>
+          <input
+            type="text"
+            value={seoTitle}
+            onChange={(e) => setSeoTitle(e.target.value)}
+            className={styles.input}
+            placeholder="Refayet Hossen (Rifayet Hossen) | Best Shopify Developer & Full Stack Web Developer"
+            required
+          />
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
+            Character Count: {seoTitle.length} chars
+          </span>
+        </div>
+
+        <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+          <label className={styles.label}>
+            Google Meta Description (140 - 160 chars recommended)
+          </label>
+          <textarea
+            value={seoDescription}
+            onChange={(e) => setSeoDescription(e.target.value)}
+            className={styles.textarea}
+            rows={3}
+            placeholder="Refayet Hossen (also known as Rifayet Hossen) is a premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist..."
+            required
+          />
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
+            Character Count: {seoDescription.length} chars
+          </span>
+        </div>
+
+        <div className={styles.formGroup} style={{ gridColumn: 'span 2' }}>
+          <label className={styles.label}>
+            Target SEO Keywords (Comma-separated list)
+          </label>
+          <textarea
+            value={seoKeywords}
+            onChange={(e) => setSeoKeywords(e.target.value)}
+            className={styles.textarea}
+            rows={3}
+            placeholder="Rifayet Hossen, Refayet Hossen, Best shopify developer, Shopify developer, Shopify expert, Web developer, Full stack developer, e-commerce website, ecommerce website, e-commerce store, ecommerce store, New website build, developer, engineer"
+            required
+          />
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
+            Used for Google crawler semantic weighting & keyword relevance ranking.
+          </span>
+        </div>
+
+        <h3 className="gold-gradient-text" style={{ gridColumn: 'span 2', fontSize: '1.25rem', fontFamily: 'var(--font-display)', letterSpacing: '0.05em', marginTop: '16px', marginBottom: '8px', borderBottom: '1px solid var(--glass-border-light)', paddingBottom: '8px' }}>
+          CANONICAL DOMAIN & WEBMASTER VERIFICATION
+        </h3>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Canonical Domain URL (Live Production URL)</label>
+          <input
+            type="url"
+            value={canonicalUrl}
+            onChange={(e) => setCanonicalUrl(e.target.value)}
+            className={styles.input}
+            placeholder="https://rifat-portfolio-brown.vercel.app"
+            required
+          />
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
+            Used in rel=&quot;canonical&quot;, sitemap.xml, and schema URLs.
+          </span>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Google Search Console Verification Token</label>
+          <input
+            type="text"
+            value={googleSiteVerification}
+            onChange={(e) => setGoogleSiteVerification(e.target.value)}
+            className={styles.input}
+            placeholder="e.g. google-site-verification=XXXXXXXXXXXXXXXXXXXXX or token string"
+          />
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>
+            Enter your Google Search Console verification code to verify site ownership immediately.
+          </span>
+        </div>
+
+        <div style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn-premium btn-premium-gold"
+            style={{ padding: '14px 36px', fontSize: '0.92rem', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            {saving ? 'Saving SEO Config...' : 'Save & Publish SEO Metadata'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

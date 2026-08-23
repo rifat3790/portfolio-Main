@@ -40,7 +40,7 @@ export default function About({ siteSettings }: AboutProps) {
             {/* Asymmetrical Arched Frame */}
             <div className={styles.aboutPortraitArchedFrame}>
               {siteSettings?.aboutImage ? (
-                <img src={siteSettings.aboutImage} alt="Biography portrait" loading="lazy" decoding="async" />
+                <img src={siteSettings.aboutImage} alt="Refayet Hossen (Rifayet Hossen) - Best Shopify Developer & Full Stack Architect" loading="lazy" decoding="async" />
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-tertiary)' }}>
                   <User size={80} color="var(--text-muted)" />

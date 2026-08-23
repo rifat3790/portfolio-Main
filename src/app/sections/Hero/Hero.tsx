@@ -133,7 +133,7 @@ export default function Hero({ siteSettings }: HeroProps) {
               {siteSettings?.logoImage ? (
                 <img
                   src={siteSettings.logoImage}
-                  alt="Refayet Hossen Portrait"
+                  alt="Refayet Hossen (Rifayet Hossen) - Best Shopify Developer & Full Stack Web Engineer"
                   loading="eager"
                   decoding="async"
                   fetchPriority="high"
