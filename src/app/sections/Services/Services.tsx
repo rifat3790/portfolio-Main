@@ -214,18 +214,39 @@ export default function Services({ siteSettings, initialServices }: ServicesProp
         </div>
 
         {/* Banner Callout Section */}
-        <div className={styles.servicesCTASection}>
-          <div className={styles.servicesCTAText}>
-            <span className={styles.servicesCTASub}>LET'S WORK TOGETHER</span>
-            <h3 className={styles.servicesCTATitle}>Have a Project in Mind?</h3>
-            <p className={styles.servicesCTADesc}>Let's build something amazing together.</p>
+        <div
+          style={{
+            marginTop: '80px',
+            background: 'linear-gradient(135deg, rgba(15, 18, 35, 0.85) 0%, rgba(8, 10, 22, 0.95) 100%)',
+            border: '1px solid rgba(129, 140, 248, 0.22)',
+            borderRadius: '24px',
+            padding: '44px 48px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '32px',
+            flexWrap: 'wrap',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          <div style={{ flex: '1 1 300px' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#818cf8', letterSpacing: '0.1em', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+              LET'S WORK TOGETHER
+            </span>
+            <h3 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.4rem)', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', marginBottom: '8px' }}>
+              Have a Project in Mind?
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '1rem', margin: 0 }}>
+              Let's build something extraordinary and impactful together.
+            </p>
           </div>
-          <div className={styles.servicesCTAActions}>
-            <a href="#contact" className="btn-premium btn-premium-gold" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              Hire Me Now <Rocket size={14} />
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <a href="#contact" className="btn-premium btn-premium-gold">
+              <span>Hire Me Now</span>
+              <Rocket size={16} />
             </a>
-            <a href="#projects" className="btn-premium btn-premium-outline" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              View My Work
+            <a href="#projects" className="btn-premium btn-premium-outline">
+              <span>View My Work</span>
             </a>
           </div>
         </div>
