@@ -140,11 +140,13 @@ export async function generateMetadata(): Promise<Metadata> {
         'max-snippet': -1,
       },
     },
-    verification: googleVerification
-      ? {
-          google: googleVerification,
-        }
-      : undefined,
+    verification: {
+      google: [
+        'SS7ibWZJLzqWLymSqKjIvm_BLRj6aJ_dv9FNqugK-P4',
+        'JnoN5vpptN87OgIZvo0pMIZdXebRaXO8rtE1a4wguic',
+        ...(googleVerification ? [googleVerification] : []),
+      ],
+    },
     category: 'technology',
   };
 }
@@ -164,6 +166,8 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} ${syne.variable} ${satisfy.variable}`} suppressHydrationWarning>
       <head>
+        <meta name="google-site-verification" content="SS7ibWZJLzqWLymSqKjIvm_BLRj6aJ_dv9FNqugK-P4" />
+        <meta name="google-site-verification" content="JnoN5vpptN87OgIZvo0pMIZdXebRaXO8rtE1a4wguic" />
         <JsonLd siteSettings={settings} siteUrl="https://rifat-portfolio-brown.vercel.app" />
       </head>
       <body suppressHydrationWarning>

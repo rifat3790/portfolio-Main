@@ -236,7 +236,7 @@ const SettingSchema = new Schema<ISetting>({
   seoDescription: { type: String, default: 'Refayet Hossen (also known as Rifayet Hossen) is a premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist building high-converting Shopify stores, custom e-commerce websites, and modern web applications.' },
   seoKeywords: { type: String, default: 'Rifayet Hossen, Refayet Hossen, Best shopify developer, Shopify developer, Shopify expert, Web developer, Full stack developer, e-commerce website, ecommerce website, e-commerce store, ecommerce store, New website build, developer, engineer, Shopify liquid developer, Next.js developer, React developer, MERN stack developer' },
   canonicalUrl: { type: String, default: 'https://rifat-portfolio-brown.vercel.app' },
-  googleSiteVerification: { type: String, default: '' },
+  googleSiteVerification: { type: String, default: 'SS7ibWZJLzqWLymSqKjIvm_BLRj6aJ_dv9FNqugK-P4' },
   ogImageUrl: { type: String, default: '' },
 }, { timestamps: true });
 
