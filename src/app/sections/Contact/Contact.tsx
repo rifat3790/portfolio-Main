@@ -150,7 +150,12 @@ export default function Contact({ siteSettings }: ContactProps) {
               </div>
             </div>
 
-            <button type="submit" disabled={contactStatus === 'loading'} className={styles.contactFormSubmitBtn}>
+            <button
+              type="submit"
+              disabled={contactStatus === 'loading'}
+              className="btn-premium btn-premium-gold"
+              style={{ width: '100%', padding: '18px 36px', fontSize: '1rem', marginTop: '12px' }}
+            >
               {contactStatus === 'loading' ? <>Sending Message...</> : <>Send Message <ArrowRight size={16} /></>}
             </button>
 

@@ -162,16 +162,33 @@ export default function Projects({ siteSettings, initialProjects, onSelectProjec
         )}
 
         {/* Bottom Collaboration Banner */}
-        <div className={styles.projectBottomBanner}>
-          <div className={styles.projectBottomLeft}>
-            <div className={styles.projectBottomIcon}><Sparkles size={24} /></div>
+        <div
+          style={{
+            marginTop: '70px',
+            background: 'linear-gradient(135deg, rgba(15, 18, 35, 0.85) 0%, rgba(8, 10, 22, 0.95) 100%)',
+            border: '1px solid rgba(129, 140, 248, 0.22)',
+            borderRadius: '24px',
+            padding: '36px 44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '24px',
+            flexWrap: 'wrap',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(129, 140, 248, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8', flexShrink: 0 }}>
+              <Sparkles size={24} />
+            </div>
             <div>
-              <h4 className={styles.projectBottomTitle}>Have a project in mind?</h4>
-              <p className={styles.projectBottomDesc}>Let's collaborate and turn your ideas into real solutions.</p>
+              <h4 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#ffffff', marginBottom: '4px' }}>Have a project in mind?</h4>
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem', margin: 0 }}>Let's collaborate and turn your ideas into real solutions.</p>
             </div>
           </div>
-          <a href="#contact" className="btn-premium btn-premium-gold" style={{ padding: '16px 36px', borderRadius: '100px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-            Let's Work Together <ArrowRight size={16} />
+          <a href="#contact" className="btn-premium btn-premium-gold">
+            <span>Let's Work Together</span>
+            <ArrowRight size={16} />
           </a>
         </div>
 

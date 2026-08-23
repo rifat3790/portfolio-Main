@@ -27,6 +27,8 @@
 
 a, button {
   text-decoration: none !important;
+}
+
 html {
   scroll-behavior: smooth;
   text-rendering: optimizeLegibility;
