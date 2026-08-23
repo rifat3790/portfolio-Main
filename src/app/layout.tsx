@@ -166,6 +166,8 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable} ${syne.variable} ${satisfy.variable}`} suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <meta name="google-site-verification" content="SS7ibWZJLzqWLymSqKjIvm_BLRj6aJ_dv9FNqugK-P4" />
         <meta name="google-site-verification" content="JnoN5vpptN87OgIZvo0pMIZdXebRaXO8rtE1a4wguic" />
         <JsonLd siteSettings={settings} siteUrl="https://rifat-portfolio-brown.vercel.app" />

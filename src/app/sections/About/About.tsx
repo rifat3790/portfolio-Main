@@ -154,16 +154,25 @@ export default function About({ siteSettings }: AboutProps) {
             </div>
 
             {/* CV Download / Talk CTA button */}
-            <a
-              href={siteSettings?.aboutCvFile ? siteSettings.aboutCvFile : (siteSettings?.aboutCvUrl || '#')}
-              download={siteSettings?.aboutCvFile ? (siteSettings.aboutCvFileName || 'Md_Refayet_Hossen_CV.pdf') : undefined}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-premium btn-premium-gold"
-              style={{ padding: '16px 36px', fontSize: '0.9rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-            >
-              {siteSettings?.aboutCvText || 'Download CV'} <ArrowRight size={16} />
-            </a>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '8px' }}>
+              <a
+                href={siteSettings?.aboutCvFile ? siteSettings.aboutCvFile : (siteSettings?.aboutCvUrl || '#')}
+                download={siteSettings?.aboutCvFile ? (siteSettings.aboutCvFileName || 'Md_Refayet_Hossen_CV.pdf') : undefined}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-premium btn-premium-gold"
+                style={{ padding: '16px 36px', fontSize: '0.92rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '10px' }}
+              >
+                {siteSettings?.aboutCvText || 'Download CV'} <ArrowRight size={16} />
+              </a>
+              <a
+                href="#contact"
+                className="btn-premium btn-premium-outline"
+                style={{ padding: '16px 32px', fontSize: '0.92rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '10px' }}
+              >
+                Start Collaboration
+              </a>
+            </div>
           </motion.div>
 
         </div>

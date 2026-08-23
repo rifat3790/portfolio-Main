@@ -45,8 +45,22 @@ export default function Hero({ siteSettings }: HeroProps) {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
+            {/* Ultra-Luxury Global Status Pill */}
+            <motion.div
+              className="luxury-glow-badge"
+              style={{ marginBottom: '20px', width: 'fit-content' }}
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e', display: 'inline-block', boxShadow: '0 0 12px #22c55e', position: 'relative' }}>
+                <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', backgroundColor: '#22c55e', animation: 'ping 1.8s infinite', opacity: 0.75 }} />
+              </span>
+              <span>Available for Bespoke Shopify & Web Projects</span>
+            </motion.div>
+
             <div className={styles.heroPremiumTagline}>
-              {siteSettings?.heroTagline || "HI, I'M"}
+              {siteSettings?.heroTagline || "HI, I'M REFAYET HOSSEN"}
               <span style={{ display: 'inline-block', animation: 'wave 2.5s infinite', transformOrigin: '70% 70%' }}>👋</span>
             </div>
 
@@ -59,12 +73,12 @@ export default function Hero({ siteSettings }: HeroProps) {
             </h1>
 
             <p className={styles.heroPremiumDesc}>
-              {siteSettings?.heroSubtitle || 'I build fast, scalable and modern web applications that help businesses grow and make a real impact in the digital world.'}
+              {siteSettings?.heroSubtitle || 'Premier Shopify Developer & Full Stack Web Engineer crafting high-converting e-commerce stores, custom digital architectures, and lightning-fast web applications.'}
             </p>
 
             <div className={styles.heroPremiumButtons}>
-              <a href={siteSettings?.heroBtn1Url || '#contact'} className="btn-premium btn-premium-gold" style={{ padding: '14px 28px', fontSize: '0.9rem', borderRadius: '100px', background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)', border: 'none', gap: 8 }}>
-                {siteSettings?.heroBtn1Text || "Let's Work Together"} <ChevronRight size={16} />
+              <a href={siteSettings?.heroBtn1Url || '#contact'} className="btn-premium btn-premium-gold" style={{ padding: '16px 34px', fontSize: '0.92rem', borderRadius: '100px', gap: 10 }}>
+                {siteSettings?.heroBtn1Text || "Let's Work Together"} <ChevronRight size={18} />
               </a>
               <a
                 href={siteSettings?.aboutCvFile ? siteSettings.aboutCvFile : (siteSettings?.aboutCvUrl || '#')}
@@ -72,30 +86,30 @@ export default function Hero({ siteSettings }: HeroProps) {
                 target="_blank"
                 rel="noreferrer"
                 className="btn-premium btn-premium-outline"
-                style={{ padding: '14px 28px', fontSize: '0.9rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: 10, background: 'var(--glass-bg)', border: '1px solid var(--glass-border-light)', color: 'var(--text-primary)' }}
+                style={{ padding: '16px 32px', fontSize: '0.92rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: 12, color: 'var(--text-primary)' }}
               >
-                <span style={{ color: 'var(--text-primary)' }}>{siteSettings?.aboutCvText || 'Download CV'}</span>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#818cf8', display: 'inline-block', boxShadow: '0 0 10px #818cf8' }} />
+                <span>{siteSettings?.aboutCvText || 'Download CV'}</span>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#818cf8', display: 'inline-block', boxShadow: '0 0 12px #818cf8' }} />
               </a>
             </div>
 
-            {/* Premium Stat Row (directly in Hero below buttons as requested in mockup) */}
-            <div className={styles.aboutStatsRow} style={{ width: '100%', background: 'var(--glass-bg)', border: '1px solid var(--glass-border-light)', borderRadius: '16px', padding: '20px 24px', textAlign: 'left', marginBottom: '32px' }}>
+            {/* Premium Stat Row (directly in Hero below buttons) */}
+            <div className={styles.aboutStatsRow} style={{ width: '100%', background: 'linear-gradient(135deg, rgba(15, 18, 35, 0.75) 0%, rgba(8, 10, 20, 0.85) 100%)', border: '1px solid rgba(129, 140, 248, 0.22)', boxShadow: '0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)', borderRadius: '20px', padding: '22px 28px', textAlign: 'left', marginBottom: '32px' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-primary)' }}>{siteSettings?.stat1Value || '5+'}</span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{siteSettings?.stat1Label || 'Years Experience'}</span>
+                <span style={{ fontSize: '1.65rem', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.02em' }}>{siteSettings?.stat1Value || '5+'}</span>
+                <span style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{siteSettings?.stat1Label || 'Years Experience'}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-primary)' }}>{siteSettings?.stat2Value || '50+'}</span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{siteSettings?.stat2Label || 'Projects Completed'}</span>
+                <span style={{ fontSize: '1.65rem', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.02em' }}>{siteSettings?.stat2Value || '50+'}</span>
+                <span style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{siteSettings?.stat2Label || 'Projects Completed'}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-primary)' }}>{siteSettings?.stat3Value || '20+'}</span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{siteSettings?.stat3Label || 'Happy Clients'}</span>
+                <span style={{ fontSize: '1.65rem', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.02em' }}>{siteSettings?.stat3Value || '20+'}</span>
+                <span style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{siteSettings?.stat3Label || 'Happy Clients'}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-primary)' }}>{siteSettings?.stat4Value || '100%'}</span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{siteSettings?.stat4Label || 'Satisfaction'}</span>
+                <span style={{ fontSize: '1.65rem', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.02em' }}>{siteSettings?.stat4Value || '100%'}</span>
+                <span style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{siteSettings?.stat4Label || 'Satisfaction'}</span>
               </div>
             </div>
           </motion.div>
