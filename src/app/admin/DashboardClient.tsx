@@ -294,23 +294,53 @@ export default function DashboardClient() {
           </button>
         </aside>
 
-        {/* Main Content Area */}
+        {/* Main Content Area: Instant Zero-Latency Persistent Tab Navigation */}
         <main className={styles.mainContent}>
-          {activeTab === 'chat' && <ChatManager showToast={showToast} />}
-          {activeTab === 'messages' && <ContactMessagesManager showToast={showToast} />}
-          {activeTab === 'projects' && <ProjectManager showToast={showToast} />}
-          {activeTab === 'skills' && <SkillManager showToast={showToast} />}
-          {activeTab === 'testimonials' && <TestimonialManager showToast={showToast} />}
-          {activeTab === 'blogs' && <BlogManager showToast={showToast} />}
-          {activeTab === 'services' && <ServiceManager showToast={showToast} />}
-          {activeTab === 'experiences' && <ExperienceManager showToast={showToast} />}
-          {activeTab === 'newsletter' && <NewsletterManager showToast={showToast} />}
-          {activeTab === 'hero-settings' && <HeroSettingsManager showToast={showToast} />}
-          {activeTab === 'about-settings' && <AboutSettingsManager showToast={showToast} />}
-          {activeTab === 'brand-settings' && <BrandSettingsManager showToast={showToast} />}
-          {activeTab === 'seo-settings' && <SeoSettingsManager showToast={showToast} />}
-          {activeTab === 'wallet' && <WalletManager showToast={showToast} />}
-          {activeTab === 'team-tracker' && <TeamTrackerManager showToast={showToast} />}
+          <div style={{ display: activeTab === 'chat' ? 'block' : 'none', height: '100%' }}>
+            <ChatManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'messages' ? 'block' : 'none' }}>
+            <ContactMessagesManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'projects' ? 'block' : 'none' }}>
+            <ProjectManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'skills' ? 'block' : 'none' }}>
+            <SkillManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'testimonials' ? 'block' : 'none' }}>
+            <TestimonialManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'blogs' ? 'block' : 'none' }}>
+            <BlogManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'services' ? 'block' : 'none' }}>
+            <ServiceManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'experiences' ? 'block' : 'none' }}>
+            <ExperienceManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'newsletter' ? 'block' : 'none' }}>
+            <NewsletterManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'hero-settings' ? 'block' : 'none' }}>
+            <HeroSettingsManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'about-settings' ? 'block' : 'none' }}>
+            <AboutSettingsManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'brand-settings' ? 'block' : 'none' }}>
+            <BrandSettingsManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'seo-settings' ? 'block' : 'none' }}>
+            <SeoSettingsManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'wallet' ? 'block' : 'none' }}>
+            <WalletManager showToast={showToast} />
+          </div>
+          <div style={{ display: activeTab === 'team-tracker' ? 'block' : 'none' }}>
+            <TeamTrackerManager showToast={showToast} />
+          </div>
         </main>
       </div>
 

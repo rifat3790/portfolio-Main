@@ -42,11 +42,12 @@ async function dbConnect() {
 
   // Optimized MongoDB Connection Options for high performance and low latency
   const opts = {
-    bufferCommands: true,
-    maxPoolSize: 10,
+    bufferCommands: false,
+    maxPoolSize: 20,
     minPoolSize: 2,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
+    serverSelectionTimeoutMS: 3000,
+    connectTimeoutMS: 5000,
+    socketTimeoutMS: 30000,
   };
 
   cached!.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
