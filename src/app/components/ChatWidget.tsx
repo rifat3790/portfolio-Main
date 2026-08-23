@@ -39,6 +39,7 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
   const [userEmail, setUserEmail] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
   const [messages, setMessages] = useState<IMessage[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
   const [chatInputText, setChatInputText] = useState('');
   const [chatImageInput, setChatImageInput] = useState<string | null>(null);
   const chatMessagesEndRef = useRef<HTMLDivElement>(null);
@@ -84,7 +85,7 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
   // Scroll chat messages to bottom
   useEffect(() => {
     chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isChatOpen]);
+  }, [messages, isTyping, isChatOpen]);
 
   // Register chat session
   const handleRegisterChat = (e: React.FormEvent) => {
@@ -103,6 +104,8 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
   const handleSendChatMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!sessionId || (!chatInputText.trim() && !chatImageInput)) return;
+
+    const isFirstMessage = messages.filter(m => m.sender === 'admin').length === 0;
 
     const messagePayload = {
       sessionId,
@@ -124,6 +127,12 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
     setChatInputText('');
     setChatImageInput(null);
 
+    if (isFirstMessage) {
+      setTimeout(() => {
+        setIsTyping(true);
+      }, 400);
+    }
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -131,10 +140,18 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
         body: JSON.stringify(messagePayload),
       });
       if (res.ok) {
-        fetchChatMessages(sessionId);
+        if (isFirstMessage) {
+          setTimeout(async () => {
+            await fetchChatMessages(sessionId);
+            setIsTyping(false);
+          }, 1200);
+        } else {
+          fetchChatMessages(sessionId);
+        }
       }
     } catch (err) {
       console.error('Failed to send message:', err);
+      setIsTyping(false);
     }
   };
 
@@ -230,6 +247,28 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
                       </div>
                     );
                   })
+                )}
+                {isTyping && (
+                  <div
+                    className={`${styles.chatBubble} ${styles.chatBubbleAdmin}`}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '10px 14px',
+                      background: 'rgba(129, 140, 248, 0.12)',
+                      border: '1px solid rgba(129, 140, 248, 0.25)',
+                      borderRadius: '16px 16px 16px 4px',
+                      maxWidth: '85%',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.78rem', color: '#c7d2fe', marginRight: 4, fontWeight: 500 }}>
+                      Refayet is typing
+                    </span>
+                    <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#818cf8', animation: 'bounce 1s infinite' }} />
+                    <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#818cf8', animation: 'bounce 1s infinite 0.2s' }} />
+                    <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#818cf8', animation: 'bounce 1s infinite 0.4s' }} />
+                  </div>
                 )}
                 <div ref={chatMessagesEndRef} />
               </div>

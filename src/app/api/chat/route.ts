@@ -91,8 +91,23 @@ export async function POST(req: NextRequest) {
         { upsert: true, new: true }
       );
 
-      // Await instant email and whatsapp notification before returning response
-      await sendLiveChatNotificationEmail({
+      // Check if this is the first message in this session or if admin has not replied yet
+      const adminMessageCount = await Message.countDocuments({ sessionId, sender: 'admin' });
+      if (adminMessageCount === 0) {
+        // Professional, luxury instant automated acknowledgment
+        const autoReplyGreeting = userName ? `Hello ${userName.split(' ')[0]}!` : 'Hello!';
+        const autoReplyText = `${autoReplyGreeting} Thank you for reaching out. I have received your message and will review it and get back to you shortly. In the meantime, please feel free to share any specific details about your project, timeline, or any questions you might have!`;
+
+        await Message.create({
+          sessionId,
+          sender: 'admin',
+          text: autoReplyText,
+          createdAt: new Date(Date.now() + 500),
+        });
+      }
+
+      // Send instant notification alert in background
+      sendLiveChatNotificationEmail({
         sessionId,
         senderName: userName || 'Website Visitor',
         senderEmail: userEmail || 'Not provided',
