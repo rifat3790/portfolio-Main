@@ -4,6 +4,8 @@ import { Message, ChatSession } from '@/models/Chat';
 import { isAuthenticated } from '@/lib/auth';
 import { sendLiveChatNotificationEmail } from '@/lib/emailService';
 
+export const dynamic = 'force-dynamic';
+
 // GET messages for a session, or GET all chat sessions (if admin)
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -21,17 +23,53 @@ export async function GET(req: NextRequest) {
 
     // 2. If requesting messages for a specific session
     if (sessionId) {
-      // If admin accesses it, clear unread count for this session
+      const now = new Date();
+
       if (isAdminRequest) {
+        // Admin viewing: Mark all user messages as seen
+        await Message.updateMany(
+          { sessionId, sender: 'user', seen: false },
+          { $set: { seen: true, seenAt: now } }
+        );
         await ChatSession.findOneAndUpdate(
           { sessionId },
-          { unreadCount: 0 },
+          { unreadCount: 0, lastSeenByAdmin: now },
+          { new: true }
+        );
+      } else {
+        // Visitor viewing: Mark all admin messages as seen
+        await Message.updateMany(
+          { sessionId, sender: 'admin', seen: false },
+          { $set: { seen: true, seenAt: now } }
+        );
+        await ChatSession.findOneAndUpdate(
+          { sessionId },
+          { lastSeenByUser: now },
           { new: true }
         );
       }
 
-      const messages = await Message.find({ sessionId }).sort({ createdAt: 1 });
-      return NextResponse.json(messages);
+      const [messages, session] = await Promise.all([
+        Message.find({ sessionId }).sort({ createdAt: 1 }),
+        ChatSession.findOne({ sessionId }),
+      ]);
+
+      const isAdminTyping = session?.adminTypingUntil ? new Date(session.adminTypingUntil).getTime() > Date.now() : false;
+      const isUserTyping = session?.userTypingUntil ? new Date(session.userTypingUntil).getTime() > Date.now() : false;
+
+      return NextResponse.json({
+        messages,
+        session: session ? {
+          sessionId: session.sessionId,
+          userName: session.userName,
+          userEmail: session.userEmail,
+          unreadCount: session.unreadCount,
+          isAdminTyping,
+          isUserTyping,
+          lastSeenByUser: session.lastSeenByUser,
+          lastSeenByAdmin: session.lastSeenByAdmin,
+        } : null
+      });
     }
 
     return NextResponse.json({ error: 'Session ID is required or unauthorized request' }, { status: 400 });
@@ -41,24 +79,52 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST a new message (accessible by user or admin)
+// POST a new message or broadcast typing status
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
-    const { sessionId, sender, text, image, userName, userEmail } = data;
+    const { action, sessionId, sender, text, image, userName, userEmail } = data;
 
-    if (!sessionId || !sender) {
-      return NextResponse.json({ error: 'Session ID and Sender are required' }, { status: 400 });
+    if (!sessionId) {
+      return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
     }
 
+    await dbConnect();
     const isAdminRequest = isAuthenticated(req);
+
+    // Handle typing heartbeat action
+    if (action === 'typing') {
+      const typingExpiry = new Date(Date.now() + 3500);
+      if (sender === 'admin') {
+        if (!isAdminRequest) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        await ChatSession.findOneAndUpdate(
+          { sessionId },
+          { adminTypingUntil: typingExpiry },
+          { upsert: true }
+        );
+      } else {
+        await ChatSession.findOneAndUpdate(
+          { sessionId },
+          { userTypingUntil: typingExpiry },
+          { upsert: true }
+        );
+      }
+      return NextResponse.json({ success: true });
+    }
+
+    if (!sender) {
+      return NextResponse.json({ error: 'Sender is required' }, { status: 400 });
+    }
 
     // Enforce that only authenticated admins can send messages as 'admin'
     if (sender === 'admin' && !isAdminRequest) {
       return NextResponse.json({ error: 'Unauthorized to send as Admin' }, { status: 401 });
     }
 
-    await dbConnect();
+    // Clear typing indicator when message is submitted
+    const typingClear = sender === 'admin' ? { adminTypingUntil: new Date(0) } : { userTypingUntil: new Date(0) };
 
     // Save message to database
     const newMessage = await Message.create({
@@ -66,10 +132,12 @@ export async function POST(req: NextRequest) {
       sender,
       text: text || '',
       image: image || null,
+      seen: false,
     });
 
     // Update the ChatSession document
     const updateObj: Record<string, any> = {
+      ...typingClear,
       updatedAt: new Date(),
     };
 
@@ -80,7 +148,7 @@ export async function POST(req: NextRequest) {
       updateObj.userEmail = userEmail;
     }
 
-    // If user sent it, increment admin's unreadCount and await real-time email & whatsapp notification for Vercel
+    // If user sent it, increment admin's unreadCount and await real-time email notification
     if (sender === 'user') {
       await ChatSession.findOneAndUpdate(
         { sessionId },
@@ -102,6 +170,7 @@ export async function POST(req: NextRequest) {
           sessionId,
           sender: 'admin',
           text: autoReplyText,
+          seen: false,
           createdAt: new Date(Date.now() + 500),
         });
       }

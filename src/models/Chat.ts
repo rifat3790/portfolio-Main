@@ -6,6 +6,8 @@ export interface IMessage extends Document {
   sender: 'user' | 'admin';
   text: string;
   image?: string; // Base64 string for images
+  seen: boolean;
+  seenAt?: Date;
   createdAt: Date;
 }
 
@@ -15,6 +17,10 @@ export interface IChatSession extends Document {
   userName: string;
   userEmail?: string;
   unreadCount: number;
+  userTypingUntil?: Date;
+  adminTypingUntil?: Date;
+  lastSeenByUser?: Date;
+  lastSeenByAdmin?: Date;
   updatedAt: Date;
 }
 
@@ -24,6 +30,8 @@ const MessageSchema: Schema = new Schema(
     sender: { type: String, enum: ['user', 'admin'], required: true },
     text: { type: String, default: '' },
     image: { type: String }, // Base64 image
+    seen: { type: Boolean, default: false },
+    seenAt: { type: Date },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );
@@ -34,6 +42,10 @@ const ChatSessionSchema: Schema = new Schema(
     userName: { type: String, required: true },
     userEmail: { type: String },
     unreadCount: { type: Number, default: 0 },
+    userTypingUntil: { type: Date },
+    adminTypingUntil: { type: Date },
+    lastSeenByUser: { type: Date },
+    lastSeenByAdmin: { type: Date },
   },
   { timestamps: true }
 );

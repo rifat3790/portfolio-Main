@@ -402,6 +402,8 @@ interface IMessage {
   sender: 'user' | 'admin';
   text: string;
   image?: string;
+  seen?: boolean;
+  seenAt?: string;
   createdAt: string;
 }
 
@@ -412,8 +414,22 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
   const [inputText, setInputText] = useState('');
   const [imageInput, setImageInput] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isUserTyping, setIsUserTyping] = useState(false);
   const messageEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const adminTypingSentRef = useRef<number>(0);
+  const broadcastAdminTyping = () => {
+    const now = Date.now();
+    if (now - adminTypingSentRef.current > 2000 && selectedSession) {
+      adminTypingSentRef.current = now;
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'typing', sessionId: selectedSession.sessionId, sender: 'admin' }),
+      }).catch(() => {});
+    }
+  };
 
   // Fetch all chat sessions
   const fetchSessions = async (showLoading = false) => {
@@ -437,7 +453,14 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
       const res = await fetch(`/api/admin/chat?sessionId=${sessId}`);
       if (res.ok) {
         const data = await res.json();
-        setMessages(data);
+        if (Array.isArray(data)) {
+          setMessages(data);
+        } else if (data && data.messages) {
+          setMessages(data.messages);
+          if (data.session) {
+            setIsUserTyping(Boolean(data.session.isUserTyping));
+          }
+        }
       }
     } catch (err) {
       console.error('Error fetching messages:', err);
@@ -452,7 +475,7 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
       if (selectedSession) {
         fetchMessages(selectedSession.sessionId);
       }
-    }, 4000);
+    }, 2000);
     return () => clearInterval(interval);
   }, [selectedSession?.sessionId]);
 
@@ -626,13 +649,41 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
                           />
                         )}
                         {m.text && <p className={styles.msgText}>{m.text}</p>}
-                        <span className={`${styles.msgTime} ${isAdmin ? styles.msgTimeAdmin : styles.msgTimeUser}`}>
-                          {timeStr}
-                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: isAdmin ? 'flex-end' : 'flex-start', gap: '4px', marginTop: '4px', fontSize: '0.72rem', color: isAdmin ? 'rgba(255, 255, 255, 0.7)' : '#94a3b8' }}>
+                          <span>{timeStr}</span>
+                          {isAdmin && (
+                            <span style={{ marginLeft: '4px', fontWeight: 600, color: m.seen ? '#34d399' : 'rgba(255,255,255,0.6)' }}>
+                              {m.seen ? '✓✓ Seen' : '✓ Delivered'}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
+                {isUserTyping && (
+                  <div className={`${styles.msgRow} ${styles.msgRowUser}`}>
+                    <div
+                      className={`${styles.msgBubble} ${styles.msgBubbleUser}`}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '10px 14px',
+                        background: 'rgba(129, 140, 248, 0.12)',
+                        border: '1px solid rgba(129, 140, 248, 0.25)',
+                        borderRadius: '16px 16px 16px 4px',
+                      }}
+                    >
+                      <span style={{ fontSize: '0.8rem', color: '#c7d2fe', fontWeight: 500 }}>
+                        {selectedSession.userName || 'User'} is typing
+                      </span>
+                      <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#818cf8', animation: 'bounce 1s infinite' }} />
+                      <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#818cf8', animation: 'bounce 1s infinite 0.2s' }} />
+                      <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#818cf8', animation: 'bounce 1s infinite 0.4s' }} />
+                    </div>
+                  </div>
+                )}
                 <div ref={messageEndRef} />
               </div>
 
@@ -669,8 +720,11 @@ function ChatManager({ showToast }: { showToast: (message: string, type?: 'succe
                   <input
                     type="text"
                     value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Enter reply..."
+                    onChange={(e) => {
+                      setInputText(e.target.value);
+                      broadcastAdminTyping();
+                    }}
+                    placeholder={`Reply directly to ${selectedSession.userName}...`}
                     className={styles.chatInputText}
                   />
                   <button type="submit" className="btn-premium btn-premium-gold" style={{ padding: '0 20px', height: 46 }}>

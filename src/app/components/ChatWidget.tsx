@@ -18,6 +18,8 @@ interface IMessage {
   sender: 'user' | 'admin';
   text: string;
   image?: string;
+  seen?: boolean;
+  seenAt?: string;
   createdAt: string;
 }
 
@@ -59,13 +61,33 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
     }
   }, []);
 
+  const lastTypingSentRef = useRef<number>(0);
+  const broadcastUserTyping = () => {
+    const now = Date.now();
+    if (now - lastTypingSentRef.current > 2000 && sessionId) {
+      lastTypingSentRef.current = now;
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'typing', sessionId, sender: 'user' }),
+      }).catch(() => {});
+    }
+  };
+
   // Fetch chat messages periodically
   const fetchChatMessages = async (sessId: string) => {
     try {
       const res = await fetch(`/api/chat?sessionId=${sessId}`);
       if (res.ok) {
         const data = await res.json();
-        setMessages(data);
+        if (Array.isArray(data)) {
+          setMessages(data);
+        } else if (data && data.messages) {
+          setMessages(data.messages);
+          if (data.session) {
+            setIsTyping(Boolean(data.session.isAdminTyping));
+          }
+        }
       }
     } catch (err) {
       console.error('Chat refresh failed:', err);
@@ -78,9 +100,9 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
     fetchChatMessages(sessionId);
     const interval = setInterval(() => {
       fetchChatMessages(sessionId);
-    }, 4000);
+    }, 2500);
     return () => clearInterval(interval);
-  }, [sessionId]);
+  }, [sessionId, isChatOpen]);
 
   // Scroll chat messages to bottom
   useEffect(() => {
@@ -121,8 +143,9 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
       sender: 'user',
       text: chatInputText,
       image: chatImageInput || undefined,
-      createdAt: new Date().toISOString(),
-    };
+      seen: false,
+      createdAt: new Date().toISOString() as any,
+    } as any;
     setMessages(prev => [...prev, optimisticMsg]);
     setChatInputText('');
     setChatImageInput(null);
@@ -202,7 +225,7 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
-                placeholder="Rifat Hossen"
+                placeholder="Your Name"
                 className={styles.chatInput}
                 style={{ width: '100%', marginBottom: '10px' }}
                 required
@@ -211,7 +234,7 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
                 type="email"
                 value={userEmail}
                 onChange={(e) => setUserEmail(e.target.value)}
-                placeholder="example@gmail.com"
+                placeholder="your.email@example.com"
                 className={styles.chatInput}
                 style={{ width: '100%', marginBottom: '16px' }}
                 required
@@ -230,10 +253,12 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
                 ) : (
                   messages.map((m, idx) => {
                     const isAdmin = m.sender === 'admin';
+                    const timeStr = m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
                     return (
                       <div
                         key={idx}
                         className={`${styles.chatBubble} ${isAdmin ? styles.chatBubbleAdmin : styles.chatBubbleUser}`}
+                        style={{ display: 'flex', flexDirection: 'column' }}
                       >
                         {m.image && (
                           <img
@@ -243,7 +268,16 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
                             onClick={() => window.open(m.image, '_blank')}
                           />
                         )}
-                        {m.text && <p>{m.text}</p>}
+                        {m.text && <p style={{ margin: 0 }}>{m.text}</p>}
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: isAdmin ? 'flex-start' : 'flex-end', gap: '4px', marginTop: '4px', fontSize: '0.68rem', color: isAdmin ? '#94a3b8' : 'rgba(255, 255, 255, 0.7)' }}>
+                          <span>{timeStr}</span>
+                          {!isAdmin && (
+                            <span style={{ marginLeft: '4px', fontWeight: 600, color: m.seen ? '#34d399' : 'rgba(255,255,255,0.6)' }}>
+                              {m.seen ? '✓✓ Seen' : '✓ Sent'}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   })
@@ -280,37 +314,40 @@ export default function ChatWidget({ siteSettings }: ChatWidgetProps) {
                     <button
                       type="button"
                       onClick={() => setChatImageInput(null)}
-                      style={{ position: 'absolute', top: -6, right: -6, background: '#ef4444', border: 'none', borderRadius: '50%', color: 'white', padding: 1, cursor: 'pointer', display: 'flex' }}
+                      style={{ position: 'absolute', top: -6, right: -6, background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: 16, height: 16, fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                      <X size={10} />
+                      ×
                     </button>
                   </div>
                 )}
                 <form onSubmit={handleSendChatMessage} className={styles.chatForm}>
+                  <input
+                    type="file"
+                    ref={chatFileInputRef}
+                    onChange={handleChatImageUpload}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                  />
                   <button
                     type="button"
                     onClick={() => chatFileInputRef.current?.click()}
-                    className={styles.headerIconBtn}
-                    title="Send Photo"
+                    className={styles.chatIconBtn}
+                    title="Attach Image"
                   >
                     <ImageIcon size={18} />
                   </button>
                   <input
-                    type="file"
-                    accept="image/*"
-                    ref={chatFileInputRef}
-                    onChange={handleChatImageUpload}
-                    style={{ display: 'none' }}
-                  />
-                  <input
                     type="text"
                     value={chatInputText}
-                    onChange={(e) => setChatInputText(e.target.value)}
-                    placeholder="Message..."
-                    className={styles.chatInput}
+                    onChange={(e) => {
+                      setChatInputText(e.target.value);
+                      broadcastUserTyping();
+                    }}
+                    placeholder="Type your message..."
+                    className={styles.chatTextInput}
                   />
-                  <button type="submit" className={styles.headerIconBtn} style={{ color: 'var(--accent-gold)' }}>
-                    <Send size={18} />
+                  <button type="submit" className={styles.chatSendBtn} title="Send Message">
+                    <Send size={16} />
                   </button>
                 </form>
               </div>

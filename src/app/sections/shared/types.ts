@@ -46,6 +46,8 @@ export interface IMessage {
   sender: 'user' | 'admin';
   text: string;
   image?: string;
+  seen?: boolean;
+  seenAt?: string;
   createdAt: string;
 }
 

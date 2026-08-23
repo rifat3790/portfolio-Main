@@ -478,15 +478,32 @@ a.btn-premium-outline:visited {
 
 /* Floating Navbar pill custom light look */
 [data-theme="light"] [class*="navPill"] {
-  background: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
   border-color: rgba(15, 23, 42, 0.08) !important;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06) !important;
+}
+[data-theme="light"] [class*="navBrandName"] {
+  color: #0f172a !important;
+}
+[data-theme="light"] [class*="navBrandInfo"] {
+  border-left-color: rgba(15, 23, 42, 0.12) !important;
 }
 [data-theme="light"] [class*="navLinkItem"] {
   color: #475569 !important;
 }
 [data-theme="light"] [class*="navLinkItem"]:hover {
   color: #818cf8 !important;
+}
+[data-theme="light"] [class*="themeToggleBtn"],
+[data-theme="light"] [class*="mobileMenuToggle"] {
+  background: rgba(241, 245, 249, 0.8) !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
+}
+[data-theme="light"] [class*="themeToggleBtn"]:hover,
+[data-theme="light"] [class*="mobileMenuToggle"]:hover {
+  background: rgba(226, 232, 240, 0.9) !important;
+  color: #d97706 !important;
 }
 
 /* Card and container borders and backgrounds */

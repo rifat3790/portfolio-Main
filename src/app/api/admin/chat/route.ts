@@ -18,14 +18,39 @@ export async function GET(req: NextRequest) {
 
     // 1. If fetching messages for a specific session
     if (sessionId) {
-      // Clear unread count for this session
-      await ChatSession.findOneAndUpdate(
-        { sessionId },
-        { unreadCount: 0 }
+      const now = new Date();
+
+      // Mark all user messages as seen and clear unread count
+      await Message.updateMany(
+        { sessionId, sender: 'user', seen: false },
+        { $set: { seen: true, seenAt: now } }
       );
+
+      const [updatedSession, messages] = await Promise.all([
+        ChatSession.findOneAndUpdate(
+          { sessionId },
+          { unreadCount: 0, lastSeenByAdmin: now },
+          { new: true }
+        ),
+        Message.find({ sessionId }).sort({ createdAt: 1 }),
+      ]);
       
-      const messages = await Message.find({ sessionId }).sort({ createdAt: 1 });
-      return NextResponse.json(messages);
+      const isUserTyping = updatedSession?.userTypingUntil ? new Date(updatedSession.userTypingUntil).getTime() > Date.now() : false;
+      const isAdminTyping = updatedSession?.adminTypingUntil ? new Date(updatedSession.adminTypingUntil).getTime() > Date.now() : false;
+
+      return NextResponse.json({
+        messages,
+        session: updatedSession ? {
+          sessionId: updatedSession.sessionId,
+          userName: updatedSession.userName,
+          userEmail: updatedSession.userEmail,
+          unreadCount: updatedSession.unreadCount,
+          isUserTyping,
+          isAdminTyping,
+          lastSeenByUser: updatedSession.lastSeenByUser,
+          lastSeenByAdmin: updatedSession.lastSeenByAdmin,
+        } : null,
+      });
     }
 
     // 2. If fetching all active chat sessions

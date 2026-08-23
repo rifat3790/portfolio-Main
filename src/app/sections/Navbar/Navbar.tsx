@@ -39,17 +39,27 @@ export default function Navbar({ siteSettings, isDrawerOpen, setIsDrawerOpen, th
           </nav>
 
           <div className={styles.navActions}>
-            <button type="button" onClick={toggleTheme} className={styles.themeToggleBtn} aria-label="Toggle Theme" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)' }}>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={styles.themeToggleBtn}
+              aria-label="Toggle Theme"
+            >
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
-            <a href="#contact" className={`${styles.navCTAButton} btn-premium btn-premium-gold`} style={{ padding: '10px 22px', fontSize: '0.82rem', gap: '6px' }}>
+            <a href="#contact" className={styles.navCTAButton}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
               <span>Hire Me</span>
             </a>
 
             {/* Mobile Menu Toggle button */}
-            <button type="button" onClick={() => setIsDrawerOpen(true)} className={styles.mobileMenuToggle} aria-label="Menu">
-              <Menu size={24} />
+            <button
+              type="button"
+              onClick={() => setIsDrawerOpen(true)}
+              className={styles.mobileMenuToggle}
+              aria-label="Menu"
+            >
+              <Menu size={20} />
             </button>
           </div>
         </div>
@@ -62,15 +72,16 @@ export default function Navbar({ siteSettings, isDrawerOpen, setIsDrawerOpen, th
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3 }}
             style={{
               position: 'fixed',
               top: 0,
               left: 0,
               width: '100%',
               height: '100%',
-              background: 'rgba(6, 6, 8, 0.98)',
+              background: theme === 'light' ? 'rgba(255, 255, 255, 0.98)' : 'rgba(6, 6, 8, 0.98)',
               backdropFilter: 'blur(30px)',
+              WebkitBackdropFilter: 'blur(30px)',
               zIndex: 2000,
               display: 'flex',
               flexDirection: 'column',
@@ -80,12 +91,26 @@ export default function Navbar({ siteSettings, isDrawerOpen, setIsDrawerOpen, th
           >
             <button
               onClick={() => setIsDrawerOpen(false)}
-              style={{ position: 'absolute', top: '40px', right: '5vw', background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }}
+              style={{
+                position: 'absolute',
+                top: '24px',
+                right: '24px',
+                background: theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.08)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-primary)',
+                cursor: 'pointer'
+              }}
               aria-label="Close menu"
             >
-              <X size={36} />
+              <X size={26} />
             </button>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '90%', maxWidth: '420px', margin: '0 auto', textAlign: 'left', padding: '20px' }}>
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '90%', maxWidth: '420px', margin: '0 auto', textAlign: 'left', padding: '16px' }}>
               {(siteSettings?.navbarLinks || []).map((link, idx) => {
                 const stepNum = String(idx + 1).padStart(2, '0');
                 const linkSubtitles: { [key: string]: string } = {
@@ -108,12 +133,12 @@ export default function Navbar({ siteSettings, isDrawerOpen, setIsDrawerOpen, th
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     whileHover={{ x: 8 }}
-                    transition={{ delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ delay: idx * 0.05, ease: [0.16, 1, 0.3, 1] }}
                     onClick={() => setIsDrawerOpen(false)}
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      borderBottom: '1px solid rgba(255,255,255,0.05)',
+                      borderBottom: theme === 'light' ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.05)',
                       paddingBottom: '8px',
                       textDecoration: 'none'
                     }}
