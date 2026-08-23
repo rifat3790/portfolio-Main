@@ -95,37 +95,16 @@ export async function fetchFreshHomepageData() {
 }
 
 export async function getHomepageData() {
-  const now = Date.now();
-
-  // Tier 1: In-Memory Hot Cache Available
-  if (global.homepageDataCache && global.homepageDataCache.data) {
-    const isStale = (now - global.homepageDataCache.timestamp > CACHE_STALE_TTL_MS);
-    if (isStale && !global.isRevalidatingData) {
-      global.isRevalidatingData = true;
-      // Background non-blocking revalidation
-      fetchFreshHomepageData().finally(() => {
-        global.isRevalidatingData = false;
-      });
+  try {
+    const freshData = await fetchFreshHomepageData();
+    return freshData;
+  } catch (error) {
+    console.error('Database connection error in getHomepageData:', error);
+    if (global.homepageDataCache?.data) {
+      return global.homepageDataCache.data;
     }
-    return global.homepageDataCache.data;
+    return defaultHomepageData;
   }
-
-  // Tier 2: Instant Cold-Start Boot (Zero Latency)
-  // Seed the cache with bundled JSON immediately so the user NEVER waits for MongoDB cold connections
-  global.homepageDataCache = {
-    data: defaultHomepageData,
-    timestamp: now,
-  };
-
-  // Kick off background fetch to sync fresh data from MongoDB
-  if (!global.isRevalidatingData) {
-    global.isRevalidatingData = true;
-    fetchFreshHomepageData().finally(() => {
-      global.isRevalidatingData = false;
-    });
-  }
-
-  return defaultHomepageData;
 }
 
 // Called after any Admin mutation — immediately refreshes cache and revalidates Next.js ISR paths

@@ -1,7 +1,8 @@
 import { getHomepageData } from '@/lib/data-cache';
 import HomeClient from './HomeClient';
 
-export const revalidate = 60; // 60s ISR + Instant On-Demand Revalidation on Admin Save
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 export default async function Home() {
   let projects = [];
