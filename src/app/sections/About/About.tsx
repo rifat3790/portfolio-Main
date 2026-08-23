@@ -154,23 +154,80 @@ export default function About({ siteSettings }: AboutProps) {
             </div>
 
             {/* CV Download / Talk CTA button */}
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '8px' }}>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '16px' }}>
               <a
                 href={siteSettings?.aboutCvFile ? siteSettings.aboutCvFile : (siteSettings?.aboutCvUrl || '#')}
                 download={siteSettings?.aboutCvFile ? (siteSettings.aboutCvFileName || 'Md_Refayet_Hossen_CV.pdf') : undefined}
                 target="_blank"
                 rel="noreferrer"
-                className="btn-premium btn-premium-gold"
-                style={{ padding: '16px 36px', fontSize: '0.92rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '10px' }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  padding: '16px 36px',
+                  fontSize: '0.92rem',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-display)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  borderRadius: '100px',
+                  background: 'linear-gradient(135deg, #818cf8 0%, #4f46e5 100%)',
+                  color: '#ffffff',
+                  boxShadow: '0 8px 25px rgba(129, 140, 248, 0.35)',
+                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  border: 'none',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 14px 35px rgba(129, 140, 248, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(129, 140, 248, 0.35)';
+                }}
               >
-                {siteSettings?.aboutCvText || 'Download CV'} <ArrowRight size={16} />
+                <span>{siteSettings?.aboutCvText || 'Download CV'}</span>
+                <ArrowRight size={16} />
               </a>
+
               <a
                 href="#contact"
-                className="btn-premium btn-premium-outline"
-                style={{ padding: '16px 32px', fontSize: '0.92rem', borderRadius: '100px', display: 'inline-flex', alignItems: 'center', gap: '10px' }}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  padding: '16px 34px',
+                  fontSize: '0.92rem',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-display)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  borderRadius: '100px',
+                  background: 'rgba(15, 18, 35, 0.75)',
+                  border: '1px solid rgba(129, 140, 248, 0.3)',
+                  color: '#ffffff',
+                  backdropFilter: 'blur(16px)',
+                  boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4)',
+                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)';
+                  e.currentTarget.style.borderColor = 'rgba(129, 140, 248, 0.6)';
+                  e.currentTarget.style.boxShadow = '0 12px 30px rgba(129, 140, 248, 0.25)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.borderColor = 'rgba(129, 140, 248, 0.3)';
+                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.4)';
+                }}
               >
-                Start Collaboration
+                <span>Start Collaboration</span>
               </a>
             </div>
           </motion.div>
