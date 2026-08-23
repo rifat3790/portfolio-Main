@@ -235,41 +235,85 @@ export default function About({ siteSettings }: AboutProps) {
         </div>
 
         {/* Premium Philosophy / Core Values Showcase */}
-        <div className={styles.aboutPhilosophyGrid}>
-          <div className={styles.aboutPhilosophyItem}>
-            <div className={styles.aboutPhilosophyHeader}>
-              <span className={styles.aboutPhilosophyNumber}>01</span>
-              <span className={styles.aboutPhilosophyLine} />
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '24px',
+            marginTop: '64px',
+            width: '100%',
+          }}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(15, 18, 35, 0.7) 0%, rgba(8, 10, 22, 0.8) 100%)',
+              border: '1px solid rgba(129, 140, 248, 0.2)',
+              borderRadius: '20px',
+              padding: '28px 24px',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.4)',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <span style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#818cf8' }}>01</span>
+              <span style={{ height: '1px', flex: 1, background: 'rgba(129, 140, 248, 0.2)' }} />
             </div>
-            <h4 className={styles.aboutPhilosophyTitle}>{siteSettings?.aboutValue1Title || 'Quality First'}</h4>
-            <p className={styles.aboutPhilosophyDesc}>{siteSettings?.aboutValue1Desc || 'Delivering pixel-perfect, premium code matching top international standards.'}</p>
+            <h4 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-display)', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>{siteSettings?.aboutValue1Title || 'Quality First'}</h4>
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>{siteSettings?.aboutValue1Desc || 'Delivering pixel-perfect, premium code matching top international standards.'}</p>
           </div>
 
-          <div className={styles.aboutPhilosophyItem}>
-            <div className={styles.aboutPhilosophyHeader}>
-              <span className={styles.aboutPhilosophyNumber}>02</span>
-              <span className={styles.aboutPhilosophyLine} />
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(15, 18, 35, 0.7) 0%, rgba(8, 10, 22, 0.8) 100%)',
+              border: '1px solid rgba(129, 140, 248, 0.2)',
+              borderRadius: '20px',
+              padding: '28px 24px',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.4)',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <span style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#818cf8' }}>02</span>
+              <span style={{ height: '1px', flex: 1, background: 'rgba(129, 140, 248, 0.2)' }} />
             </div>
-            <h4 className={styles.aboutPhilosophyTitle}>{siteSettings?.aboutValue2Title || 'Agile & Responsive'}</h4>
-            <p className={styles.aboutPhilosophyDesc}>{siteSettings?.aboutValue2Desc || 'Fast iterations, transparent updates, and super lightweight pages.'}</p>
+            <h4 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-display)', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>{siteSettings?.aboutValue2Title || 'Agile & Responsive'}</h4>
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>{siteSettings?.aboutValue2Desc || 'Fast iterations, transparent updates, and super lightweight pages.'}</p>
           </div>
 
-          <div className={styles.aboutPhilosophyItem}>
-            <div className={styles.aboutPhilosophyHeader}>
-              <span className={styles.aboutPhilosophyNumber}>03</span>
-              <span className={styles.aboutPhilosophyLine} />
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(15, 18, 35, 0.7) 0%, rgba(8, 10, 22, 0.8) 100%)',
+              border: '1px solid rgba(129, 140, 248, 0.2)',
+              borderRadius: '20px',
+              padding: '28px 24px',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.4)',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <span style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#818cf8' }}>03</span>
+              <span style={{ height: '1px', flex: 1, background: 'rgba(129, 140, 248, 0.2)' }} />
             </div>
-            <h4 className={styles.aboutPhilosophyTitle}>{siteSettings?.aboutValue3Title || 'Clean & Scalable'}</h4>
-            <p className={styles.aboutPhilosophyDesc}>{siteSettings?.aboutValue3Desc || 'Future-proof modular structures tailored for high-scale enterprise operations.'}</p>
+            <h4 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-display)', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>{siteSettings?.aboutValue3Title || 'Clean & Scalable'}</h4>
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>{siteSettings?.aboutValue3Desc || 'Future-proof modular structures tailored for high-scale enterprise operations.'}</p>
           </div>
 
-          <div className={styles.aboutPhilosophyItem}>
-            <div className={styles.aboutPhilosophyHeader}>
-              <span className={styles.aboutPhilosophyNumber}>04</span>
-              <span className={styles.aboutPhilosophyLine} />
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(15, 18, 35, 0.7) 0%, rgba(8, 10, 22, 0.8) 100%)',
+              border: '1px solid rgba(129, 140, 248, 0.2)',
+              borderRadius: '20px',
+              padding: '28px 24px',
+              boxShadow: '0 15px 35px rgba(0, 0, 0, 0.4)',
+              transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <span style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', fontWeight: 800, color: '#818cf8' }}>04</span>
+              <span style={{ height: '1px', flex: 1, background: 'rgba(129, 140, 248, 0.2)' }} />
             </div>
-            <h4 className={styles.aboutPhilosophyTitle}>{siteSettings?.aboutValue4Title || 'Client-Centric'}</h4>
-            <p className={styles.aboutPhilosophyDesc}>{siteSettings?.aboutValue4Desc || 'Partnering closely to solve real-world problems and drive conversion rates.'}</p>
+            <h4 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-display)', fontWeight: 700, color: '#ffffff', marginBottom: '8px' }}>{siteSettings?.aboutValue4Title || 'Client-Centric'}</h4>
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.6, margin: 0 }}>{siteSettings?.aboutValue4Desc || 'Partnering closely to solve real-world problems and drive conversion rates.'}</p>
           </div>
         </div>
 

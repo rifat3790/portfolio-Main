@@ -141,7 +141,21 @@ export default function Hero({ siteSettings }: HeroProps) {
             </div>
 
             {/* Premium Stat Row (directly in Hero below buttons) */}
-            <div className={styles.aboutStatsRow} style={{ width: '100%', background: 'linear-gradient(135deg, rgba(15, 18, 35, 0.75) 0%, rgba(8, 10, 20, 0.85) 100%)', border: '1px solid rgba(129, 140, 248, 0.22)', boxShadow: '0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)', borderRadius: '20px', padding: '22px 28px', textAlign: 'left', marginBottom: '32px' }}>
+            <div
+              style={{
+                width: '100%',
+                background: 'linear-gradient(135deg, rgba(15, 18, 35, 0.75) 0%, rgba(8, 10, 20, 0.85) 100%)',
+                border: '1px solid rgba(129, 140, 248, 0.22)',
+                boxShadow: '0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
+                borderRadius: '20px',
+                padding: '22px 28px',
+                textAlign: 'left',
+                marginBottom: '32px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+                gap: '16px',
+              }}
+            >
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ fontSize: '1.65rem', fontWeight: '800', color: '#ffffff', letterSpacing: '-0.02em' }}>{siteSettings?.stat1Value || '5+'}</span>
                 <span style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{siteSettings?.stat1Label || 'Years Experience'}</span>
