@@ -5121,17 +5121,34 @@
 
 @media (max-width: 768px) {
   .floatingNavbar {
-    width: calc(100% - 30px);
-    top: 12px;
+    width: calc(100% - 24px);
+    top: 10px;
+    left: 12px;
+    right: 12px;
+  }
+  .navPill {
+    padding: 8px 16px !important;
+    border-radius: 100px !important;
+    gap: 8px;
+  }
+  .navBrandRole {
+    display: none;
+  }
+  .navBrandInfo {
+    padding-left: 8px;
+  }
+  .themeToggleBtn {
+    width: 36px;
+    height: 36px;
   }
 }
 
 .navPill {
-  background: rgba(10, 15, 30, 0.45);
+  background: rgba(10, 15, 30, 0.65);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  border-radius: 100px;
   padding: 12px 28px;
   display: flex;
   align-items: center;
@@ -5271,9 +5288,9 @@
   box-shadow: 0 0 15px rgba(96, 165, 250, 0.2);
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .navCTAButton {
-    display: none;
+    display: none !important;
   }
 }
 
@@ -5285,6 +5302,8 @@
   cursor: pointer;
   align-items: center;
   justify-content: center;
+  width: 36px;
+  height: 36px;
 }
 
 @media (max-width: 991px) {
