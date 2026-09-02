@@ -14,35 +14,35 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     console.error('Error fetching settings for robots.ts:', err);
   }
 
+  const disallowed = [
+    '/admin',
+    '/admin/*',
+    '/api/admin/*',
+    '/api/cron/*',
+    '/api/auth/*',
+    '/wallet',
+    '/wallet/*',
+  ];
+
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: [
-          '/admin',
-          '/admin/*',
-          '/api/admin/*',
-          '/api/cron/*',
-          '/api/auth/*',
-          '/wallet',
-          '/wallet/*',
-        ],
+        disallow: disallowed,
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
-        disallow: [
-          '/admin',
-          '/admin/*',
-          '/api/admin/*',
-          '/api/cron/*',
-          '/api/auth/*',
-          '/wallet',
-          '/wallet/*',
-        ],
+        disallow: disallowed,
+      },
+      {
+        userAgent: 'Bingbot',
+        allow: '/',
+        disallow: disallowed,
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   };
 }

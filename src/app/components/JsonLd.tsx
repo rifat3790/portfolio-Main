@@ -7,47 +7,53 @@ interface JsonLdProps {
 }
 
 export default function JsonLd({ siteSettings, siteUrl = 'https://rifat-portfolio-brown.vercel.app' }: JsonLdProps) {
-  const canonical = siteSettings?.canonicalUrl || siteUrl;
+  const canonical = (siteSettings?.canonicalUrl || siteUrl).replace(/\/$/, '');
   const name = siteSettings?.aboutName || 'Refayet Hossen';
   const email = siteSettings?.email || 'mdrifayethossen@gmail.com';
 
-  const personSchema = {
+  const profilePageSchema = {
     '@context': 'https://schema.org',
-    '@type': 'Person',
-    '@id': `${canonical}/#person`,
-    name: name,
-    alternateName: ['Rifayet Hossen', 'Md. Refayet Hossen', 'Md Rifayet Hossen', 'Rifat', 'Best Shopify Developer'],
-    jobTitle: ['Shopify Developer', 'Full Stack Web Developer', 'Software Engineer', 'E-Commerce Specialist', 'Frontend Developer', 'Backend Developer'],
-    description: siteSettings?.seoDescription || 'Refayet Hossen (also known as Rifayet Hossen) is a premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist building high-converting Shopify stores, custom e-commerce websites, and modern web applications.',
+    '@type': 'ProfilePage',
+    '@id': `${canonical}/#profilepage`,
     url: canonical,
-    image: `${canonical}/icon.png`,
-    email: email,
-    telephone: siteSettings?.phone || undefined,
-    sameAs: [
-      siteSettings?.github || 'https://github.com/rifat3790',
-      siteSettings?.linkedin || 'https://linkedin.com/in/rifat',
-      siteSettings?.whatsapp ? `https://wa.me/${siteSettings.whatsapp.replace(/[^0-9]/g, '')}` : undefined,
-    ].filter(Boolean),
-    knowsAbout: [
-      'Shopify Development',
-      'Shopify Theme Customization',
-      'Shopify Liquid',
-      'E-Commerce Website Build',
-      'Ecommerce Store Development',
-      'Full Stack Web Development',
-      'Next.js 16',
-      'React',
-      'Node.js',
-      'TypeScript',
-      'MongoDB',
-      'Tailwind CSS',
-      'Headless Commerce',
-      'Core Web Vitals Optimization',
-      'Search Engine Optimization (SEO)',
-    ],
-    worksFor: {
-      '@type': 'Organization',
-      name: 'Freelance & Bespoke Digital Architecture',
+    name: 'Refayet Hossen (Rifayet Hossen) | Best Shopify Developer & Full Stack Web Developer',
+    mainEntity: {
+      '@type': 'Person',
+      '@id': `${canonical}/#person`,
+      name: name,
+      alternateName: ['Rifayet Hossen', 'Md. Refayet Hossen', 'Md Rifayet Hossen', 'Rifat', 'Best Shopify Developer'],
+      jobTitle: ['Shopify Developer', 'Full Stack Web Developer', 'Software Engineer', 'E-Commerce Specialist', 'Frontend Developer', 'Backend Developer'],
+      description: siteSettings?.seoDescription || 'Refayet Hossen (also known as Rifayet Hossen) is a premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist building high-converting Shopify stores, custom e-commerce websites, and modern web applications.',
+      url: canonical,
+      image: `${canonical}/icon.png`,
+      email: email,
+      telephone: siteSettings?.phone || undefined,
+      sameAs: [
+        siteSettings?.github || 'https://github.com/rifat3790',
+        siteSettings?.linkedin || 'https://linkedin.com/in/rifat',
+        siteSettings?.whatsapp ? `https://wa.me/${siteSettings.whatsapp.replace(/[^0-9]/g, '')}` : undefined,
+      ].filter(Boolean),
+      knowsAbout: [
+        'Shopify Development',
+        'Shopify Theme Customization',
+        'Shopify Liquid',
+        'E-Commerce Website Build',
+        'Ecommerce Store Development',
+        'Full Stack Web Development',
+        'Next.js 16',
+        'React',
+        'Node.js',
+        'TypeScript',
+        'MongoDB',
+        'Tailwind CSS',
+        'Headless Commerce',
+        'Core Web Vitals Optimization',
+        'Search Engine Optimization (SEO)',
+      ],
+      worksFor: {
+        '@type': 'Organization',
+        name: 'Freelance & Bespoke Digital Architecture',
+      },
     },
   };
 
@@ -101,11 +107,6 @@ export default function JsonLd({ siteSettings, siteUrl = 'https://rifat-portfoli
       '@type': 'Person',
       name: name,
     },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${canonical}/#projects`,
-      'query-input': 'required name=search_term_string',
-    },
   };
 
   const faqSchema = {
@@ -155,54 +156,11 @@ export default function JsonLd({ siteSettings, siteUrl = 'https://rifat-portfoli
     ],
   };
 
-  const breadcrumbSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: canonical,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Services',
-        item: `${canonical}/#services`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: 'Projects',
-        item: `${canonical}/#projects`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 4,
-        name: 'About',
-        item: `${canonical}/#about`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 5,
-        name: 'Blog',
-        item: `${canonical}/#blogs`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 6,
-        name: 'Contact',
-        item: `${canonical}/#contact`,
-      },
-    ],
-  };
-
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(profilePageSchema) }}
       />
       <script
         type="application/ld+json"
@@ -215,10 +173,6 @@ export default function JsonLd({ siteSettings, siteUrl = 'https://rifat-portfoli
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
     </>
   );

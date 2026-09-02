@@ -216,8 +216,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [incDate, setIncDate] = useState('');
   const [editingIncomeId, setEditingIncomeId] = useState<string>('');
 
-  const fetchMonths = async (targetIdToSelect?: string) => {
-    setLoading(true);
+  const fetchMonths = async (targetIdToSelect?: string, showSpinner = true) => {
+    if (showSpinner) setLoading(true);
     try {
       const res = await fetch('/api/admin/wallet');
       if (res.ok) {
@@ -238,7 +238,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       console.error(err);
       showToast('Error connecting to database', 'error');
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
   };
 
@@ -1071,6 +1071,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       if (res.ok) {
         showToast('Expense logged successfully', 'success');
         setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        fetchMonths(activeMonth._id, false);
         setIsAddExpenseOpen(false);
         // Reset
         setExpDesc('');
@@ -1114,6 +1115,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       if (res.ok) {
         showToast('Expense updated', 'success');
         setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        fetchMonths(activeMonth._id, false);
         setIsEditExpenseOpen(false);
         setEditingExpenseId('');
         // Reset
@@ -1146,6 +1148,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       if (res.ok) {
         showToast('Expense record removed', 'success');
         setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        fetchMonths(activeMonth._id, false);
       } else {
         showToast('Failed to remove expense', 'error');
       }
@@ -1178,6 +1181,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       if (res.ok) {
         showToast('Income logged successfully', 'success');
         setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        fetchMonths(activeMonth._id, false);
         setIsAddIncomeOpen(false);
         // Reset
         setIncDesc('');
@@ -1221,6 +1225,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       if (res.ok) {
         showToast('Income updated', 'success');
         setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        fetchMonths(activeMonth._id, false);
         setIsEditIncomeOpen(false);
         setEditingIncomeId('');
         // Reset
@@ -1253,6 +1258,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       if (res.ok) {
         showToast('Income record removed', 'success');
         setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        fetchMonths(activeMonth._id, false);
       } else {
         showToast('Failed to remove income', 'error');
       }
@@ -1310,6 +1316,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       if (res.ok) {
         showToast(`Loan logged for ${loanPersonName.trim()}! Amount deducted from main balance.`, 'success');
         setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        fetchMonths(activeMonth._id, false);
         setIsAddLoanOpen(false);
         setLoanPersonName('');
         setLoanAmount('');
@@ -1364,6 +1371,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       if (res.ok) {
         showToast('Loan record updated successfully', 'success');
         setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        fetchMonths(activeMonth._id, false);
         setIsEditLoanOpen(false);
         setEditingLoanId('');
         setLoanPersonName('');
@@ -1396,6 +1404,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       if (res.ok) {
         showToast('Loan record removed', 'success');
         setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        fetchMonths(activeMonth._id, false);
       } else {
         showToast('Failed to remove loan record', 'error');
       }
@@ -1440,6 +1449,7 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
       const data = await res.json();
       if (res.ok) {
         setMonths(prev => prev.map(m => m._id === data._id ? data : m));
+        fetchMonths(activeMonth._id, false);
       } else {
         // Rollback on error
         setMonths(previousMonths);

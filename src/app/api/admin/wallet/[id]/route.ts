@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import WalletMonth from '@/models/WalletMonth';
 import { isAuthenticated } from '@/lib/auth';
 import { sendWalletTransactionAlert } from '@/lib/emailService';
+import { syncAndCascadeWalletMonths } from '@/lib/walletAutoMonth';
 
 type Params = Promise<{ id: string }>;
 
@@ -24,24 +25,40 @@ export async function PUT(req: NextRequest, segmentData: { params: Params }) {
     const oldExpenseCount = (existing.expenses || []).length;
     const oldLoanCount = (existing.loans || []).length;
 
-    if (data.monthName !== undefined) existing.monthName = data.monthName;
-    if (data.salary !== undefined) existing.salary = Number(data.salary);
-    if (data.addon !== undefined) existing.addon = Number(data.addon);
-    if (data.bonus !== undefined) existing.bonus = Number(data.bonus);
-    if (data.targetDailyCap !== undefined) existing.targetDailyCap = Number(data.targetDailyCap);
-    if (data.categoryBudgets !== undefined) existing.categoryBudgets = data.categoryBudgets;
-    if (data.expenses !== undefined) existing.expenses = data.expenses;
-    if (data.incomes !== undefined) existing.incomes = data.incomes;
-    if (data.loans !== undefined) existing.loans = data.loans;
-    if (data.savingsGoals !== undefined) existing.savingsGoals = data.savingsGoals;
-    if (data.recurringBills !== undefined) existing.recurringBills = data.recurringBills;
-    if (data.assets !== undefined) existing.assets = data.assets;
+    // Handle mobile-app action presets (e.g. from mobile-wallet service)
+    if (data.action === 'addExpense' && data.data) {
+      existing.expenses = existing.expenses || [];
+      existing.expenses.push(data.data);
+    } else if (data.action === 'addIncome' && data.data) {
+      existing.incomes = existing.incomes || [];
+      existing.incomes.push(data.data);
+    } else if (data.action === 'addAsset' && data.data) {
+      existing.assets = existing.assets || [];
+      existing.assets.push(data.data);
+    } else {
+      // Standard full or partial document updates
+      if (data.monthName !== undefined) existing.monthName = data.monthName;
+      if (data.salary !== undefined) existing.salary = Number(data.salary);
+      if (data.addon !== undefined) existing.addon = Number(data.addon);
+      if (data.bonus !== undefined) existing.bonus = Number(data.bonus);
+      if (data.targetDailyCap !== undefined) existing.targetDailyCap = Number(data.targetDailyCap);
+      if (data.categoryBudgets !== undefined) existing.categoryBudgets = data.categoryBudgets;
+      if (data.expenses !== undefined) existing.expenses = data.expenses;
+      if (data.incomes !== undefined) existing.incomes = data.incomes;
+      if (data.loans !== undefined) existing.loans = data.loans;
+      if (data.savingsGoals !== undefined) existing.savingsGoals = data.savingsGoals;
+      if (data.recurringBills !== undefined) existing.recurringBills = data.recurringBills;
+      if (data.assets !== undefined) existing.assets = data.assets;
+    }
 
     await existing.save();
 
-    // Check for newly added expenses
-    if (data.expenses && data.expenses.length > oldExpenseCount) {
-      const latestExp = data.expenses[data.expenses.length - 1];
+    // Cascade updates to all subsequent months automatically
+    await syncAndCascadeWalletMonths();
+
+    // Check for newly added expenses for email alerts
+    if (existing.expenses && existing.expenses.length > oldExpenseCount) {
+      const latestExp = existing.expenses[existing.expenses.length - 1];
       sendWalletTransactionAlert({
         type: 'expense',
         description: latestExp.description || 'Expense Item',
@@ -52,20 +69,22 @@ export async function PUT(req: NextRequest, segmentData: { params: Params }) {
       }).catch(err => console.error('Error sending expense alert email:', err));
     }
 
-    // Check for newly added loans
-    if (data.loans && data.loans.length > oldLoanCount) {
-      const latestLoan = data.loans[data.loans.length - 1];
+    // Check for newly added loans for email alerts
+    if (existing.loans && existing.loans.length > oldLoanCount) {
+      const latestLoan = existing.loans[existing.loans.length - 1];
       sendWalletTransactionAlert({
         type: 'loan',
         description: `Loan to/from ${latestLoan.personName || 'Person'}`,
         amount: latestLoan.amount || 0,
         category: 'Loan',
-        date: latestLoan.dateGiven ? new Date(latestLoan.dateGiven).toISOString().split('T')[0] : undefined,
+        date: latestLoan.date ? new Date(latestLoan.date).toISOString().split('T')[0] : undefined,
         monthName: existing.monthName
       }).catch(err => console.error('Error sending loan alert email:', err));
     }
 
-    return NextResponse.json(existing);
+    // Fetch freshly cascaded document
+    const refreshed = await WalletMonth.findById(id);
+    return NextResponse.json(refreshed || existing);
   } catch (error) {
     console.error('Error updating wallet month:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -85,6 +104,9 @@ export async function DELETE(req: NextRequest, segmentData: { params: Params }) 
     if (!deleted) {
       return NextResponse.json({ error: 'Month sheet not found' }, { status: 404 });
     }
+
+    // Recalculate remaining months
+    await syncAndCascadeWalletMonths();
 
     return NextResponse.json({ success: true, message: 'Month sheet deleted successfully' });
   } catch (error) {

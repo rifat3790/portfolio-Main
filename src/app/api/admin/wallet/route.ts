@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import WalletMonth from '@/models/WalletMonth';
 import { isAuthenticated } from '@/lib/auth';
-
-import { ensureCurrentMonthCreated } from '@/lib/walletAutoMonth';
+import { ensureCurrentMonthCreated, syncAndCascadeWalletMonths, parseMonthDate } from '@/lib/walletAutoMonth';
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,8 +14,13 @@ export async function GET(req: NextRequest) {
     // Ensure current month sheet exists automatically
     await ensureCurrentMonthCreated();
 
-    // Sort months chronologically by creation timestamp so latest month is last
-    const months = await WalletMonth.find({}).sort({ createdAt: 1 }).lean();
+    // Recalculate & cascade opening balances and pending loans across all months
+    await syncAndCascadeWalletMonths();
+
+    // Fetch all months and sort chronologically by calendar date
+    const months = await WalletMonth.find({}).lean();
+    months.sort((a, b) => parseMonthDate(a.monthName, a.createdAt) - parseMonthDate(b.monthName, b.createdAt));
+
     return NextResponse.json(months);
   } catch (error) {
     console.error('Error fetching wallet months:', error);
@@ -43,8 +47,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'This month sheet already exists.' }, { status: 400 });
     }
 
-    // Find the latest existing month sheet to carry over pending loans and opening savings balance
-    const previousMonth = await WalletMonth.findOne({}).sort({ createdAt: -1 }).lean();
+    // Find all existing months sorted chronologically to inherit config
+    const allMonths = await WalletMonth.find({}).lean();
+    allMonths.sort((a, b) => parseMonthDate(a.monthName, a.createdAt) - parseMonthDate(b.monthName, b.createdAt));
+    const previousMonth = allMonths.length > 0 ? allMonths[allMonths.length - 1] : null;
 
     let carriedOverSavings = 0;
     let inheritedLoans: any[] = [];
@@ -58,12 +64,9 @@ export async function POST(req: NextRequest) {
       const prevInc = (previousMonth.salary || 0) + (previousMonth.addon || 0) + (previousMonth.bonus || 0) +
         (previousMonth.incomes || []).reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
       const prevExp = (previousMonth.expenses || []).reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
-      const prevActiveLoans = (previousMonth.loans || [])
-        .filter((l: any) => l.status === 'Pending')
-        .reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0);
 
-      // Previous Net Liquid Savings (Opening balance for the new month)
-      carriedOverSavings = (previousMonth.carriedOverSavings || 0) + prevInc - prevExp - prevActiveLoans;
+      // Previous Gross Savings (Opening balance for the new month)
+      carriedOverSavings = (previousMonth.carriedOverSavings || 0) + prevInc - prevExp;
 
       // Extract pending loans to migrate into the new month sheet
       const pendingLoans = (previousMonth.loans || []).filter((l: any) => l.status === 'Pending');
@@ -100,6 +103,9 @@ export async function POST(req: NextRequest) {
       recurringBills: data.recurringBills && data.recurringBills.length > 0 ? data.recurringBills : inheritedRecurringBills,
       assets: data.assets && data.assets.length > 0 ? data.assets : inheritedAssets,
     });
+
+    // Cascade & sync
+    await syncAndCascadeWalletMonths();
 
     return NextResponse.json(newMonth);
   } catch (error) {
