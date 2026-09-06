@@ -1,15 +1,16 @@
 {
-  "short_name": "Wallet App",
-  "name": "Personal Wallet - Executive Financial Suite",
+  "short_name": "Refayet Hossen",
+  "name": "Refayet Hossen | Best Shopify Developer & Full Stack Web Developer",
+  "description": "Refayet Hossen (Rifayet Hossen) - Premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist.",
   "icons": [
     {
-      "src": "/wallet-icon.png",
+      "src": "/icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/wallet-icon.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -20,9 +21,9 @@
       "type": "image/png"
     }
   ],
-  "start_url": "/wallet",
-  "background_color": "#090d16",
-  "theme_color": "#0f172a",
+  "start_url": "/",
+  "background_color": "#030305",
+  "theme_color": "#07080f",
   "display": "standalone",
   "orientation": "portrait"
 }

@@ -59,19 +59,6 @@ export default function HomeClient({
     document.documentElement.setAttribute('data-theme', newTheme);
   };
 
-  // Dynamically update favicon
-  useEffect(() => {
-    if (siteSettings?.favicon) {
-      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.head.appendChild(link);
-      }
-      link.href = siteSettings.favicon;
-    }
-  }, [siteSettings?.favicon]);
-
   return (
     <div className={styles.container}>
       <CustomCursor />

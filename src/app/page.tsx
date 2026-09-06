@@ -1,8 +1,9 @@
 import { getHomepageData } from '@/lib/data-cache';
 import HomeClient from './HomeClient';
 
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
+// Enable ISR (Incremental Static Regeneration) for sub-50ms instant Global Edge CDN loads
+// On-demand revalidation is automatically executed whenever mutations occur in /admin
+export const revalidate = 86400; // 24 hours ISR
 
 export default async function Home() {
   let projects = [];

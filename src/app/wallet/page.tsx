@@ -4,7 +4,7 @@ import WalletMobileClient from './WalletMobileClient';
 export const metadata: Metadata = {
   title: 'Personal Wallet Android App | Executive Financial Suite',
   description: 'Standalone Mobile Android Application for Personal Finance, Net Worth, Wealth Vault, Daily Burn Rate & AI Advisor.',
-  manifest: '/manifest.json',
+  manifest: '/wallet-manifest.json',
   icons: {
     icon: '/wallet-icon.png',
     apple: '/apple-icon.png',

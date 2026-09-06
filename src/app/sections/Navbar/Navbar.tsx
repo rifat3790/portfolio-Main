@@ -47,7 +47,7 @@ export default function Navbar({ siteSettings, isDrawerOpen, setIsDrawerOpen, th
             >
               {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
             </button>
-            <a href="#contact" className={styles.navCTAButton}>
+            <a href="#contact" className={styles.navCTAButton} aria-label="Contact Refayet Hossen" title="Contact Refayet Hossen">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polyline points="22 2 15 22 11 13 2 9 22 2"/></svg>
               <span>Hire Me</span>
             </a>

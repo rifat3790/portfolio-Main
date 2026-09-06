@@ -25,12 +25,17 @@ export default function JsonLd({ siteSettings, siteUrl = 'https://rifat-portfoli
       jobTitle: ['Shopify Developer', 'Full Stack Web Developer', 'Software Engineer', 'E-Commerce Specialist', 'Frontend Developer', 'Backend Developer'],
       description: siteSettings?.seoDescription || 'Refayet Hossen (also known as Rifayet Hossen) is a premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist building high-converting Shopify stores, custom e-commerce websites, and modern web applications.',
       url: canonical,
-      image: `${canonical}/icon.png`,
+      image: `${canonical}/refayet-profile.png`,
       email: email,
       telephone: siteSettings?.phone || undefined,
+      alumniOf: {
+        '@type': 'EducationalOrganization',
+        name: 'Green University of Bangladesh',
+      },
       sameAs: [
         siteSettings?.github || 'https://github.com/rifat3790',
         siteSettings?.linkedin || 'https://linkedin.com/in/rifat',
+        'https://facebook.com/refayet.hossen',
         siteSettings?.whatsapp ? `https://wa.me/${siteSettings.whatsapp.replace(/[^0-9]/g, '')}` : undefined,
       ].filter(Boolean),
       knowsAbout: [
@@ -55,6 +60,19 @@ export default function JsonLd({ siteSettings, siteUrl = 'https://rifat-portfoli
         name: 'Freelance & Bespoke Digital Architecture',
       },
     },
+  };
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Refayet Hossen Portfolio',
+        item: canonical,
+      },
+    ],
   };
 
   const professionalServiceSchema = {
@@ -158,6 +176,10 @@ export default function JsonLd({ siteSettings, siteUrl = 'https://rifat-portfoli
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(profilePageSchema) }}

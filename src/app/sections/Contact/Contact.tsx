@@ -41,7 +41,7 @@ export default function Contact({ siteSettings }: ContactProps) {
         {/* Left Column: Details & Socials */}
         <div className={styles.contactPremiumLeft}>
           <span className={styles.contactPremiumSub}>
-            <MessageSquare size={14} style={{ marginRight: 6 }} /> GET IN TOUCH
+            <MessageSquare size={14} style={{ marginRight: 6 }} /> GET IN TOUCH WITH REFAYET HOSSEN
           </span>
           <h2 className={styles.contactPremiumTitle}>
             Let's Create Something <span className={styles.contactPremiumGradientText}>Extraordinary.</span>
