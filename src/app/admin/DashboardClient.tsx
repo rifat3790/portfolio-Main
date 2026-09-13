@@ -1015,11 +1015,11 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
 
       {/* Project Form Modal */}
       {isModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
+        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2>{editId ? 'Modify Project' : 'New Project'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose}>
+              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose} aria-label="Close modal">
                 <X size={20} />
               </button>
             </div>
@@ -1031,6 +1031,7 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className={styles.input}
+                  placeholder="e.g. Aetheria Estates"
                   required
                 />
               </div>
@@ -1043,6 +1044,7 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   className={styles.input}
                 />
               </div>
+
               <div className={styles.formGroup}>
                 <label className={styles.label}>Category</label>
                 <select
@@ -1078,24 +1080,11 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                       }
                     }}
                     className="btn-premium btn-premium-gold"
-                    style={{ padding: '0 16px', fontSize: '0.8rem', height: '42px' }}
+                    style={{ padding: '0 16px', fontSize: '0.8rem', height: '42px', flexShrink: 0 }}
                   >
                     Add
                   </button>
                 </div>
-              </div>
-
-              <div className={styles.formGroup} style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '32px' }}>
-                <input
-                  type="checkbox"
-                  id="isFeatured"
-                  checked={isFeatured}
-                  onChange={(e) => setIsFeatured(e.target.checked)}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-gold)' }}
-                />
-                <label htmlFor="isFeatured" className={styles.label} style={{ cursor: 'pointer', margin: 0 }}>
-                  Mark as Featured Project
-                </label>
               </div>
 
               <div className={styles.formGroup}>
@@ -1105,6 +1094,16 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                   placeholder="e.g. Full Stack Developer"
+                  className={styles.input}
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>Project Type</label>
+                <input
+                  type="text"
+                  value={projectType}
+                  onChange={(e) => setProjectType(e.target.value)}
+                  placeholder="e.g. Web Application / E-Commerce"
                   className={styles.input}
                 />
               </div>
@@ -1119,16 +1118,28 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   className={styles.input}
                 />
               </div>
-
               <div className={styles.formGroup}>
-                <label className={styles.label}>Project Type</label>
+                <label className={styles.label}>Project Password (Optional)</label>
                 <input
                   type="text"
-                  value={projectType}
-                  onChange={(e) => setProjectType(e.target.value)}
-                  placeholder="e.g. Web Application"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="e.g. secret123"
                   className={styles.input}
                 />
+              </div>
+
+              <div className={styles.featuredToggleCard}>
+                <input
+                  type="checkbox"
+                  id="isFeatured"
+                  checked={isFeatured}
+                  onChange={(e) => setIsFeatured(e.target.checked)}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-gold)' }}
+                />
+                <label htmlFor="isFeatured" style={{ cursor: 'pointer', margin: 0, fontSize: '0.9rem', color: '#ffffff', fontWeight: 600 }}>
+                  ⭐ Mark as Featured Project (Highlighted prominently on the showcase)
+                </label>
               </div>
 
               <div className={`${styles.formGroup} ${styles.formSpanFull}`}>
@@ -1138,6 +1149,7 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className={styles.input}
+                  placeholder="Brief summary of the project"
                   required
                 />
               </div>
@@ -1151,12 +1163,14 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   className={styles.input}
                 />
               </div>
+
               <div className={styles.formGroup}>
                 <label className={styles.label}>Live Demo URL</label>
                 <input
                   type="url"
                   value={liveLink}
                   onChange={(e) => setLiveLink(e.target.value)}
+                  placeholder="https://example.com"
                   className={styles.input}
                 />
               </div>
@@ -1166,16 +1180,7 @@ function ProjectManager({ showToast }: { showToast: (message: string, type?: 'su
                   type="url"
                   value={githubLink}
                   onChange={(e) => setGithubLink(e.target.value)}
-                  className={styles.input}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Project Password (Optional)</label>
-                <input
-                  type="text"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="e.g. secret123"
+                  placeholder="https://github.com/..."
                   className={styles.input}
                 />
               </div>
@@ -1436,11 +1441,11 @@ function SkillManager({ showToast }: { showToast: (message: string, type?: 'succ
 
       {/* Skill Form Modal */}
       {isModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
+        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2>{editId ? 'Modify Skill' : 'New Skill'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose}>
+              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose} aria-label="Close modal">
                 <X size={20} />
               </button>
             </div>
@@ -1690,11 +1695,11 @@ function TestimonialManager({ showToast }: { showToast: (message: string, type?:
 
       {/* Testimonial Form Modal */}
       {isModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
+        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2>{editId ? 'Modify Testimonial' : 'New Testimonial'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose}>
+              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose} aria-label="Close modal">
                 <X size={20} />
               </button>
             </div>
@@ -1986,11 +1991,11 @@ function BlogManager({ showToast }: { showToast: (message: string, type?: 'succe
 
       {/* Blog Write/Edit Modal */}
       {isModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent} style={{ maxWidth: '800px' }}>
+        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2>{editId ? 'Edit Journal Entry' : 'Create New Journal Entry'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose}>
+              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose} aria-label="Close modal">
                 <X size={20} />
               </button>
             </div>
@@ -2282,11 +2287,11 @@ function ServiceManager({ showToast }: { showToast: (message: string, type?: 'su
 
       {/* Service Form Modal */}
       {isModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
+        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2>{editId ? 'Modify Service' : 'New Service'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose}>
+              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose} aria-label="Close modal">
                 <X size={20} />
               </button>
             </div>
@@ -2568,11 +2573,11 @@ function ExperienceManager({ showToast }: { showToast: (message: string, type?: 
       )}
 
       {isModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent} style={{ maxWidth: '700px' }}>
+        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h2 className={styles.modalTitle}>{editId ? 'Edit Work Experience' : 'Add Work Experience'}</h2>
-              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose}>
+              <button onClick={() => setIsModalOpen(false)} className={styles.modalClose} aria-label="Close modal">
                 <X size={20} />
               </button>
             </div>
