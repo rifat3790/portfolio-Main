@@ -37,7 +37,27 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         disallow: disallowed,
       },
       {
+        userAgent: 'Googlebot-Image',
+        allow: '/',
+        disallow: disallowed,
+      },
+      {
         userAgent: 'Bingbot',
+        allow: '/',
+        disallow: disallowed,
+      },
+      {
+        userAgent: 'Applebot',
+        allow: '/',
+        disallow: disallowed,
+      },
+      {
+        userAgent: 'DuckDuckBot',
+        allow: '/',
+        disallow: disallowed,
+      },
+      {
+        userAgent: 'Baiduspider',
         allow: '/',
         disallow: disallowed,
       },

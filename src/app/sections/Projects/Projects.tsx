@@ -127,12 +127,19 @@ export default function Projects({ siteSettings, initialProjects, onSelectProjec
                   onClick={() => onSelectProject(p)}
                 >
                   <div className={styles.projectCardImageWrapper}>
-                    <img src={p.image} alt={p.title} className={styles.projectCardImage} loading="lazy" decoding="async" />
+                    <img
+                      src={p.image}
+                      alt={`${p.title} - Best Shopify & Full Stack Web Project by Refayet Hossen (Rifayet Hossen)`}
+                      title={`${p.title} | Case Study & Architecture by Refayet Hossen`}
+                      className={styles.projectCardImage}
+                      loading="lazy"
+                      decoding="async"
+                    />
                     <div className={styles.projectCardIndex}>{(idx + 1).toString().padStart(2, '0')}</div>
                   </div>
-                  <div className={styles.projectCardContent}>
-                    <h3 className={styles.projectCardTitle}>{p.title}</h3>
-                    <p className={styles.projectCardDesc}>{p.description}</p>
+                  <div className={styles.projectCardContent} itemScope itemType="https://schema.org/CreativeWork">
+                    <h3 className={styles.projectCardTitle} itemProp="name">{p.title}</h3>
+                    <p className={styles.projectCardDesc} itemProp="description">{p.description}</p>
                     <div className={styles.projectCardFooter}>
                       <div className={styles.projectCardTags}>
                         {p.techStack.slice(0, 3).map((tech) => (

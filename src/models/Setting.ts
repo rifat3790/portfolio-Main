@@ -233,8 +233,8 @@ const SettingSchema = new Schema<ISetting>({
   aboutValue4Desc: { type: String, default: 'Partnering closely to solve real-world problems and drive conversion rates.' },
   // SEO & Webmaster Configuration
   seoTitle: { type: String, default: 'Refayet Hossen (Rifayet Hossen) | Best Shopify Developer & Full Stack Web Developer' },
-  seoDescription: { type: String, default: 'Refayet Hossen (also known as Rifayet Hossen) is a premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist building high-converting Shopify stores, custom e-commerce websites, and modern web applications.' },
-  seoKeywords: { type: String, default: 'Rifayet Hossen, Refayet Hossen, Best shopify developer, Shopify developer, Shopify expert, Web developer, Full stack developer, e-commerce website, ecommerce website, e-commerce store, ecommerce store, New website build, developer, engineer, Shopify liquid developer, Next.js developer, React developer, MERN stack developer' },
+  seoDescription: { type: String, default: 'Refayet Hossen (also known as Rifayet Hossen) is a premier Shopify Developer, Full Stack Web Developer, and E-commerce Specialist building high-converting Shopify stores, custom e-commerce websites, and new website builds with Next.js, React, Node.js, and Shopify Liquid.' },
+  seoKeywords: { type: String, default: 'Refayet Hossen, Rifayet Hossen, Md. Refayet Hossen, Md Rifayet Hossen, Rifat, rifat3790, Best shopify developer, Shopify developer, Shopify expert, Shopify liquid developer, Shopify theme developer, Shopify speed optimization, Web developer, Full stack developer, Full stack web developer, Next.js developer, Next.js 16 developer, React developer, Node.js developer, MERN stack developer, e-commerce website, ecommerce store, New website build, Custom web application, Headless Shopify developer' },
   canonicalUrl: { type: String, default: 'https://rifat-portfolio-brown.vercel.app' },
   googleSiteVerification: { type: String, default: 'SS7ibWZJLzqWLymSqKjIvm_BLRj6aJ_dv9FNqugK-P4' },
   ogImageUrl: { type: String, default: '' },

@@ -98,14 +98,21 @@ export default function Experience({ siteSettings, initialExperiences }: Experie
                     <div className={`${styles.expCard} ${isActive ? styles.expCardActive : ''}`}>
                       <div className={styles.expCardLogoBox}>
                         {item.logo ? (
-                          <img src={item.logo} alt={item.company} className={styles.expCardLogoImg} loading="lazy" decoding="async" />
+                          <img
+                            src={item.logo}
+                            alt={`${item.company} - Software Engineering Experience of Refayet Hossen`}
+                            title={`${item.role} at ${item.company} | Refayet Hossen`}
+                            className={styles.expCardLogoImg}
+                            loading="lazy"
+                            decoding="async"
+                          />
                         ) : (
                           <div className={styles.expCardLogoPlaceholder}>{item.company.charAt(0)}</div>
                         )}
                       </div>
-                      <div className={styles.expCardContent}>
+                      <div className={styles.expCardContent} itemScope itemType="https://schema.org/Organization">
                         <div className={styles.expCardHeaderRow}>
-                          <h4 className={styles.expCardCompany}>{item.company}</h4>
+                          <h4 className={styles.expCardCompany} itemProp="name">{item.company}</h4>
                           {item.isCurrent && <span className={styles.expCurrentPill}>Current</span>}
                         </div>
                         <div className={styles.expCardRole}>{item.role}</div>
@@ -121,10 +128,17 @@ export default function Experience({ siteSettings, initialExperiences }: Experie
             <div className={styles.expDetailCol}>
               {selectedExp ? (
                 <>
-                  <div className={styles.expDetailHeader}>
+                  <div className={styles.expDetailHeader} itemScope itemType="https://schema.org/Organization">
                     <div className={styles.expDetailLogoBox}>
                       {selectedExp.logo ? (
-                        <img src={selectedExp.logo} alt={selectedExp.company} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img
+                          src={selectedExp.logo}
+                          alt={`${selectedExp.company} - Experience and Engineering by Refayet Hossen`}
+                          title={`${selectedExp.role} at ${selectedExp.company}`}
+                          loading="lazy"
+                          decoding="async"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
                       ) : (
                         <div className={styles.expCardLogoPlaceholder} style={{ fontSize: '1.8rem', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {selectedExp.company.charAt(0)}
@@ -132,7 +146,7 @@ export default function Experience({ siteSettings, initialExperiences }: Experie
                       )}
                     </div>
                     <div className={styles.expDetailInfo}>
-                      <h3 className={styles.expDetailCompany}>{selectedExp.company}</h3>
+                      <h3 className={styles.expDetailCompany} itemProp="name">{selectedExp.company}</h3>
                       <div className={styles.expDetailRole}>{selectedExp.role}</div>
                       <div className={styles.expDetailMetaRow}>
                         <div className={styles.expDetailMetaItem}><Clock size={14} /><span>{selectedExp.duration}</span></div>

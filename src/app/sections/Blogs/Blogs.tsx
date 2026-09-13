@@ -149,7 +149,14 @@ export default function Blogs({ siteSettings, initialBlogs }: BlogsProps) {
                   >
                     <div className={styles.blogCardImageWrapper}>
                       {blog.image ? (
-                        <img src={blog.image} alt={blog.title} className={styles.blogCardImage} loading="lazy" decoding="async" />
+                        <img
+                          src={blog.image}
+                          alt={`${blog.title} | Web Development & Shopify Tutorial by Refayet Hossen`}
+                          title={`${blog.title} - Refayet Hossen Tech Blog`}
+                          className={styles.blogCardImage}
+                          loading="lazy"
+                          decoding="async"
+                        />
                       ) : (
                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-tertiary)' }}>
                           <BookOpen size={48} color="var(--text-muted)" />
@@ -160,9 +167,9 @@ export default function Blogs({ siteSettings, initialBlogs }: BlogsProps) {
                         {blog.createdAt ? new Date(blog.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''}
                       </span>
                     </div>
-                    <div className={styles.blogCardContent}>
-                      <h3 className={styles.blogCardTitle}>{blog.title}</h3>
-                      <p className={styles.blogCardExcerpt}>{blog.excerpt}</p>
+                    <div className={styles.blogCardContent} itemScope itemType="https://schema.org/BlogPosting">
+                      <h3 className={styles.blogCardTitle} itemProp="headline">{blog.title}</h3>
+                      <p className={styles.blogCardExcerpt} itemProp="description">{blog.excerpt}</p>
                       <div className={styles.blogCardFooter}>
                         <div className={styles.blogCardAuthor}>
                           {siteSettings?.aboutImage ? (
