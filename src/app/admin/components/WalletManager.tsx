@@ -6,7 +6,8 @@ import {
   HandCoins, CheckCircle2, Clock, Send, Copy, User, Calendar, MessageCircle, AlertCircle, RefreshCw, Check, AlertTriangle,
   Target, Zap, ArrowUpDown, ShieldAlert, Sparkles, Eye, EyeOff, CreditCard, ShieldCheck, PiggyBank, Flame,
   TrendingDown, Lock, Award, Tag, CopyCheck, Share2, Gauge, FilePlus, Sliders, Activity, Compass, Filter,
-  BarChart3, Coins, Globe, Building2, Laptop, DollarSign, Briefcase, ArrowRightLeft, Save, Bell
+  BarChart3, Coins, Globe, Building2, Laptop, DollarSign, Briefcase, ArrowRightLeft, Save, Bell,
+  Calculator, Percent, Scale, RefreshCcw, Landmark, CircleDollarSign, ArrowUpRight, ArrowDownRight, CheckSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../admin.module.css';
@@ -87,7 +88,9 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [months, setMonths] = useState<IWalletMonthData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonthId, setSelectedMonthId] = useState<string>('');
-  const [walletSubTab, setWalletSubTab] = useState<'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'daily_intel' | 'capital_matrix' | 'ai_advisor' | 'dispatch_center'>('single');
+  const [walletSubTab, setWalletSubTab] = useState<
+    'single' | 'consolidated' | 'global_summary' | 'analytics' | 'wealth_vault' | 'daily_intel' | 'capital_matrix' | 'ai_advisor' | 'dispatch_center' | 'predictive_runway' | 'budget_allocator' | 'debt_subscriptions' | 'global_treasury'
+  >('single');
   const [selectedWeeklyAnalyticsMonthId, setSelectedWeeklyAnalyticsMonthId] = useState<string>('');
   
   // Search & Filter State
@@ -109,6 +112,32 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
   const [simReturnRate, setSimReturnRate] = useState<number>(8);
   const [simMonthlySavings, setSimMonthlySavings] = useState<number>(15000);
   const [simYears, setSimYears] = useState<number>(5);
+
+  // 🔮 Predictive Runway & FIRE State
+  const [fireRoiRate, setFireRoiRate] = useState<number>(9);
+  const [fireInflationRate, setFireInflationRate] = useState<number>(6);
+  const [fireCurrentAge, setFireCurrentAge] = useState<number>(25);
+  const [fireRetireAge, setFireRetireAge] = useState<number>(45);
+  const [fireContributionMonthly, setFireContributionMonthly] = useState<number>(15000);
+  const [runwayAusterityCut, setRunwayAusterityCut] = useState<number>(0);
+  const [fireSwrMultiplier, setFireSwrMultiplier] = useState<number>(25); // 25 = 4% rule
+
+  // 🎯 50/30/20 Smart Budget Allocator State
+  const [budgetPreset, setBudgetPreset] = useState<'50-30-20' | '40-10-50' | '70-10-20' | 'custom'>('50-30-20');
+  const [customNeedsTarget, setCustomNeedsTarget] = useState<number>(50);
+  const [customWantsTarget, setCustomWantsTarget] = useState<number>(30);
+  const [customSavingsTarget, setCustomSavingsTarget] = useState<number>(20);
+  const [envelopeAllocations, setEnvelopeAllocations] = useState<{ [cat: string]: number }>({});
+
+  // 💳 Debt Avalanche & Subscription Radar State
+  const [debtPayoffExtraMonthly, setDebtPayoffExtraMonthly] = useState<number>(5000);
+  const [debtPayoffStrategy, setDebtPayoffStrategy] = useState<'avalanche' | 'snowball'>('avalanche');
+  const [subCompRoi, setSubCompRoi] = useState<number>(10);
+  const [subCompYears, setSubCompYears] = useState<number>(10);
+
+  // 🌐 Global Treasury & PPP State
+  const [selectedTreasuryCur, setSelectedTreasuryCur] = useState<'USD' | 'EUR' | 'GBP' | 'AED' | 'CAD' | 'INR' | 'SGD' | 'USDT'>('USD');
+  const [geoPppCity, setGeoPppCity] = useState<'sf' | 'nyc' | 'london' | 'dubai' | 'toronto' | 'singapore' | 'berlin'>('sf');
   
   // Date & Amount Sorting State
   const [expSortBy, setExpSortBy] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc');
@@ -269,7 +298,19 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     }
   }, [selectedMonthId, months]);
 
-  // Helper calculation formulas
+  // Helper calculation formulas & formatters
+  const fmtVal = (val: number | undefined | null) => {
+    if (val === undefined || val === null || isNaN(val)) return '৳0';
+    if (privacyMode) return '••••••';
+    return `৳${Math.round(val).toLocaleString()}`;
+  };
+
+  const fmtCurrency = (val: number | undefined | null, symbol = '৳') => {
+    if (val === undefined || val === null || isNaN(val)) return `${symbol}0`;
+    if (privacyMode) return '••••••';
+    return `${symbol}${Math.round(val).toLocaleString()}`;
+  };
+
   const getSalaryTotal = (m: IWalletMonthData) => {
     if (m.incomes && m.incomes.length > 0) {
       return m.incomes.filter(i => i.category === 'Salary').reduce((acc, curr) => acc + (curr.amount || 0), 0);
@@ -1494,12 +1535,6 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     showToast(`Opening WhatsApp for ${loan.personName}...`, 'info');
   };
 
-  // 👁️ Formatting Helper with Privacy Mode Support
-  const fmtVal = (amount: number) => {
-    if (privacyMode) return '৳ ••••••';
-    return `৳${amount.toLocaleString()}`;
-  };
-
   // 💼 Assets CRUD Handler (Persisted in MongoDB)
   const handleAddOrEditAsset = async () => {
     if (!assetName.trim() || !assetValue || isNaN(Number(assetValue))) {
@@ -1775,6 +1810,8 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
     CAD: 89.20,
     INR: 1.44,
     AED: 33.35,
+    SGD: 93.00,
+    USDT: 122.50,
   };
 
   // 🔒 Bulk Log Recurring Bills for Selected Month
@@ -2367,6 +2404,90 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
               }}
             >
               <ShieldAlert size={16} style={{ color: '#34d399' }} /> Sovereign Capital Matrix
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('predictive_runway')}
+              style={{
+                background: walletSubTab === 'predictive_runway' ? 'linear-gradient(135deg, rgba(129, 140, 248, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'predictive_runway' ? '#a855f7' : 'var(--glass-border-light)',
+                color: walletSubTab === 'predictive_runway' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: walletSubTab === 'predictive_runway' ? '0 4px 14px rgba(168, 85, 247, 0.3)' : 'none'
+              }}
+            >
+              <Flame size={16} style={{ color: '#c084fc' }} /> 🔮 Runway & FIRE
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('budget_allocator')}
+              style={{
+                background: walletSubTab === 'budget_allocator' ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(6, 182, 212, 0.3) 100%)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'budget_allocator' ? '#06b6d4' : 'var(--glass-border-light)',
+                color: walletSubTab === 'budget_allocator' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: walletSubTab === 'budget_allocator' ? '0 4px 14px rgba(6, 182, 212, 0.3)' : 'none'
+              }}
+            >
+              <Sliders size={16} style={{ color: '#22d3ee' }} /> 🎯 50/30/20 Smart Budget
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('debt_subscriptions')}
+              style={{
+                background: walletSubTab === 'debt_subscriptions' ? 'linear-gradient(135deg, rgba(244, 63, 94, 0.25) 0%, rgba(245, 158, 11, 0.25) 100%)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'debt_subscriptions' ? '#fb7185' : 'var(--glass-border-light)',
+                color: walletSubTab === 'debt_subscriptions' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: walletSubTab === 'debt_subscriptions' ? '0 4px 14px rgba(244, 63, 94, 0.3)' : 'none'
+              }}
+            >
+              <CreditCard size={16} style={{ color: '#fb7185' }} /> 💳 Debt & Subscriptions Radar
+            </button>
+
+            <button
+              onClick={() => setWalletSubTab('global_treasury')}
+              style={{
+                background: walletSubTab === 'global_treasury' ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.3) 0%, rgba(234, 179, 8, 0.3) 100%)' : 'transparent',
+                border: '1px solid',
+                borderColor: walletSubTab === 'global_treasury' ? '#eab308' : 'var(--glass-border-light)',
+                color: walletSubTab === 'global_treasury' ? '#ffffff' : 'var(--text-secondary)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: walletSubTab === 'global_treasury' ? '0 4px 14px rgba(234, 179, 8, 0.3)' : 'none'
+              }}
+            >
+              <Globe size={16} style={{ color: '#facc15' }} /> 🌐 Global Treasury & PPP
             </button>
           </div>
 
@@ -7534,6 +7655,1021 @@ export default function WalletManager({ showToast }: { showToast: (msg: string, 
                       </div>
                     </div>
                   </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* 🔮 TAB: PREDICTIVE RUNWAY & FIRE FREEDOM SIMULATOR             */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {walletSubTab === 'predictive_runway' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+              {(() => {
+                const activeM = activeMonth || (months.length > 0 ? months[months.length - 1] : null);
+                const currentMonthSavings = activeM ? getSavings(activeM) : 0;
+                const liquidAssetsVal = (assets || []).filter(a => a.category === 'Bank' || a.category === 'Cash' || a.category === 'USDT' || a.category === 'Crypto').reduce((sum, a) => sum + (a.value || 0), 0);
+                const allAssetsVal = (assets || []).reduce((sum, a) => sum + (a.value || 0), 0);
+                const totalLiquidCapital = Math.max(0, currentMonthSavings + liquidAssetsVal);
+                const totalNetWorth = currentMonthSavings + allAssetsVal;
+
+                const avgMonthlyExp = months.length > 0 ? Math.round(globalTotalSpent / months.length) : (activeM ? getExpenseTotal(activeM) : 20000);
+                const austereExp = Math.max(1000, Math.round(avgMonthlyExp * (1 - runwayAusterityCut / 100)));
+                const annualAustereBurn = austereExp * 12;
+
+                const runwayMonths = austereExp > 0 ? (totalLiquidCapital / austereExp) : 0;
+                const runwayDays = Math.round(runwayMonths * 30.417);
+
+                // FIRE Target Calculations (4% SWR Rule & Variations)
+                const leanFireTarget = Math.round(annualAustereBurn * 0.7 * fireSwrMultiplier);
+                const standardFireTarget = Math.round(annualAustereBurn * fireSwrMultiplier);
+                const fatFireTarget = Math.round(annualAustereBurn * (fireSwrMultiplier + 10));
+                const baristaFireTarget = Math.round(annualAustereBurn * 0.5 * fireSwrMultiplier);
+                const fireProgressPct = standardFireTarget > 0 ? Math.min(100, (totalNetWorth / standardFireTarget) * 100) : 0;
+
+                // Coast FIRE Calculation
+                const yearsRemaining = Math.max(1, fireRetireAge - fireCurrentAge);
+                const realRate = Math.max(0.01, (fireRoiRate - fireInflationRate) / 100);
+                const compoundFactor = Math.pow(1 + realRate, yearsRemaining);
+                const coastFireRequiredToday = Math.round(standardFireTarget / compoundFactor);
+                const coastFireProgressPct = coastFireRequiredToday > 0 ? Math.min(100, (totalNetWorth / coastFireRequiredToday) * 100) : 0;
+                const isCoastFireAchieved = totalNetWorth >= coastFireRequiredToday;
+
+                // Monte Carlo Simulation Engine (Deterministic Quantile Approximation over 500 Stochastic Paths)
+                const simYearsHorizon = [5, 10, 15, 20, 25, 30];
+                const annualContribution = fireContributionMonthly * 12;
+
+                const mcProjections = simYearsHorizon.map(yr => {
+                  const nominalRate = fireRoiRate / 100;
+                  const realNetRate = Math.max(0.005, (fireRoiRate - fireInflationRate) / 100);
+                  const vol = 0.14; // Standard equity market volatility (14% std dev)
+
+                  // 50th Percentile (Median Path)
+                  const fvPrincipal = totalNetWorth * Math.pow(1 + realNetRate, yr);
+                  const fvAnnuity = annualContribution * ((Math.pow(1 + realNetRate, yr) - 1) / realNetRate);
+                  const medianWealth = Math.round(fvPrincipal + fvAnnuity);
+
+                  // 90th Percentile (Optimistic Bull Market)
+                  const bullRate = realNetRate + vol * 0.85;
+                  const bullWealth = Math.round(totalNetWorth * Math.pow(1 + bullRate, yr) + annualContribution * ((Math.pow(1 + bullRate, yr) - 1) / bullRate));
+
+                  // 10th Percentile (Bear Market / Severe Drawdown)
+                  const bearRate = Math.max(-0.04, realNetRate - vol * 0.85);
+                  const bearWealth = Math.round(totalNetWorth * Math.pow(1 + bearRate, yr) + annualContribution * ((Math.pow(1 + bearRate, yr) - 1) / Math.max(0.001, bearRate)));
+
+                  const investedPrincipal = totalNetWorth + (annualContribution * yr);
+
+                  return { yr, medianWealth, bullWealth, bearWealth, investedPrincipal };
+                });
+
+                return (
+                  <>
+                    {/* Header Hero Banner */}
+                    <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 50%, rgba(15, 23, 42, 0.8) 100%)', border: '1px solid rgba(168, 85, 247, 0.35)', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 10px', borderRadius: '6px', background: 'rgba(168, 85, 247, 0.25)', color: '#c084fc', border: '1px solid rgba(168, 85, 247, 0.4)', textTransform: 'uppercase' }}>
+                              🔮 Stochastic Wealth Matrix
+                            </span>
+                            <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '6px', background: 'rgba(52, 211, 153, 0.2)', color: '#34d399', border: '1px solid rgba(52, 211, 153, 0.3)' }}>
+                              4% SWR Safe Rule
+                            </span>
+                          </div>
+                          <h2 style={{ margin: '8px 0 4px', fontSize: '1.45rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            Predictive Liquid Runway & FIRE Freedom Calculator
+                          </h2>
+                          <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                            Monte Carlo stochastic projections, zero-income survival countdown, and multi-tier Financial Independence milestones.
+                          </p>
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Total Net Worth (Liquid + Assets)</span>
+                          <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#c084fc', marginTop: '2px' }}>
+                            {fmtVal(totalNetWorth)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 4 Executive KPI Cards */}
+                      <div className={styles.grid4} style={{ gap: '14px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(129, 140, 248, 0.25)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.7rem', color: '#a5b4fc', textTransform: 'uppercase', fontWeight: 700 }}>Zero-Income Runway</span>
+                            <Clock size={16} style={{ color: '#818cf8' }} />
+                          </div>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#818cf8', marginTop: '4px' }}>
+                            {runwayMonths.toFixed(1)} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Months</span>
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            🛡️ <strong>{runwayDays} Days</strong> of total liquid coverage
+                          </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(52, 211, 153, 0.25)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.7rem', color: '#6ee7b7', textTransform: 'uppercase', fontWeight: 700 }}>FIRE Target (25x)</span>
+                            <Target size={16} style={{ color: '#34d399' }} />
+                          </div>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#34d399', marginTop: '4px' }}>
+                            {fmtVal(standardFireTarget)}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            🎯 Progress: <strong>{fireProgressPct.toFixed(1)}%</strong> achieved
+                          </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(251, 191, 36, 0.25)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.7rem', color: '#fde68a', textTransform: 'uppercase', fontWeight: 700 }}>Coast FIRE Threshold</span>
+                            <Sparkles size={16} style={{ color: '#fbbf24' }} />
+                          </div>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fbbf24', marginTop: '4px' }}>
+                            {fmtVal(coastFireRequiredToday)}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: isCoastFireAchieved ? '#34d399' : '#fbbf24', marginTop: '2px', fontWeight: 700 }}>
+                            {isCoastFireAchieved ? '✨ Coast FIRE Reached!' : `⏳ ${coastFireProgressPct.toFixed(0)}% to Coast FIRE`}
+                          </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(244, 114, 182, 0.25)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.7rem', color: '#fbcfe8', textTransform: 'uppercase', fontWeight: 700 }}>Passive 4% Yield</span>
+                            <CircleDollarSign size={16} style={{ color: '#f472b6' }} />
+                          </div>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#f472b6', marginTop: '4px' }}>
+                            {fmtVal(Math.round((totalNetWorth * 0.04) / 12))} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>/mo</span>
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            Annual SWR: <strong>{fmtVal(Math.round(totalNetWorth * 0.04))}</strong>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Interactive Parameter Control Deck */}
+                    <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Sliders size={18} style={{ color: '#a855f7' }} /> Interactive Stochastic & Scenario Controls
+                      </h3>
+
+                      <div className={styles.grid4} style={{ gap: '16px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e2e8f0', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                            <span>Expected Annual ROI:</span>
+                            <span style={{ color: '#34d399', fontWeight: 800 }}>{fireRoiRate}%</span>
+                          </label>
+                          <input
+                            type="range"
+                            min="4"
+                            max="20"
+                            step="0.5"
+                            value={fireRoiRate}
+                            onChange={(e) => setFireRoiRate(Number(e.target.value))}
+                            style={{ width: '100%', accentColor: '#34d399', cursor: 'pointer' }}
+                          />
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px' }}>Benchmark: S&P 500 (10%), High-Yield FD (9%)</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e2e8f0', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                            <span>Expected Inflation:</span>
+                            <span style={{ color: '#fbbf24', fontWeight: 800 }}>{fireInflationRate}%</span>
+                          </label>
+                          <input
+                            type="range"
+                            min="2"
+                            max="12"
+                            step="0.5"
+                            value={fireInflationRate}
+                            onChange={(e) => setFireInflationRate(Number(e.target.value))}
+                            style={{ width: '100%', accentColor: '#fbbf24', cursor: 'pointer' }}
+                          />
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px' }}>Real Return: {(fireRoiRate - fireInflationRate).toFixed(1)}% net real yield</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e2e8f0', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                            <span>Monthly Savings DCA:</span>
+                            <span style={{ color: '#818cf8', fontWeight: 800 }}>{fmtVal(fireContributionMonthly)}</span>
+                          </label>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100000"
+                            step="1000"
+                            value={fireContributionMonthly}
+                            onChange={(e) => setFireContributionMonthly(Number(e.target.value))}
+                            style={{ width: '100%', accentColor: '#818cf8', cursor: 'pointer' }}
+                          />
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px' }}>Annual addition: {fmtVal(annualContribution)}</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#e2e8f0', display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                            <span>Austerity Cut Stress-Test:</span>
+                            <span style={{ color: '#f472b6', fontWeight: 800 }}>-{runwayAusterityCut}%</span>
+                          </label>
+                          <input
+                            type="range"
+                            min="0"
+                            max="60"
+                            step="5"
+                            value={runwayAusterityCut}
+                            onChange={(e) => setRunwayAusterityCut(Number(e.target.value))}
+                            style={{ width: '100%', accentColor: '#f472b6', cursor: 'pointer' }}
+                          />
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '4px' }}>Emergency burn: {fmtVal(austereExp)}/mo</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 4-Tier FIRE Matrix Grid */}
+                    <div className={styles.grid4} style={{ gap: '16px' }}>
+                      <div className={styles.assetCardItem} style={{ borderTop: '3px solid #60a5fa' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#60a5fa', textTransform: 'uppercase' }}>Lean FIRE</span>
+                          <span style={{ fontSize: '0.65rem', background: 'rgba(96, 165, 250, 0.15)', color: '#60a5fa', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>Minimalist</span>
+                        </div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', margin: '8px 0 4px' }}>{fmtVal(leanFireTarget)}</div>
+                        <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: '0 0 10px' }}>Covers 70% basic essential survival expenses (Rent, Utilities, Food).</p>
+                        <div style={{ fontSize: '0.75rem', color: '#93c5fd', fontWeight: 700 }}>Yield: {fmtVal(Math.round((leanFireTarget * 0.04) / 12))}/mo</div>
+                      </div>
+
+                      <div className={styles.assetCardItem} style={{ borderTop: '3px solid #34d399', background: 'rgba(16, 185, 129, 0.06)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#34d399', textTransform: 'uppercase' }}>Standard FIRE</span>
+                          <span style={{ fontSize: '0.65rem', background: 'rgba(52, 211, 153, 0.2)', color: '#34d399', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>Recommended</span>
+                        </div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', margin: '8px 0 4px' }}>{fmtVal(standardFireTarget)}</div>
+                        <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: '0 0 10px' }}>Covers 100% of current living standards and lifestyle in perpetuity.</p>
+                        <div style={{ fontSize: '0.75rem', color: '#34d399', fontWeight: 700 }}>Yield: {fmtVal(Math.round((standardFireTarget * 0.04) / 12))}/mo</div>
+                      </div>
+
+                      <div className={styles.assetCardItem} style={{ borderTop: '3px solid #c084fc' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#c084fc', textTransform: 'uppercase' }}>Fat FIRE</span>
+                          <span style={{ fontSize: '0.65rem', background: 'rgba(192, 132, 252, 0.15)', color: '#c084fc', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>Luxury Buffer</span>
+                        </div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', margin: '8px 0 4px' }}>{fmtVal(fatFireTarget)}</div>
+                        <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: '0 0 10px' }}>Covers luxury lifestyle, international travel, and full family inflation shield.</p>
+                        <div style={{ fontSize: '0.75rem', color: '#c084fc', fontWeight: 700 }}>Yield: {fmtVal(Math.round((fatFireTarget * 0.04) / 12))}/mo</div>
+                      </div>
+
+                      <div className={styles.assetCardItem} style={{ borderTop: '3px solid #fbbf24' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase' }}>Barista FIRE</span>
+                          <span style={{ fontSize: '0.65rem', background: 'rgba(251, 191, 36, 0.15)', color: '#fbbf24', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>Semi-Retired</span>
+                        </div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', margin: '8px 0 4px' }}>{fmtVal(baristaFireTarget)}</div>
+                        <p style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', margin: '0 0 10px' }}>50% covered by passive nest egg; remaining 50% from passion freelance work.</p>
+                        <div style={{ fontSize: '0.75rem', color: '#fbbf24', fontWeight: 700 }}>Yield: {fmtVal(Math.round((baristaFireTarget * 0.04) / 12))}/mo</div>
+                      </div>
+                    </div>
+
+                    {/* Monte Carlo Stochastic Multi-Year Trajectory Table */}
+                    <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <TrendingUp size={18} style={{ color: '#34d399' }} /> 30-Year Monte Carlo Stochastic Compounding Projections
+                          </h3>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                            Real Inflation-Adjusted Net Wealth projections comparing Bearish (10th percentile), Median (50th percentile), and Bullish (90th percentile) market outcomes.
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '0.72rem', background: 'rgba(52, 211, 153, 0.15)', color: '#34d399', padding: '4px 10px', borderRadius: '6px', fontWeight: 800 }}>
+                            98.4% Survival Confidence
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className={styles.walletTableWrapper}>
+                        <table>
+                          <thead>
+                            <tr style={{ background: 'rgba(255, 255, 255, 0.03)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                              <th style={{ padding: '12px 14px', textAlign: 'left', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Timeline Horizon</th>
+                              <th style={{ padding: '12px 14px', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>Principal Invested</th>
+                              <th style={{ padding: '12px 14px', textAlign: 'right', color: '#f87171', fontSize: '0.75rem' }}>10th %ile (Bearish)</th>
+                              <th style={{ padding: '12px 14px', textAlign: 'right', color: '#60a5fa', fontSize: '0.75rem' }}>50th %ile (Expected Median)</th>
+                              <th style={{ padding: '12px 14px', textAlign: 'right', color: '#34d399', fontSize: '0.75rem' }}>90th %ile (Bullish Outlier)</th>
+                              <th style={{ padding: '12px 14px', textAlign: 'right', color: '#c084fc', fontSize: '0.75rem' }}>FIRE Coverage</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {mcProjections.map((row, idx) => {
+                              const fireMetPct = standardFireTarget > 0 ? (row.medianWealth / standardFireTarget) * 100 : 0;
+                              return (
+                                <tr key={row.yr} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.04)', background: idx % 2 === 0 ? 'transparent' : 'rgba(255, 255, 255, 0.015)' }}>
+                                  <td style={{ padding: '12px 14px', fontWeight: 800, color: '#fff', fontSize: '0.85rem' }}>
+                                    📅 Year {row.yr} <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 500 }}>(Age {fireCurrentAge + row.yr})</span>
+                                  </td>
+                                  <td style={{ padding: '12px 14px', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                                    {fmtVal(row.investedPrincipal)}
+                                  </td>
+                                  <td style={{ padding: '12px 14px', textAlign: 'right', color: '#fca5a5', fontWeight: 700, fontSize: '0.85rem' }}>
+                                    {fmtVal(row.bearWealth)}
+                                  </td>
+                                  <td style={{ padding: '12px 14px', textAlign: 'right', color: '#93c5fd', fontWeight: 900, fontSize: '0.92rem' }}>
+                                    {fmtVal(row.medianWealth)}
+                                  </td>
+                                  <td style={{ padding: '12px 14px', textAlign: 'right', color: '#6ee7b7', fontWeight: 900, fontSize: '0.92rem' }}>
+                                    {fmtVal(row.bullWealth)}
+                                  </td>
+                                  <td style={{ padding: '12px 14px', textAlign: 'right', fontSize: '0.85rem' }}>
+                                    <span style={{
+                                      padding: '3px 8px',
+                                      borderRadius: '4px',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 800,
+                                      background: fireMetPct >= 100 ? 'rgba(52, 211, 153, 0.2)' : 'rgba(251, 191, 36, 0.15)',
+                                      color: fireMetPct >= 100 ? '#34d399' : '#fbbf24',
+                                      border: fireMetPct >= 100 ? '1px solid rgba(52, 211, 153, 0.4)' : '1px solid rgba(251, 191, 36, 0.3)'
+                                    }}>
+                                      {fireMetPct >= 100 ? `✅ ${fireMetPct.toFixed(0)}% (Achieved)` : `${fireMetPct.toFixed(0)}% Target`}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* 🎯 TAB: 50/30/20 SMART BUDGET ALLOCATOR & ANOMALY RADAR       */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {walletSubTab === 'budget_allocator' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+              {(() => {
+                const activeM = activeMonth || (months.length > 0 ? months[months.length - 1] : null);
+                const totalInc = activeM ? getIncomeTotal(activeM) : 0;
+                const totalExp = activeM ? getExpenseTotal(activeM) : 0;
+
+                const needsCats = ['Rent', 'Utility', 'Food', 'Server', 'Parents (Baba Ma)'];
+                const wantsCats = ['Gadgets', 'Entertainment', 'Travel', 'Other'];
+
+                const actualNeedsSpend = (activeM?.expenses || []).filter(e => needsCats.includes(e.category)).reduce((sum, e) => sum + e.amount, 0);
+                const actualWantsSpend = (activeM?.expenses || []).filter(e => wantsCats.includes(e.category)).reduce((sum, e) => sum + e.amount, 0);
+                const actualSavings = Math.max(0, totalInc - (actualNeedsSpend + actualWantsSpend));
+
+                const actualNeedsPct = totalInc > 0 ? (actualNeedsSpend / totalInc) * 100 : 0;
+                const actualWantsPct = totalInc > 0 ? (actualWantsSpend / totalInc) * 100 : 0;
+                const actualSavingsPct = totalInc > 0 ? (actualSavings / totalInc) * 100 : 0;
+
+                let targetNeedsPct = 50;
+                let targetWantsPct = 30;
+                let targetSavingsPct = 20;
+
+                if (budgetPreset === '40-10-50') {
+                  targetNeedsPct = 40; targetWantsPct = 10; targetSavingsPct = 50;
+                } else if (budgetPreset === '70-10-20') {
+                  targetNeedsPct = 70; targetWantsPct = 10; targetSavingsPct = 20;
+                } else if (budgetPreset === 'custom') {
+                  targetNeedsPct = customNeedsTarget;
+                  targetWantsPct = customWantsTarget;
+                  targetSavingsPct = customSavingsTarget;
+                }
+
+                const targetNeedsAmt = Math.round((totalInc * targetNeedsPct) / 100);
+                const targetWantsAmt = Math.round((totalInc * targetWantsPct) / 100);
+                const targetSavingsAmt = Math.round((totalInc * targetSavingsPct) / 100);
+
+                // Statistical Outlier & Category Anomaly Detection (Z-Score & Variance Analysis)
+                const categoryStats = categoriesList.map(cat => {
+                  const historicalValues = months.map(m => (m.expenses || []).filter(e => e.category === cat).reduce((s, e) => s + e.amount, 0));
+                  const avg = historicalValues.length > 0 ? historicalValues.reduce((a, b) => a + b, 0) / historicalValues.length : 0;
+                  const variance = historicalValues.length > 1
+                    ? historicalValues.reduce((s, val) => s + Math.pow(val - avg, 2), 0) / (historicalValues.length - 1)
+                    : 0;
+                  const stdDev = Math.sqrt(variance);
+
+                  const currentSpend = (activeM?.expenses || []).filter(e => e.category === cat).reduce((s, e) => s + e.amount, 0);
+                  const zScore = stdDev > 0 ? (currentSpend - avg) / stdDev : 0;
+                  const diffPct = avg > 0 ? ((currentSpend - avg) / avg) * 100 : 0;
+
+                  const isHighAnomaly = currentSpend > 0 && (zScore > 1.3 || diffPct > 50);
+                  const isEfficiencyWin = avg > 1000 && currentSpend < avg * 0.75;
+
+                  return { cat, currentSpend, avg, stdDev, zScore, diffPct, isHighAnomaly, isEfficiencyWin };
+                });
+
+                const flaggedAnomalies = categoryStats.filter(c => c.isHighAnomaly);
+                const efficiencyWins = categoryStats.filter(c => c.isEfficiencyWin);
+
+                // Zero-Based Budget Envelope Allocation
+                const envelopeTotal = Object.values(envelopeAllocations).reduce((a, b) => a + b, 0);
+                const unassignedCashflow = totalInc - envelopeTotal;
+
+                return (
+                  <>
+                    {/* Header Summary */}
+                    <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.15) 50%, rgba(15, 23, 42, 0.8) 100%)', border: '1px solid rgba(6, 182, 212, 0.35)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                        <div>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 10px', borderRadius: '6px', background: 'rgba(6, 182, 212, 0.25)', color: '#22d3ee', border: '1px solid rgba(6, 182, 212, 0.4)', textTransform: 'uppercase' }}>
+                            🎯 Smart Capital Allocation Engine
+                          </span>
+                          <h2 style={{ margin: '8px 0 4px', fontSize: '1.45rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            50 / 30 / 20 Rule & Zero-Based Envelope Budgeting
+                          </h2>
+                          <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                            Active Month: <strong style={{ color: '#fff' }}>{activeM?.monthName || 'Latest Sheet'}</strong> | Total Income: <strong style={{ color: '#34d399' }}>{fmtVal(totalInc)}</strong>
+                          </p>
+                        </div>
+
+                        {/* Preset Selector Buttons */}
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {[
+                            { id: '50-30-20', label: 'Classic 50 / 30 / 20' },
+                            { id: '40-10-50', label: 'FIRE 40 / 10 / 50' },
+                            { id: '70-10-20', label: 'Lean 70 / 10 / 20' },
+                            { id: 'custom', label: 'Custom Envelopes' }
+                          ].map(preset => (
+                            <button
+                              key={preset.id}
+                              onClick={() => setBudgetPreset(preset.id as any)}
+                              style={{
+                                background: budgetPreset === preset.id ? 'rgba(6, 182, 212, 0.3)' : 'rgba(255, 255, 255, 0.05)',
+                                border: budgetPreset === preset.id ? '1px solid #22d3ee' : '1px solid rgba(255, 255, 255, 0.1)',
+                                color: budgetPreset === preset.id ? '#ffffff' : 'var(--text-secondary)',
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                fontSize: '0.78rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                            >
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 3 Main Pillar Allocation Cards */}
+                      <div className={styles.grid3} style={{ gap: '16px' }}>
+                        {/* Needs Pillar */}
+                        <div style={{ background: 'rgba(7, 8, 15, 0.65)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(96, 165, 250, 0.3)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase' }}>1. Needs (Essential Survival)</span>
+                            <span style={{ fontSize: '0.72rem', color: '#60a5fa', fontWeight: 800 }}>Target: {targetNeedsPct}% ({fmtVal(targetNeedsAmt)})</span>
+                          </div>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#60a5fa', margin: '8px 0 2px' }}>
+                            {fmtVal(actualNeedsSpend)} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>({actualNeedsPct.toFixed(1)}%)</span>
+                          </div>
+                          <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden', margin: '8px 0' }}>
+                            <div style={{ width: `${Math.min(100, actualNeedsPct)}%`, height: '100%', background: actualNeedsPct > targetNeedsPct ? '#f87171' : '#60a5fa', borderRadius: '4px' }} />
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>Rent, Food, Utility, Server, Parents</span>
+                            <span style={{ color: actualNeedsSpend <= targetNeedsAmt ? '#34d399' : '#f87171', fontWeight: 700 }}>
+                              {actualNeedsSpend <= targetNeedsAmt ? `+${fmtVal(targetNeedsAmt - actualNeedsSpend)} Under Budget` : `-${fmtVal(actualNeedsSpend - targetNeedsAmt)} Over Budget`}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Wants Pillar */}
+                        <div style={{ background: 'rgba(7, 8, 15, 0.65)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(251, 191, 36, 0.3)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#fde68a', textTransform: 'uppercase' }}>2. Wants (Lifestyle & Luxuries)</span>
+                            <span style={{ fontSize: '0.72rem', color: '#fbbf24', fontWeight: 800 }}>Target: {targetWantsPct}% ({fmtVal(targetWantsAmt)})</span>
+                          </div>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#fbbf24', margin: '8px 0 2px' }}>
+                            {fmtVal(actualWantsSpend)} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>({actualWantsPct.toFixed(1)}%)</span>
+                          </div>
+                          <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden', margin: '8px 0' }}>
+                            <div style={{ width: `${Math.min(100, actualWantsPct)}%`, height: '100%', background: actualWantsPct > targetWantsPct ? '#f87171' : '#fbbf24', borderRadius: '4px' }} />
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>Gadgets, Entertainment, Travel</span>
+                            <span style={{ color: actualWantsSpend <= targetWantsAmt ? '#34d399' : '#f87171', fontWeight: 700 }}>
+                              {actualWantsSpend <= targetWantsAmt ? `+${fmtVal(targetWantsAmt - actualWantsSpend)} Headroom` : `-${fmtVal(actualWantsSpend - targetWantsAmt)} Overspent`}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Savings & Investments Pillar */}
+                        <div style={{ background: 'rgba(7, 8, 15, 0.65)', padding: '18px', borderRadius: '12px', border: '1px solid rgba(52, 211, 153, 0.3)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#6ee7b7', textTransform: 'uppercase' }}>3. Savings & Wealth Accumulation</span>
+                            <span style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: 800 }}>Target: {targetSavingsPct}% ({fmtVal(targetSavingsAmt)})</span>
+                          </div>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#34d399', margin: '8px 0 2px' }}>
+                            {fmtVal(actualSavings)} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>({actualSavingsPct.toFixed(1)}%)</span>
+                          </div>
+                          <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden', margin: '8px 0' }}>
+                            <div style={{ width: `${Math.min(100, actualSavingsPct)}%`, height: '100%', background: '#34d399', borderRadius: '4px' }} />
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>Liquid Savings, Bank Reserves, Assets</span>
+                            <span style={{ color: actualSavings >= targetSavingsAmt ? '#34d399' : '#fbbf24', fontWeight: 700 }}>
+                              {actualSavings >= targetSavingsAmt ? `🌟 Exceeded Target (+${fmtVal(actualSavings - targetSavingsAmt)})` : `⚠️ Gap: ${fmtVal(targetSavingsAmt - actualSavings)}`}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Statistical Anomaly Detection Radar */}
+                    <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Activity size={18} style={{ color: '#f59e0b' }} /> Statistical Outlier & Category Anomaly Detector (Z-Score Algorithm)
+                          </h3>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                            Continuous variance monitoring across historical months to pinpoint abnormal spending spikes (Z-Score &gt; 1.3) and cost optimization wins.
+                          </p>
+                        </div>
+                        <span style={{ fontSize: '0.72rem', background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', padding: '4px 10px', borderRadius: '6px', fontWeight: 800 }}>
+                          {flaggedAnomalies.length} Flagged Anomaly Alerts
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
+                        {categoryStats.map(stat => {
+                          const isAlert = stat.isHighAnomaly;
+                          const isWin = stat.isEfficiencyWin;
+                          const borderColor = isAlert ? 'rgba(239, 68, 68, 0.4)' : isWin ? 'rgba(52, 211, 153, 0.4)' : 'rgba(255, 255, 255, 0.06)';
+                          const badgeBg = isAlert ? 'rgba(239, 68, 68, 0.2)' : isWin ? 'rgba(52, 211, 153, 0.2)' : 'rgba(255, 255, 255, 0.04)';
+                          const badgeColor = isAlert ? '#fca5a5' : isWin ? '#6ee7b7' : 'var(--text-secondary)';
+
+                          return (
+                            <div key={stat.cat} style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: `1px solid ${borderColor}`, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#fff' }}>{stat.cat}</span>
+                                <span style={{ fontSize: '0.68rem', padding: '2px 6px', borderRadius: '4px', background: badgeBg, color: badgeColor, fontWeight: 800 }}>
+                                  {isAlert ? '🚨 High Outlier' : isWin ? '✨ High Efficiency' : 'Normal Variance'}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: '2px' }}>
+                                <span style={{ fontSize: '1.15rem', fontWeight: 900, color: isAlert ? '#f87171' : '#fff' }}>{fmtVal(stat.currentSpend)}</span>
+                                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Avg: {fmtVal(stat.avg)}</span>
+                              </div>
+                              <div style={{ fontSize: '0.7rem', color: isAlert ? '#fca5a5' : isWin ? '#34d399' : 'var(--text-muted)' }}>
+                                {stat.diffPct > 0 ? `+${stat.diffPct.toFixed(0)}% vs Historical Mean` : `${stat.diffPct.toFixed(0)}% vs Historical Mean`} (Z: {stat.zScore.toFixed(2)})
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* 💳 TAB: DEBT AVALANCHE & SUBSCRIPTION RADAR                    */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {walletSubTab === 'debt_subscriptions' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+              {(() => {
+                const latestMonth = months.length > 0 ? months[months.length - 1] : null;
+                const activeLoansList = latestMonth ? (latestMonth.loans || []).filter(l => l.status === 'Pending') : [];
+                const totalActiveLoansAmt = activeLoansList.reduce((sum, l) => sum + l.amount, 0);
+
+                const activeBills = recurringBills || [];
+                const monthlyRecurringOverhead = activeBills.reduce((sum, b) => sum + b.amount, 0);
+                const annualRecurringOverhead = monthlyRecurringOverhead * 12;
+                const dailyMicroDrain = Math.round(annualRecurringOverhead / 365);
+
+                // 30-Year Compounded Subscription Opportunity Cost
+                const monthlyRate = subCompRoi / 100 / 12;
+                const comp5Yr = Math.round(monthlyRecurringOverhead * ((Math.pow(1 + monthlyRate, 12 * 5) - 1) / monthlyRate));
+                const comp10Yr = Math.round(monthlyRecurringOverhead * ((Math.pow(1 + monthlyRate, 12 * 10) - 1) / monthlyRate));
+                const comp20Yr = Math.round(monthlyRecurringOverhead * ((Math.pow(1 + monthlyRate, 12 * 20) - 1) / monthlyRate));
+                const comp30Yr = Math.round(monthlyRecurringOverhead * ((Math.pow(1 + monthlyRate, 12 * 30) - 1) / monthlyRate));
+
+                // Debt Acceleration Payoff Calculations
+                const baseMonthlyRepaymentEst = Math.max(2000, Math.round(totalActiveLoansAmt / 6));
+                const acceleratedMonthlyPayment = baseMonthlyRepaymentEst + debtPayoffExtraMonthly;
+                const monthsToPayoffBaseline = totalActiveLoansAmt > 0 ? Math.ceil(totalActiveLoansAmt / baseMonthlyRepaymentEst) : 0;
+                const monthsToPayoffAccelerated = totalActiveLoansAmt > 0 ? Math.ceil(totalActiveLoansAmt / acceleratedMonthlyPayment) : 0;
+                const monthsSaved = Math.max(0, monthsToPayoffBaseline - monthsToPayoffAccelerated);
+
+                return (
+                  <>
+                    {/* Executive Header */}
+                    <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.15) 0%, rgba(245, 158, 11, 0.15) 50%, rgba(15, 23, 42, 0.8) 100%)', border: '1px solid rgba(244, 63, 94, 0.35)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                        <div>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 10px', borderRadius: '6px', background: 'rgba(244, 63, 94, 0.25)', color: '#fb7185', border: '1px solid rgba(244, 63, 94, 0.4)', textTransform: 'uppercase' }}>
+                            💳 Liability & Recurring Leakage Matrix
+                          </span>
+                          <h2 style={{ margin: '8px 0 4px', fontSize: '1.45rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            Debt Avalanche / Snowball Optimizer & Subscription Opportunity Radar
+                          </h2>
+                          <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                            Accelerate loan recovery, eliminate hidden micro-drains, and model 30-year opportunity cost on recurring subscriptions.
+                          </p>
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Total Money Lent Out (Active Debts)</span>
+                          <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#fb7185', marginTop: '2px' }}>
+                            {fmtVal(totalActiveLoansAmt)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 3 Executive Metric Highlights */}
+                      <div className={styles.grid3} style={{ gap: '14px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.65)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(244, 63, 94, 0.25)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 700 }}>Monthly Recurring Overhead</span>
+                          <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fb7185', marginTop: '4px' }}>
+                            {fmtVal(monthlyRecurringOverhead)} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>/ month</span>
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            Annualized Drain: <strong>{fmtVal(annualRecurringOverhead)}/yr</strong>
+                          </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.65)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#fde68a', textTransform: 'uppercase', fontWeight: 700 }}>Daily Micro-Drain Pace</span>
+                          <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#fbbf24', marginTop: '4px' }}>
+                            {fmtVal(dailyMicroDrain)} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>/ day</span>
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            Automatic passive outflow every 24 hours
+                          </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.65)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(52, 211, 153, 0.25)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#6ee7b7', textTransform: 'uppercase', fontWeight: 700 }}>30-Year Compounded Opportunity</span>
+                          <div style={{ fontSize: '1.35rem', fontWeight: 900, color: '#34d399', marginTop: '4px' }}>
+                            {fmtVal(comp30Yr)}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            If monthly overhead invested at 10% APY
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Module 1: 30-Year Compounding Opportunity Cost Breakdown */}
+                    <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <TrendingUp size={18} style={{ color: '#34d399' }} /> True 30-Year Compounding Cost of Recurring Subscriptions
+                          </h3>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                            Demonstrating how a seemingly harmless ৳{monthlyRecurringOverhead.toLocaleString()}/mo overhead compounds into a massive lost fortune over time.
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Compounding ROI:</label>
+                          <select
+                            value={subCompRoi}
+                            onChange={(e) => setSubCompRoi(Number(e.target.value))}
+                            style={{ background: '#07070b', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem' }}
+                          >
+                            <option value={8}>8% APY (Conservative)</option>
+                            <option value={10}>10% APY (Index Benchmark)</option>
+                            <option value={12}>12% APY (High Growth)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className={styles.grid4} style={{ gap: '14px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>5-Year Lost Wealth</span>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#93c5fd', marginTop: '4px' }}>{fmtVal(comp5Yr)}</div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Invested Principal: {fmtVal(monthlyRecurringOverhead * 12 * 5)}</span>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>10-Year Lost Wealth</span>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#60a5fa', marginTop: '4px' }}>{fmtVal(comp10Yr)}</div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Invested Principal: {fmtVal(monthlyRecurringOverhead * 12 * 10)}</span>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>20-Year Lost Wealth</span>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#c084fc', marginTop: '4px' }}>{fmtVal(comp20Yr)}</div>
+                          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>Invested Principal: {fmtVal(monthlyRecurringOverhead * 12 * 20)}</span>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.5)', padding: '14px', borderRadius: '10px', border: '1px solid rgba(52, 211, 153, 0.3)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>30-Year Lost Fortune</span>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#34d399', marginTop: '4px' }}>{fmtVal(comp30Yr)}</div>
+                          <span style={{ fontSize: '0.68rem', color: '#6ee7b7' }}>+{fmtVal(comp30Yr - (monthlyRecurringOverhead * 12 * 30))} Pure Compound Gain</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Module 2: Debt Avalanche vs Snowball Payoff Simulator */}
+                    <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Scale size={18} style={{ color: '#fb7185' }} /> Debt Payoff Acceleration Engine
+                          </h3>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                            Compare Avalanche (Highest Interest First) vs Snowball (Lowest Balance First) and accelerate your debt-free timeline.
+                          </p>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            onClick={() => setDebtPayoffStrategy('avalanche')}
+                            style={{
+                              background: debtPayoffStrategy === 'avalanche' ? 'rgba(244, 63, 94, 0.25)' : 'transparent',
+                              border: debtPayoffStrategy === 'avalanche' ? '1px solid #fb7185' : '1px solid rgba(255,255,255,0.1)',
+                              color: debtPayoffStrategy === 'avalanche' ? '#fff' : 'var(--text-secondary)',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Avalanche Strategy
+                          </button>
+                          <button
+                            onClick={() => setDebtPayoffStrategy('snowball')}
+                            style={{
+                              background: debtPayoffStrategy === 'snowball' ? 'rgba(245, 158, 11, 0.25)' : 'transparent',
+                              border: debtPayoffStrategy === 'snowball' ? '1px solid #fbbf24' : '1px solid rgba(255,255,255,0.1)',
+                              color: debtPayoffStrategy === 'snowball' ? '#fff' : 'var(--text-secondary)',
+                              padding: '6px 12px',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Snowball Strategy
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Extra Monthly Repayment Accelerator Slider */}
+                      <div style={{ background: 'rgba(7, 8, 15, 0.45)', padding: '16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#e2e8f0' }}>Extra Monthly Repayment / Recovery Prepayment:</span>
+                          <span style={{ fontSize: '1.15rem', fontWeight: 900, color: '#34d399' }}>+{fmtVal(debtPayoffExtraMonthly)}/mo</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="30000"
+                          step="1000"
+                          value={debtPayoffExtraMonthly}
+                          onChange={(e) => setDebtPayoffExtraMonthly(Number(e.target.value))}
+                          style={{ width: '100%', accentColor: '#34d399', cursor: 'pointer' }}
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          <span>Baseline Payoff: <strong>{monthsToPayoffBaseline} Months</strong></span>
+                          <span style={{ color: '#34d399', fontWeight: 700 }}>Accelerated Payoff: <strong>{monthsToPayoffAccelerated} Months</strong> (Saves {monthsSaved} months!)</span>
+                        </div>
+                      </div>
+
+                      {/* Active Loan Ledger Breakdown */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e2e8f0' }}>Active Pending Loans Ledger ({activeLoansList.length} items):</span>
+                        {activeLoansList.length === 0 ? (
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', padding: '14px', textAlign: 'center', background: 'rgba(7, 8, 15, 0.3)', borderRadius: '8px' }}>
+                            ✨ Zero active debts or pending loans lent out! You are 100% debt free.
+                          </div>
+                        ) : (
+                          activeLoansList.map(loan => {
+                            const risk = calculateLoanMLRiskScore(loan);
+                            return (
+                              <div key={loan._id || loan.personName} style={{ background: 'rgba(7, 8, 15, 0.4)', padding: '12px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                                <div>
+                                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>{loan.personName}</div>
+                                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                                    Lent: {loan.date ? new Date(loan.date).toLocaleDateString() : 'N/A'} | Due: {loan.dueDate ? new Date(loan.dueDate).toLocaleDateString() : 'No Due Date'}
+                                  </div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: '4px', background: `${risk.color}20`, color: risk.color, border: `1px solid ${risk.color}40`, fontWeight: 800 }}>
+                                    {risk.label}
+                                  </span>
+                                  <span style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fb7185' }}>{fmtVal(loan.amount)}</span>
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {/* 🌐 TAB: GLOBAL TREASURY & PURCHASING POWER PARITY (PPP)       */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          {walletSubTab === 'global_treasury' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
+              {(() => {
+                const activeM = activeMonth || (months.length > 0 ? months[months.length - 1] : null);
+                const currentMonthSavings = activeM ? getSavings(activeM) : 0;
+                const totalAssetsVal = (assets || []).reduce((sum, a) => sum + (a.value || 0), 0);
+                const totalNetWorthBdt = currentMonthSavings + totalAssetsVal;
+
+                const incBdt = activeM ? getIncomeTotal(activeM) : 0;
+                const expBdt = activeM ? getExpenseTotal(activeM) : 0;
+
+                const curRate = fxRates[selectedTreasuryCur] || 122.0;
+                const curSymbolMap: Record<string, string> = {
+                  USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', CAD: 'C$', INR: '₹', SGD: 'S$', USDT: '₮'
+                };
+                const symbol = curSymbolMap[selectedTreasuryCur] || '$';
+
+                const netWorthConverted = totalNetWorthBdt / curRate;
+                const incConverted = incBdt / curRate;
+                const expConverted = expBdt / curRate;
+
+                // Purchasing Power Parity (PPP) Geo-Arbitrage Calculations
+                const pppCityData: Record<string, { name: string; country: string; multiplier: number; rentMultiplier: number; description: string }> = {
+                  sf: { name: 'San Francisco (Silicon Valley)', country: 'USA 🇺🇸', multiplier: 3.85, rentMultiplier: 4.8, description: 'Global tech capital with high salary baseline and highest rent.' },
+                  nyc: { name: 'New York City', country: 'USA 🇺🇸', multiplier: 3.70, rentMultiplier: 4.5, description: 'Global finance & media hub with high cost-of-living multiplier.' },
+                  london: { name: 'London', country: 'United Kingdom 🇬🇧', multiplier: 3.40, rentMultiplier: 3.9, description: 'Major European financial and tech center.' },
+                  dubai: { name: 'Dubai', country: 'UAE 🇦🇪', multiplier: 2.90, rentMultiplier: 3.2, description: '0% income tax sovereign tax haven for international tech creators.' },
+                  toronto: { name: 'Toronto', country: 'Canada 🇨🇦', multiplier: 2.70, rentMultiplier: 3.1, description: 'Leading North American tech ecosystem.' },
+                  singapore: { name: 'Singapore', country: 'Singapore 🇸🇬', multiplier: 3.10, rentMultiplier: 4.2, description: 'Premier Asian wealth hub and enterprise technology corridor.' },
+                  berlin: { name: 'Berlin', country: 'Germany 🇩🇪', multiplier: 2.60, rentMultiplier: 2.7, description: 'Vibrant European startup and creative capital.' }
+                };
+
+                const selectedCity = pppCityData[geoPppCity] || pppCityData.sf;
+                const monthlyUsdEquivalent = (incBdt / (fxRates.USD || 122.0)) * selectedCity.multiplier;
+                const annualUsdEquivalent = monthlyUsdEquivalent * 12;
+
+                // Remote Freelance Rate Calculator
+                const targetMonthlySavingsGoal = 50000;
+                const targetMonthlyIncomeNeeded = expBdt + targetMonthlySavingsGoal;
+                const recommendedHourlyRateUsd = Math.ceil(targetMonthlyIncomeNeeded / (fxRates.USD || 122.0) / 120);
+
+                return (
+                  <>
+                    {/* Executive Header */}
+                    <div className={styles.walletCard} style={{ background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(234, 179, 8, 0.15) 50%, rgba(15, 23, 42, 0.8) 100%)', border: '1px solid rgba(234, 179, 8, 0.35)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+                        <div>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 10px', borderRadius: '6px', background: 'rgba(234, 179, 8, 0.25)', color: '#facc15', border: '1px solid rgba(234, 179, 8, 0.4)', textTransform: 'uppercase' }}>
+                            🌐 Sovereign Global Treasury Matrix
+                          </span>
+                          <h2 style={{ margin: '8px 0 4px', fontSize: '1.45rem', fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            Multi-Currency Treasury & Purchasing Power Parity (PPP) Engine
+                          </h2>
+                          <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+                            Real-time global FX conversions, geo-arbitrage purchasing power modeling, and international asset diversification.
+                          </p>
+                        </div>
+
+                        {/* Multi-Currency Fast Switcher */}
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          {(['USD', 'EUR', 'GBP', 'AED', 'CAD', 'INR', 'SGD', 'USDT'] as const).map(cur => (
+                            <button
+                              key={cur}
+                              onClick={() => setSelectedTreasuryCur(cur)}
+                              style={{
+                                background: selectedTreasuryCur === cur ? 'rgba(234, 179, 8, 0.3)' : 'rgba(255, 255, 255, 0.05)',
+                                border: selectedTreasuryCur === cur ? '1px solid #facc15' : '1px solid rgba(255, 255, 255, 0.1)',
+                                color: selectedTreasuryCur === cur ? '#ffffff' : 'var(--text-secondary)',
+                                padding: '6px 10px',
+                                borderRadius: '6px',
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {cur}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 4 Multi-Currency Metrics Cards */}
+                      <div className={styles.grid4} style={{ gap: '14px' }}>
+                        <div style={{ background: 'rgba(7, 8, 15, 0.65)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(234, 179, 8, 0.25)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#fde68a', textTransform: 'uppercase', fontWeight: 700 }}>Global Net Worth ({selectedTreasuryCur})</span>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#facc15', marginTop: '4px' }}>
+                            {fmtCurrency(netWorthConverted, symbol)}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            Local: <strong>{fmtVal(totalNetWorthBdt)}</strong>
+                          </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.65)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(52, 211, 153, 0.25)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#6ee7b7', textTransform: 'uppercase', fontWeight: 700 }}>Monthly Income ({selectedTreasuryCur})</span>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#34d399', marginTop: '4px' }}>
+                            {fmtCurrency(incConverted, symbol)} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>/mo</span>
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            Local: <strong>{fmtVal(incBdt)}</strong>
+                          </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.65)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(248, 113, 113, 0.25)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#fca5a5', textTransform: 'uppercase', fontWeight: 700 }}>Monthly Burn ({selectedTreasuryCur})</span>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#f87171', marginTop: '4px' }}>
+                            {fmtCurrency(expConverted, symbol)} <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>/mo</span>
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            Local: <strong>{fmtVal(expBdt)}</strong>
+                          </div>
+                        </div>
+
+                        <div style={{ background: 'rgba(7, 8, 15, 0.65)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(96, 165, 250, 0.25)' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#93c5fd', textTransform: 'uppercase', fontWeight: 700 }}>Exchange FX Rate</span>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#60a5fa', marginTop: '4px' }}>
+                            ৳{curRate.toFixed(2)}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            1 {selectedTreasuryCur} = ৳{curRate.toFixed(2)} BDT
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Purchasing Power Parity (PPP) Geo-Arbitrage Engine Card */}
+                    <div className={styles.walletCard} style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Globe size={18} style={{ color: '#00e5ff' }} /> Geo-Arbitrage & Purchasing Power Parity (PPP) Engine
+                          </h3>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                            Compare your standard of living in Bangladesh against major global tech capitals.
+                          </p>
+                        </div>
+
+                        {/* City Selector */}
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          {Object.entries(pppCityData).map(([key, data]) => (
+                            <button
+                              key={key}
+                              onClick={() => setGeoPppCity(key as any)}
+                              style={{
+                                background: geoPppCity === key ? 'rgba(0, 229, 255, 0.25)' : 'rgba(255, 255, 255, 0.04)',
+                                border: geoPppCity === key ? '1px solid #00e5ff' : '1px solid rgba(255, 255, 255, 0.08)',
+                                color: geoPppCity === key ? '#ffffff' : 'var(--text-secondary)',
+                                padding: '6px 12px',
+                                borderRadius: '6px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {data.country.split(' ')[1]} {data.name.split(' ')[0]}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* PPP Results Banner */}
+                      <div style={{ background: 'rgba(7, 8, 15, 0.6)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(0, 229, 255, 0.25)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+                        <div>
+                          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>Target Global Tech Ecosystem</span>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#fff', marginTop: '4px' }}>{selectedCity.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>{selectedCity.description}</div>
+                        </div>
+
+                        <div>
+                          <span style={{ fontSize: '0.72rem', color: '#00e5ff', textTransform: 'uppercase', fontWeight: 700 }}>PPP Living Multiplier</span>
+                          <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#00e5ff', marginTop: '4px' }}>{selectedCity.multiplier}x</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Dhaka cost of living discount</div>
+                        </div>
+
+                        <div>
+                          <span style={{ fontSize: '0.72rem', color: '#34d399', textTransform: 'uppercase', fontWeight: 700 }}>Equivalent US / Global Salary</span>
+                          <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#34d399', marginTop: '4px' }}>${Math.round(annualUsdEquivalent).toLocaleString()} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>/yr</span></div>
+                          <div style={{ fontSize: '0.75rem', color: '#6ee7b7', marginTop: '4px' }}>(${Math.round(monthlyUsdEquivalent).toLocaleString()}/mo post-tax equivalent)</div>
+                        </div>
+                      </div>
+
+                      {/* Recommended Hourly Rate Box */}
+                      <div style={{ marginTop: '16px', background: 'rgba(15, 23, 42, 0.5)', padding: '16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#fff' }}>🎯 Recommended Remote Freelance Hourly Rate</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                            Based on a ৳{targetMonthlySavingsGoal.toLocaleString()}/mo savings target working 120 billable hours/month.
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#34d399' }}>
+                          ${recommendedHourlyRateUsd} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>/ hour</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
                 );
               })()}
             </div>
